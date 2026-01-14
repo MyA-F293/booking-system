@@ -659,7 +659,7 @@ const AdminDashboard = ({ user }) => {
                                             <label className="block text-gray-700 font-semibold mb-2 font-poppins">
                                                 Student ID
                                             </label>
-                                            <div className="flex gap-2">
+                                            <div className="flex flex-col sm:flex-row gap-2">
                                                 <input
                                                     type="text"
                                                     value={generatedId}
@@ -670,7 +670,7 @@ const AdminDashboard = ({ user }) => {
                                                 <button
                                                     type="button"
                                                     onClick={handleGenerateId}
-                                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap font-semibold"
+                                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap font-semibold text-sm sm:text-base"
                                                 >
                                                     {t('admin.generateId')}
                                                 </button>
@@ -678,11 +678,11 @@ const AdminDashboard = ({ user }) => {
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3 pt-4">
+                                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
                                         <button
                                             type="submit"
                                             disabled={loading || !generatedId}
-                                            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                                         >
                                             {loading ? t('common.loading') : `✅ ${t('admin.createStudentButton')}`}
                                         </button>
