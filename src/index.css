@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+/* Century Gothic Font */
+@font-face {
+    font-family: 'Century Gothic';
+    src: local('Century Gothic'), local('CenturyGothic');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Century Gothic';
+    src: local('Century Gothic Bold'), local('CenturyGothic-Bold');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Apply Century Gothic as default font */
+body {
+    font-family: 'Century Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.font-poppins,
+.font-montserrat {
+    font-family: 'Century Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ===============================
+   THEME 1 – LIGHT (DEFAULT)
+   Putih Elegan
+================================ */
+.theme-light {
+    --primary-blue: #1F4E8C;
+    --accent-orange: #F39C32;
+    --bg-main: #FFFFFF;
+    --bg-section: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text-primary: #1F4E8C;
+    --text-secondary: #6B7280;
+    --text-invert: #FFFFFF;
+    --border-color: #E5E7EB;
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ===============================
+   THEME 2 – DARK / INVERSE
+   Biru Elegan
+================================ */
+.theme-dark {
+    --primary-blue: #1F4E8C;
+    --accent-orange: #F39C32;
+    --bg-main: #1F4E8C;
+    --bg-section: #243F6B;
+    --bg-card: #FFFFFF;
+    --text-primary: #FFFFFF;
+    --text-secondary: #E5E7EB;
+    --text-invert: #1F4E8C;
+    --border-color: rgba(255, 255, 255, 0.2);
+    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* Apply default theme */
+:root {
+    --primary-blue: #1F4E8C;
+    --accent-orange: #F39C32;
+    --bg-main: #FFFFFF;
+    --bg-section: #F5F7FA;
+    --bg-card: #FFFFFF;
+    --text-primary: #1F4E8C;
+    --text-secondary: #6B7280;
+    --text-invert: #FFFFFF;
+    --border-color: #E5E7EB;
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+
+/* Slide up animation for modals */
+@keyframes slide-up {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-up {
+    animation: slide-up 0.3s ease-out;
+}
+
+
+/* Gentle bounce animation for feedback button */
+@keyframes bounce-gentle {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
+.animate-bounce-gentle {
+    animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+/* Wiggle animation for icon */
+@keyframes wiggle {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-10deg);
+    }
+
+    75% {
+        transform: rotate(10deg);
+    }
+}
+
+.animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
+}
+
+/* Text shimmer animation */
+@keyframes text-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.animate-text-shimmer {
+    animation: text-shimmer 3s linear infinite;
+}
+
+
+/* Fade in animation for tooltip */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+}
