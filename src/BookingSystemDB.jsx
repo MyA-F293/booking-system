@@ -491,7 +491,7 @@ const BookingSystemDB = ({ user }) => {
                         <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-5 min-w-0">
                             <div className="flex-shrink-0">
                                 <img
-                                    src="/eysa-logo.png"
+                                    src="/eysa-logo.svg"
                                     alt="EYSA Logo"
                                     className="h-6 sm:h-10 lg:h-14 w-auto drop-shadow-md"
                                 />
