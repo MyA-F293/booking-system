@@ -814,6 +814,18 @@ const BookingSystemDB = ({ user }) => {
 
                                                             {/* Content */}
                                                             <div className="p-4 space-y-3">
+                                                                {/* Program & Level */}
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="p-2 bg-purple-100 rounded-lg shrink-0">
+                                                                        <Calendar size={16} className="text-purple-600" />
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <p className="text-[10px] text-gray-400 uppercase tracking-wide">Program</p>
+                                                                        <p className="font-semibold text-sm text-gray-800 truncate">{booking.schedule.program || '-'}</p>
+                                                                        <p className="text-[10px] text-gray-500">{booking.schedule.level || '-'}</p>
+                                                                    </div>
+                                                                </div>
+
                                                                 {/* Class Name */}
                                                                 <div className="flex items-center gap-3">
                                                                     <span className={`${getClassBadge(booking.schedule.class?.name).color} w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0`}>
