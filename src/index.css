@@ -1,28 +1,21 @@
 @import "tailwindcss";
 
-/* Century Gothic Font */
-@font-face {
-    font-family: 'Century Gothic';
-    src: local('Century Gothic'), local('CenturyGothic');
-    font-weight: normal;
-    font-style: normal;
-}
+/* ===============================
+   FONT CONFIGURATION
+   Using Google Fonts Poppins for cross-device compatibility
+================================ */
 
-@font-face {
-    font-family: 'Century Gothic';
-    src: local('Century Gothic Bold'), local('CenturyGothic-Bold');
-    font-weight: bold;
-    font-style: normal;
-}
-
-/* Apply Century Gothic as default font */
+/* Apply Poppins as default font with fallbacks */
 body {
-    font-family: 'Century Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
+/* Font utility classes */
 .font-poppins,
 .font-montserrat {
-    font-family: 'Century Gothic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* ===============================

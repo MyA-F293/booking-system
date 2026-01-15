@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
@@ -29,6 +29,9 @@ const AdminDashboard = ({ user }) => {
         level: '',
         batch_number: 1
     });
+
+    // Search state for students
+    const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
     // Password view/reset state
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -68,6 +71,22 @@ const AdminDashboard = ({ user }) => {
     const levels = ['Starter', 'Upper Starter', 'Pre-Intermediate', 'Intermediate'];
 
     const [activeTab, setActiveTab] = useState('stats');
+
+    // Filter students based on search query
+    const getFilteredStudents = () => {
+        if (!studentSearchQuery.trim()) {
+            return students;
+        }
+
+        const query = studentSearchQuery.toLowerCase().trim();
+        return students.filter(student =>
+            student.full_name?.toLowerCase().includes(query) ||
+            student.student_id?.toLowerCase().includes(query) ||
+            student.program?.toLowerCase().includes(query) ||
+            student.level?.toLowerCase().includes(query) ||
+            student.batch?.toString().includes(query)
+        );
+    };
 
     // ========== STUDENT FUNCTIONS ==========
     const loadStudents = async () => {
@@ -534,10 +553,13 @@ const AdminDashboard = ({ user }) => {
                     <>
                         {/* Actions Bar */}
                         <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6 mb-4 sm:mb-6">
-                            <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-4">
+                            <div className="flex justify-between items-center flex-wrap gap-2 sm:gap-4 mb-4">
                                 <div>
                                     <h2 className="text-base sm:text-2xl font-bold text-gray-800 font-montserrat">{t('admin.studentManagement')}</h2>
-                                    <p className="text-gray-600 mt-0.5 sm:mt-1 font-poppins text-xs sm:text-base">{t('admin.totalStudents')}: {students.length}</p>
+                                    <p className="text-gray-600 mt-0.5 sm:mt-1 font-poppins text-xs sm:text-base">
+                                        {t('admin.totalStudents')}: {students.length}
+                                        {studentSearchQuery && ` • Showing: ${getFilteredStudents().length}`}
+                                    </p>
                                 </div>
                                 <div className="flex gap-1.5 sm:gap-3">
                                     <button
@@ -563,6 +585,26 @@ const AdminDashboard = ({ user }) => {
                                         <span className="sm:hidden">{t('common.add')}</span>
                                     </button>
                                 </div>
+                            </div>
+
+                            {/* Search Input */}
+                            <div className="relative">
+                                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    value={studentSearchQuery}
+                                    onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                    placeholder="Search by name, ID, program, level, or batch..."
+                                    className="w-full pl-10 pr-10 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                                />
+                                {studentSearchQuery && (
+                                    <button
+                                        onClick={() => setStudentSearchQuery('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -746,8 +788,16 @@ const AdminDashboard = ({ user }) => {
                                                     <p className="text-sm text-gray-400">{t('admin.noStudentsDesc')}</p>
                                                 </td>
                                             </tr>
+                                        ) : getFilteredStudents().length === 0 ? (
+                                            <tr>
+                                                <td colSpan="7" className="px-6 py-12 text-center">
+                                                    <Search size={48} className="mx-auto mb-2 text-gray-300" />
+                                                    <p className="text-gray-500 font-semibold">No students match your search</p>
+                                                    <p className="text-sm text-gray-400">Try different keywords</p>
+                                                </td>
+                                            </tr>
                                         ) : (
-                                            students.map((student) => (
+                                            getFilteredStudents().map((student) => (
                                                 <tr key={student.id} className={`hover:bg-gray-50 transition-colors ${!student.is_active ? 'bg-gray-100 opacity-60' : ''}`}>
                                                     <td className="px-3 sm:px-6 py-2 sm:py-4 font-mono font-bold text-blue-900 text-[10px] sm:text-sm">
                                                         {student.student_id}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle } from 'lucide-react';
+import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle, Search } from 'lucide-react';
 import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentWeek, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -94,6 +94,9 @@ const AdminBookingDashboard = () => {
     // WhatsApp notification state
     const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
     const [whatsAppMessage, setWhatsAppMessage] = useState('');
+
+    // Search state for Add Student modal
+    const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
     // Refresh cooldown state
     const [isOnCooldown, setIsOnCooldown] = useState(false);
@@ -382,7 +385,20 @@ const AdminBookingDashboard = () => {
 
     const getAvailableStudents = () => {
         const bookedStudentIds = scheduleStudents.map(b => b.user.id);
-        return allStudents.filter(s => !bookedStudentIds.includes(s.id));
+        let available = allStudents.filter(s => !bookedStudentIds.includes(s.id));
+
+        // Apply search filter if query exists
+        if (studentSearchQuery.trim()) {
+            const query = studentSearchQuery.toLowerCase().trim();
+            available = available.filter(s =>
+                s.full_name?.toLowerCase().includes(query) ||
+                s.student_id?.toLowerCase().includes(query) ||
+                s.program?.toLowerCase().includes(query) ||
+                s.level?.toLowerCase().includes(query)
+            );
+        }
+
+        return available;
     };
 
     const getStatusColor = (count) => {
@@ -849,16 +865,47 @@ const AdminBookingDashboard = () => {
             {/* Add Student Modal */}
             {showAddModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-3xl max-w-lg w-full max-h-[80vh] overflow-hidden shadow-2xl">
-                        <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5">
+                    <div className="bg-white rounded-3xl max-w-lg w-full max-h-[80vh] overflow-hidden shadow-2xl flex flex-col">
+                        <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5 flex-shrink-0">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold flex items-center gap-2"><UserPlus size={20} />{t('adminBooking.addStudent')}</h3>
-                                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
+                                <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
                             </div>
                         </div>
-                        <div className="p-5 max-h-96 overflow-y-auto">
+
+                        {/* Search Input */}
+                        <div className="p-4 border-b border-gray-100 flex-shrink-0">
+                            <div className="relative">
+                                <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    value={studentSearchQuery}
+                                    onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                    placeholder="Search by name, ID, program, or level..."
+                                    className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 text-sm"
+                                />
+                                {studentSearchQuery && (
+                                    <button
+                                        onClick={() => setStudentSearchQuery('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                {getAvailableStudents().length} student{getAvailableStudents().length !== 1 ? 's' : ''} found
+                            </p>
+                        </div>
+
+                        <div className="p-5 overflow-y-auto flex-1">
                             {getAvailableStudents().length === 0 ? (
-                                <div className="text-center py-10 text-gray-500"><Users size={40} className="mx-auto mb-3 text-gray-300" /><p className="text-sm">{t('adminBooking.allStudentsRegistered')}</p></div>
+                                <div className="text-center py-10 text-gray-500">
+                                    <Users size={40} className="mx-auto mb-3 text-gray-300" />
+                                    <p className="text-sm">
+                                        {studentSearchQuery ? 'No students match your search' : t('adminBooking.allStudentsRegistered')}
+                                    </p>
+                                </div>
                             ) : (
                                 <div className="space-y-2">
                                     {getAvailableStudents().map((student) => (
@@ -874,8 +921,8 @@ const AdminBookingDashboard = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="bg-gray-50 p-4 border-t">
-                            <button onClick={() => setShowAddModal(false)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
+                        <div className="bg-gray-50 p-4 border-t flex-shrink-0">
+                            <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
                         </div>
                     </div>
                 </div>
