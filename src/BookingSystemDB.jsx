@@ -406,6 +406,13 @@ const BookingSystemDB = ({ user }) => {
             const schedule = await getOrCreateSchedule(scheduleData);
             console.log('✅ Schedule created/retrieved:', schedule);
 
+            // Check if schedule was created successfully
+            if (!schedule || !schedule.id) {
+                console.error('❌ Failed to create/get schedule');
+                toast.error('Failed to book: Could not create schedule. Please try again.');
+                return;
+            }
+
             if (schedule.current_students >= 10) {
                 console.log('⚠️ Class is full');
                 toast.error(t('booking.classFull'));
