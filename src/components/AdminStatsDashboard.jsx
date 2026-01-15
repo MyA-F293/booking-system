@@ -404,10 +404,27 @@ const AdminStatsDashboard = () => {
                             ) : (
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
-                                        <Pie data={stats.bookingsByPhase} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value" label={({ name, value }) => `${name}: ${value}`}>
+                                        <Pie
+                                            data={stats.bookingsByPhase}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={90}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            label={false}
+                                        >
                                             {stats.bookingsByPhase.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.fill} />))}
                                         </Pie>
-                                        <Tooltip />
+                                        <Tooltip formatter={(value, name) => [value, name]} />
+                                        <Legend
+                                            verticalAlign="bottom"
+                                            height={36}
+                                            formatter={(value, entry) => {
+                                                const item = stats.bookingsByPhase.find(p => p.name === value);
+                                                return `${value}: ${item?.value || 0}`;
+                                            }}
+                                        />
                                     </PieChart>
                                 </ResponsiveContainer>
                             )}
