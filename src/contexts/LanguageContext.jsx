@@ -100,6 +100,8 @@ const translations = {
     'booking.legendAvailableDesc': 'Click to book!',
     'booking.legendFull': 'Full',
     'booking.legendFullDesc': '10 students maximum',
+    'booking.legendOccupied': 'Occupied',
+    'booking.legendOccupiedDesc': 'Used by other program',
     'booking.bookingDayRestriction': 'Booking can only be done on Thursday - Saturday',
     'booking.bookingOpen': '✅ Booking is OPEN! Today is Thursday-Saturday.',
     'booking.bookingClosed': '⚠️ Booking can only be done on Thursday, Friday, and Saturday.',
@@ -110,6 +112,8 @@ const translations = {
     'booking.error': 'Failed to book: ',
     'booking.confirmed': 'Confirmed',
     'booking.dayLabel': 'Day',
+    'booking.occupied': 'Occupied',
+    'booking.occupiedByOther': 'Used by other program',
 
     // Programs
     'program.campusCareer': 'Campus & Career',

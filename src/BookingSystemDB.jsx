@@ -12,6 +12,7 @@ import {
     getTeachers,
     getOrCreateSchedule,
     getSchedules,
+    getOccupiedClassesByOtherPrograms,
     createBooking,
     hasUserBookedPhase,
     getUserBookings,
@@ -102,6 +103,9 @@ const BookingSystemDB = ({ user }) => {
 
     // Track phases being booked (to prevent double booking during async operations)
     const [bookingInProgress, setBookingInProgress] = useState(null);
+
+    // Track classes occupied by other programs (for room exclusivity)
+    const [occupiedClasses, setOccupiedClasses] = useState([]);
 
     // Success modal state
     const [showBookingSuccessModal, setShowBookingSuccessModal] = useState(false);
@@ -240,6 +244,19 @@ const BookingSystemDB = ({ user }) => {
             const data = await getSchedules(filters);
             console.log('✅ Schedules loaded:', data);
             setSchedules(data);
+
+            // Also check for classes occupied by other programs (Room Exclusivity Rule)
+            if (selectedDay && selectedTime) {
+                const occupied = await getOccupiedClassesByOtherPrograms({
+                    day: selectedDay,
+                    time_slot: selectedTime,
+                    week_number: bookingWeek,
+                    year: currentYear,
+                    currentProgram: selectedProgram,
+                    batch: userBatch
+                });
+                setOccupiedClasses(occupied);
+            }
         } catch (err) {
             console.error('❌ Error loading schedules:', err);
         }
@@ -330,6 +347,18 @@ const BookingSystemDB = ({ user }) => {
             return { count: 0, available: false, status: 'unavailable' };
         }
 
+        // Check if this class is occupied by another program (Room Exclusivity Rule)
+        const occupiedByOther = occupiedClasses.find(oc => oc.class_id === classItem.id);
+        if (occupiedByOther) {
+            console.log('🚫 Class occupied by other program:', occupiedByOther.program);
+            return {
+                count: 0,
+                available: false,
+                status: 'occupied',
+                occupiedBy: occupiedByOther.program
+            };
+        }
+
         if (!scheduleData) {
             console.log('⚠️ No scheduleData, returning default');
             return { count: 0, available: true, status: 'available' };
@@ -389,9 +418,12 @@ const BookingSystemDB = ({ user }) => {
             const teacher = teachers[teacherIndex % teachers.length];
             console.log('👨‍🏫 Selected teacher:', teacher);
 
+            // Handle case when no teachers available
+            const teacherId = teacher?.id || null;
+
             const scheduleData = {
                 class_id: classItem.id,
-                teacher_id: teacher.id,
+                teacher_id: teacherId,
                 program: selectedProgram,
                 level: selectedLevel,
                 phase: selectedPhase,
@@ -1058,15 +1090,18 @@ const BookingSystemDB = ({ user }) => {
                                             const canClick = status.available && !loading;
                                             const isFull = status.status === 'full';
                                             const isActive = status.status === 'active';
+                                            const isOccupied = status.status === 'occupied';
 
                                             const teacherIndex = classes.findIndex(c => c.id === classItem.id);
                                             const teacher = teachers[teacherIndex % teachers.length];
 
-                                            const stickyNoteClass = isFull
-                                                ? 'bg-red-50 border-red-300'
-                                                : isActive
-                                                    ? 'bg-green-50 border-green-300'
-                                                    : 'bg-yellow-50 border-yellow-300';
+                                            const stickyNoteClass = isOccupied
+                                                ? 'bg-gray-100 border-gray-400'
+                                                : isFull
+                                                    ? 'bg-red-50 border-red-300'
+                                                    : isActive
+                                                        ? 'bg-green-50 border-green-300'
+                                                        : 'bg-yellow-50 border-yellow-300';
 
                                             return (
                                                 <button
@@ -1082,10 +1117,10 @@ const BookingSystemDB = ({ user }) => {
                                                     style={{ minHeight: '100px' }}
                                                 >
                                                     {/* Status indicator */}
-                                                    <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isFull ? 'bg-red-500' : isActive ? 'bg-green-500 animate-pulse' : 'bg-yellow-400'}`} />
+                                                    <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isOccupied ? 'bg-gray-500' : isFull ? 'bg-red-500' : isActive ? 'bg-green-500 animate-pulse' : 'bg-yellow-400'}`} />
 
                                                     {/* Class name */}
-                                                    <div className={`font-bold text-xs sm:text-lg mb-1 sm:mb-2 ${isFull ? 'text-red-800' : 'text-[#1F4E8C]'}`}>
+                                                    <div className={`font-bold text-xs sm:text-lg mb-1 sm:mb-2 ${isOccupied ? 'text-gray-500' : isFull ? 'text-red-800' : 'text-[#1F4E8C]'}`}>
                                                         {classItem.name}
                                                     </div>
 
@@ -1095,20 +1130,31 @@ const BookingSystemDB = ({ user }) => {
                                                         <span className="truncate">{teacher?.name || 'TBA'}</span>
                                                     </div>
 
-                                                    {/* Student count */}
-                                                    <div className={`text-[10px] sm:text-sm font-semibold ${isFull ? 'text-red-700' : isActive ? 'text-green-700' : 'text-gray-600'}`}>
-                                                        <Users size={10} className="sm:w-3 sm:h-3 inline mr-0.5 sm:mr-1" />
-                                                        {status.count}/10
-                                                    </div>
+                                                    {/* Student count - hide for occupied */}
+                                                    {!isOccupied && (
+                                                        <div className={`text-[10px] sm:text-sm font-semibold ${isFull ? 'text-red-700' : isActive ? 'text-green-700' : 'text-gray-600'}`}>
+                                                            <Users size={10} className="sm:w-3 sm:h-3 inline mr-0.5 sm:mr-1" />
+                                                            {status.count}/10
+                                                        </div>
+                                                    )}
 
                                                     {/* Status label */}
-                                                    <div className={`mt-1 sm:mt-2 text-[8px] sm:text-xs font-bold uppercase tracking-wide ${isFull ? 'text-red-600' : isActive ? 'text-green-600' : 'text-yellow-600'}`}>
-                                                        {isFull
-                                                            ? `🔴 ${t('booking.full') || 'PENUH'}`
-                                                            : isActive
-                                                                ? `🟢 ${t('booking.available') || 'TERSEDIA'}`
-                                                                : `🟡 ${t('booking.waitingMore') || 'MENUNGGU'}`}
+                                                    <div className={`mt-1 sm:mt-2 text-[8px] sm:text-xs font-bold uppercase tracking-wide ${isOccupied ? 'text-gray-600' : isFull ? 'text-red-600' : isActive ? 'text-green-600' : 'text-yellow-600'}`}>
+                                                        {isOccupied
+                                                            ? `⚫ ${t('booking.occupied') || 'TERPAKAI'}`
+                                                            : isFull
+                                                                ? `🔴 ${t('booking.full') || 'PENUH'}`
+                                                                : isActive
+                                                                    ? `🟢 ${t('booking.available') || 'TERSEDIA'}`
+                                                                    : `🟡 ${t('booking.waitingMore') || 'MENUNGGU'}`}
                                                     </div>
+
+                                                    {/* Show which program is using this class */}
+                                                    {isOccupied && status.occupiedBy && (
+                                                        <div className="mt-1 text-[7px] sm:text-[10px] text-gray-500 italic">
+                                                            {status.occupiedBy === 'Campus & Career' ? t('program.campusCareer') : t('program.englishTeens')}
+                                                        </div>
+                                                    )}
                                                 </button>
                                             );
                                         })}
@@ -1147,6 +1193,20 @@ const BookingSystemDB = ({ user }) => {
                                             </div>
                                             <div className="text-[7px] sm:text-xs text-gray-500 hidden sm:block">
                                                 {t('booking.legendFullDesc')}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 sm:gap-3">
+                                        <div className="w-5 h-5 sm:w-10 sm:h-10 bg-gray-100 rounded sm:rounded-xl border border-gray-400 sm:border-2 flex items-center justify-center">
+                                            <div className="w-1.5 h-1.5 sm:w-3 sm:h-3 bg-gray-500 rounded-full"></div>
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-gray-700 text-[8px] sm:text-sm">
+                                                ⚫ {t('booking.occupied')}
+                                            </div>
+                                            <div className="text-[7px] sm:text-xs text-gray-500 hidden sm:block">
+                                                {t('booking.occupiedByOther')}
                                             </div>
                                         </div>
                                     </div>

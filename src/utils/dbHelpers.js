@@ -311,6 +311,59 @@ export const getSchedules = async (filters = {}) => {
     return data || []
 }
 
+/**
+ * Check which classes are already booked by OTHER programs at the same day/time
+ * This is for the Class Room Exclusivity Rule:
+ * One classroom can only be used for one program at the same time
+ * 
+ * @param {Object} params - Parameters
+ * @param {string} params.day - Day of the week
+ * @param {string} params.time_slot - Time slot (afternoon/evening)
+ * @param {number} params.week_number - Week number
+ * @param {number} params.year - Year
+ * @param {string} params.currentProgram - Current user's program (to exclude from check)
+ * @param {string} params.batch - Batch (optional)
+ * @returns {Array} - Array of class_ids that are occupied by other programs
+ */
+export const getOccupiedClassesByOtherPrograms = async (params) => {
+    const { day, time_slot, week_number, year, currentProgram, batch } = params;
+
+    console.log('📡 dbHelpers: getOccupiedClassesByOtherPrograms called with:', params);
+
+    // Get all schedules for this day/time/week that have bookings (current_students > 0)
+    // and are NOT the current program
+    let query = supabase
+        .from('schedules')
+        .select('class_id, program, current_students')
+        .eq('day', day)
+        .eq('time_slot', time_slot)
+        .eq('week_number', week_number)
+        .eq('year', year)
+        .neq('program', currentProgram)
+        .gt('current_students', 0);  // Only schedules that have at least 1 student
+
+    if (batch) {
+        query = query.eq('batch', batch);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('❌ dbHelpers: getOccupiedClassesByOtherPrograms error:', error);
+        throw error;
+    }
+
+    // Extract unique class_ids that are occupied
+    const occupiedClasses = data?.map(s => ({
+        class_id: s.class_id,
+        program: s.program,
+        students: s.current_students
+    })) || [];
+
+    console.log('✅ dbHelpers: getOccupiedClassesByOtherPrograms found:', occupiedClasses);
+    return occupiedClasses;
+}
+
 // ========================================
 // BOOKING FUNCTIONS
 // ========================================
