@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3 } from 'lucide-react';
+import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle } from 'lucide-react';
 import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentWeek, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -90,6 +90,10 @@ const AdminBookingDashboard = () => {
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [targetSchedule, setTargetSchedule] = useState('');
     const [selectedTeacher, setSelectedTeacher] = useState('');
+
+    // WhatsApp notification state
+    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+    const [whatsAppMessage, setWhatsAppMessage] = useState('');
 
     // Refresh cooldown state
     const [isOnCooldown, setIsOnCooldown] = useState(false);
@@ -263,6 +267,21 @@ const AdminBookingDashboard = () => {
                 toast.error(t('adminBooking.targetClassFull'));
                 return;
             }
+
+            // Store data for WhatsApp notification before moving
+            const notificationData = {
+                studentName: selectedStudent.user?.full_name || 'Unknown',
+                studentId: selectedStudent.user?.student_id || '-',
+                fromClass: selectedSchedule.class?.name || 'Unknown',
+                fromPhase: getPhaseLabel(selectedSchedule.phase),
+                fromDay: getDayLabel(selectedSchedule.day, selectedSchedule.phase),
+                fromTime: `${getTimeLabel(selectedSchedule.time_slot)} (${getTimeHours(selectedSchedule.time_slot)})`,
+                toClass: newSchedule.class?.name || 'Unknown',
+                toPhase: getPhaseLabel(newSchedule.phase),
+                toDay: getDayLabel(newSchedule.day, newSchedule.phase),
+                toTime: `${getTimeLabel(newSchedule.time_slot)} (${getTimeHours(newSchedule.time_slot)})`
+            };
+
             const { error: deleteError } = await supabase.from('bookings').delete().eq('id', selectedStudent.id);
             if (deleteError) throw deleteError;
             await createBooking({ schedule_id: targetSchedule, user_id: selectedStudent.user.id, status: 'confirmed' });
@@ -272,6 +291,10 @@ const AdminBookingDashboard = () => {
             setShowMoveModal(false);
             setSelectedStudent(null);
             setTargetSchedule('');
+
+            // Show WhatsApp notification modal
+            const message = generateWhatsAppMessage('move', notificationData);
+            showNotificationModal(message);
         } catch (err) {
             console.error('Error moving student:', err);
             toast.error(t('adminBooking.moveStudentFailed') + err.message);
@@ -280,17 +303,32 @@ const AdminBookingDashboard = () => {
         }
     };
 
-    const handleDeleteStudent = async (bookingId, studentName) => {
+    const handleDeleteStudent = async (bookingId, studentName, studentId) => {
         toast.confirm(
             `${t('adminBooking.confirmDelete')} ${studentName} ${t('adminBooking.fromThisClass')}?`,
             async () => {
                 try {
                     setLoading(true);
+
+                    // Store data for WhatsApp notification before deleting
+                    const notificationData = {
+                        studentName: studentName,
+                        studentId: studentId || '-',
+                        className: selectedSchedule.class?.name || 'Unknown',
+                        phase: getPhaseLabel(selectedSchedule.phase),
+                        day: getDayLabel(selectedSchedule.day, selectedSchedule.phase),
+                        time: `${getTimeLabel(selectedSchedule.time_slot)} (${getTimeHours(selectedSchedule.time_slot)})`
+                    };
+
                     const { error } = await supabase.from('bookings').delete().eq('id', bookingId);
                     if (error) throw error;
                     toast.success(t('adminBooking.studentDeleted'));
                     await loadAllSchedules();
                     await handleViewDetails(selectedSchedule);
+
+                    // Show WhatsApp notification modal
+                    const message = generateWhatsAppMessage('remove', notificationData);
+                    showNotificationModal(message);
                 } catch (err) {
                     console.error('Error deleting student:', err);
                     toast.error(t('adminBooking.deleteStudentFailed') + err.message);
@@ -351,6 +389,72 @@ const AdminBookingDashboard = () => {
         if (count >= 10) return { bg: 'bg-red-500', text: 'text-white', border: 'border-l-red-500' };
         if (count >= 4) return { bg: 'bg-emerald-500', text: 'text-white', border: 'border-l-emerald-500' };
         return { bg: 'bg-amber-400', text: 'text-amber-900', border: 'border-l-amber-400' };
+    };
+
+    // WhatsApp notification functions
+    const generateWhatsAppMessage = (type, data) => {
+        const header = `📢 *EYSA Language Center*\n_Booking Update - Week ${displayWeek}_\n${'─'.repeat(20)}\n\n`;
+
+        let message = header;
+
+        switch (type) {
+            case 'move':
+                message += `🔄 *Student Moved*\n\n`;
+                message += `👤 *Student:* ${data.studentName}\n`;
+                message += `📋 *ID:* ${data.studentId}\n\n`;
+                message += `📍 *From:*\n`;
+                message += `   • Class: ${data.fromClass}\n`;
+                message += `   • ${data.fromPhase} - ${data.fromDay}\n`;
+                message += `   • ${data.fromTime}\n\n`;
+                message += `📍 *To:*\n`;
+                message += `   • Class: ${data.toClass}\n`;
+                message += `   • ${data.toPhase} - ${data.toDay}\n`;
+                message += `   • ${data.toTime}\n`;
+                break;
+
+            case 'remove':
+                message += `❌ *Student Removed*\n\n`;
+                message += `👤 *Student:* ${data.studentName}\n`;
+                message += `📋 *ID:* ${data.studentId}\n\n`;
+                message += `📍 *From:*\n`;
+                message += `   • Class: ${data.className}\n`;
+                message += `   • ${data.phase} - ${data.day}\n`;
+                message += `   • ${data.time}\n`;
+                break;
+
+            case 'add':
+                message += `✅ *Student Added*\n\n`;
+                message += `👤 *Student:* ${data.studentName}\n`;
+                message += `📋 *ID:* ${data.studentId}\n\n`;
+                message += `📍 *To:*\n`;
+                message += `   • Class: ${data.className}\n`;
+                message += `   • ${data.phase} - ${data.day}\n`;
+                message += `   • ${data.time}\n`;
+                break;
+
+            case 'teacher':
+                message += `👨‍🏫 *Teacher Assigned*\n\n`;
+                message += `📍 *Class:* ${data.className}\n`;
+                message += `   • ${data.phase} - ${data.day}\n`;
+                message += `   • ${data.time}\n\n`;
+                message += `👨‍🏫 *Teacher:* ${data.teacherName}\n`;
+                break;
+        }
+
+        message += `\n${'─'.repeat(20)}\n`;
+        message += `⏰ ${new Date().toLocaleString('id-ID')}`;
+
+        return message;
+    };
+
+    const openWhatsApp = (message) => {
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+    };
+
+    const showNotificationModal = (message) => {
+        setWhatsAppMessage(message);
+        setShowWhatsAppModal(true);
     };
 
     return (
@@ -693,7 +797,7 @@ const AdminBookingDashboard = () => {
                                                     <button onClick={() => { setSelectedStudent(booking); setShowMoveModal(true); }} className="p-2.5 bg-[#1F4E8C] hover:bg-[#183d6e] text-white rounded-lg transition-colors" title={t('adminBooking.moveToClass')}>
                                                         <ArrowRight size={14} />
                                                     </button>
-                                                    <button onClick={() => handleDeleteStudent(booking.id, booking.user?.full_name)} className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors" title={t('common.delete')}>
+                                                    <button onClick={() => handleDeleteStudent(booking.id, booking.user?.full_name, booking.user?.student_id)} className="p-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors" title={t('common.delete')}>
                                                         <Trash2 size={14} />
                                                     </button>
                                                 </div>
@@ -802,6 +906,52 @@ const AdminBookingDashboard = () => {
                         <div className="bg-gray-50 p-4 border-t flex gap-3">
                             <button onClick={handleMoveStudent} disabled={!targetSchedule || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{t('adminBooking.move')}</button>
                             <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* WhatsApp Notification Modal */}
+            {showWhatsAppModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden">
+                        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold flex items-center gap-2">
+                                    <MessageCircle size={20} />
+                                    Send WhatsApp Notification
+                                </h3>
+                                <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                    <X size={18} />
+                                </button>
+                            </div>
+                            <p className="text-green-100 text-sm mt-1">Share this update to your WhatsApp group</p>
+                        </div>
+                        <div className="p-5">
+                            <div className="bg-gray-50 rounded-xl p-4 mb-4 max-h-64 overflow-y-auto">
+                                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">{whatsAppMessage}</pre>
+                            </div>
+                            <p className="text-xs text-gray-500 mb-4">
+                                💡 Click the button below to open WhatsApp with this message. Then select your group and send.
+                            </p>
+                        </div>
+                        <div className="bg-gray-50 p-4 border-t flex gap-3">
+                            <button
+                                onClick={() => {
+                                    openWhatsApp(whatsAppMessage);
+                                    setShowWhatsAppModal(false);
+                                }}
+                                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
+                            >
+                                <MessageCircle size={18} />
+                                Open WhatsApp
+                            </button>
+                            <button
+                                onClick={() => setShowWhatsAppModal(false)}
+                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
+                            >
+                                Skip
+                            </button>
                         </div>
                     </div>
                 </div>
