@@ -40,7 +40,7 @@ const Login = ({ onLoginSuccess }) => {
                 {/* Logo & Title */}
                 <div className="text-center mb-4 sm:mb-6">
                     <img
-                        src="/eysa-logo.svg"
+                        src="/eysa-logo.png"
                         alt="EYSA Logo"
                         className="h-14 sm:h-16 lg:h-20 w-auto mx-auto mb-2 sm:mb-3 drop-shadow-lg"
                     />
