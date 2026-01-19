@@ -298,9 +298,11 @@ const BookingSystemDB = ({ user }) => {
     }, [userId]);
 
     // Check if today is Thursday (4), Friday (5), or Saturday (6)
+    // DEVELOPMENT MODE: Temporarily disabled for testing
     const canBook = () => {
-        const today = new Date().getDay();
-        return today >= 4 && today <= 6; // 4=Kamis, 5=Jumat, 6=Sabtu
+        // const today = new Date().getDay();
+        // return today >= 4 && today <= 6; // 4=Kamis, 5=Jumat, 6=Sabtu
+        return true; // Allow booking any day for development
     };
 
     // Booking for next week
