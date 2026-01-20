@@ -802,14 +802,14 @@ const AdminBookingDashboard = () => {
                                     <div className="space-y-2">
                                         {scheduleStudents.map((booking, index) => (
                                             <div key={booking.id} className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-slate-50 hover:from-orange-50 hover:to-amber-50 rounded-xl p-4 transition-all group border border-gray-100 hover:border-orange-200">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-gradient-to-br from-[#F39C32] to-[#f5a847] text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-md">{index + 1}</div>
-                                                    <div>
-                                                        <p className="font-semibold text-gray-800">{booking.user?.full_name || 'Unknown'}</p>
-                                                        <p className="text-xs text-gray-500 font-mono">{booking.user?.student_id || '-'}</p>
+                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="w-10 h-10 bg-gradient-to-br from-[#F39C32] to-[#f5a847] text-white rounded-xl flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0">{index + 1}</div>
+                                                    <div className="min-w-0">
+                                                        <p className="font-semibold text-gray-800 truncate">{booking.user?.full_name || 'Unknown'}</p>
+                                                        <p className="text-xs text-gray-500 font-mono truncate">{booking.user?.student_id || '-'}</p>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                                                     <button onClick={() => { setSelectedStudent(booking); setShowMoveModal(true); }} className="p-2.5 bg-[#1F4E8C] hover:bg-[#183d6e] text-white rounded-lg transition-colors" title={t('adminBooking.moveToClass')}>
                                                         <ArrowRight size={14} />
                                                     </button>
