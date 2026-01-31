@@ -546,7 +546,7 @@ const AdminDashboard = ({ user }) => {
                                     title="Bulk Operations"
                                 >
                                     <Upload size={12} className="sm:w-4 sm:h-4" />
-                                    <span className="hidden lg:inline">Bulk Ops</span>
+                                    <span className="hidden sm:inline">Bulk</span>
                                 </button>
                                 <button
                                     onClick={handleLogout}
