@@ -119,14 +119,18 @@ export const subscribeToPush = async () => {
         let subscription = await registration.pushManager.getSubscription();
 
         if (!subscription) {
+            // Get VAPID public key from environment
+            const vapidPublicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+            if (!vapidPublicKey) {
+                console.error('❌ VAPID public key not found');
+                return null;
+            }
+
             // Subscribe to push notifications
-            // Note: You need to generate VAPID keys for production
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(
-                    // Replace with your VAPID public key
-                    'YOUR_VAPID_PUBLIC_KEY'
-                )
+                applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
             });
         }
 
