@@ -3,6 +3,7 @@ import Login from './Login';
 import BookingSystemDB from './BookingSystemDB';
 import AdminDashboard from './AdminDashboard';
 import TeacherDashboard from './components/TeacherDashboard';
+import InstallPWA from './components/InstallPWA';
 import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
 
@@ -60,24 +61,44 @@ function App() {
   // Not logged in
   if (!user) {
     console.log('🔒 App: No user, showing login');
-    return <Login onLoginSuccess={handleLoginSuccess} />;
+    return (
+      <>
+        <Login onLoginSuccess={handleLoginSuccess} />
+        <InstallPWA />
+      </>
+    );
   }
 
   // Teacher
   if (user.role === 'teacher') {
     console.log('👨‍🏫 App: User is teacher, showing teacher dashboard');
-    return <TeacherDashboard user={user} />;
+    return (
+      <>
+        <TeacherDashboard user={user} />
+        <InstallPWA />
+      </>
+    );
   }
 
   // Admin
   if (user.role === 'admin') {
     console.log('👑 App: User is admin, showing dashboard');
-    return <AdminDashboard user={user} />;
+    return (
+      <>
+        <AdminDashboard user={user} />
+        <InstallPWA />
+      </>
+    );
   }
 
   // Student
   console.log('👨‍🎓 App: User is student, showing booking system');
-  return <BookingSystemDB user={user} />;
+  return (
+    <>
+      <BookingSystemDB user={user} />
+      <InstallPWA />
+    </>
+  );
 }
 
 export default App;

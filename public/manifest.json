@@ -1,0 +1,72 @@
+{
+    "name": "EYSA Language Center",
+    "short_name": "EYSA",
+    "description": "Book classes and track attendance at EYSA Language Center",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#FFFFFF",
+    "theme_color": "#1F4E8C",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/eysa-logo.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/eysa-logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "education",
+        "productivity"
+    ],
+    "screenshots": [
+        {
+            "src": "/booking-illustration.png",
+            "sizes": "540x720",
+            "type": "image/png",
+            "form_factor": "narrow"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Book Class",
+            "short_name": "Book",
+            "description": "Book a new class",
+            "url": "/?action=book",
+            "icons": [
+                {
+                    "src": "/eysa-logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "View Attendance",
+            "short_name": "Attendance",
+            "description": "Check your attendance",
+            "url": "/?action=attendance",
+            "icons": [
+                {
+                    "src": "/eysa-logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "share_target": {
+        "action": "/share",
+        "method": "POST",
+        "enctype": "multipart/form-data",
+        "params": {
+            "title": "title",
+            "text": "text",
+            "url": "url"
+        }
+    }
+}

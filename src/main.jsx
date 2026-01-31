@@ -6,6 +6,12 @@ import { LanguageProvider } from './contexts/LanguageContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './components/Toast'
 import { SettingsProvider } from './contexts/SettingsContext'
+import { registerServiceWorker } from './utils/pwaHelpers'
+
+// Register Service Worker for PWA
+if (import.meta.env.PROD) {
+  registerServiceWorker();
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

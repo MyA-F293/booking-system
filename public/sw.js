@@ -1,0 +1,254 @@
+// Service Worker for EYSA Language Center PWA
+const CACHE_NAME = 'eysa-v1.0.0';
+const RUNTIME_CACHE = 'eysa-runtime';
+
+// Assets to cache on install
+const PRECACHE_ASSETS = [
+    '/',
+    '/index.html',
+    '/eysa-logo.png',
+    '/eysa-logo.svg',
+    '/booking-illustration.png',
+    '/manifest.json'
+];
+
+// Install event - cache essential assets
+self.addEventListener('install', (event) => {
+    console.log('[SW] Installing service worker...');
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then((cache) => {
+                console.log('[SW] Precaching assets');
+                return cache.addAll(PRECACHE_ASSETS);
+            })
+            .then(() => self.skipWaiting())
+    );
+});
+
+// Activate event - clean up old caches
+self.addEventListener('activate', (event) => {
+    console.log('[SW] Activating service worker...');
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames
+                    .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+                    .map((name) => {
+                        console.log('[SW] Deleting old cache:', name);
+                        return caches.delete(name);
+                    })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', (event) => {
+    const { request } = event;
+    const url = new URL(request.url);
+
+    // Skip cross-origin requests
+    if (url.origin !== location.origin) {
+        return;
+    }
+
+    // Skip Supabase API calls (always fetch fresh)
+    if (url.hostname.includes('supabase')) {
+        return;
+    }
+
+    // Network-first strategy for API calls
+    if (url.pathname.startsWith('/api/')) {
+        event.respondWith(
+            fetch(request)
+                .then((response) => {
+                    // Clone and cache successful responses
+                    if (response.ok) {
+                        const responseClone = response.clone();
+                        caches.open(RUNTIME_CACHE).then((cache) => {
+                            cache.put(request, responseClone);
+                        });
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    // Fallback to cache if network fails
+                    return caches.match(request);
+                })
+        );
+        return;
+    }
+
+    // Cache-first strategy for static assets
+    event.respondWith(
+        caches.match(request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    console.log('[SW] Serving from cache:', request.url);
+                    return cachedResponse;
+                }
+
+                // Not in cache, fetch from network
+                return fetch(request)
+                    .then((response) => {
+                        // Don't cache non-successful responses
+                        if (!response || response.status !== 200 || response.type === 'error') {
+                            return response;
+                        }
+
+                        // Clone and cache the response
+                        const responseClone = response.clone();
+                        caches.open(RUNTIME_CACHE).then((cache) => {
+                            cache.put(request, responseClone);
+                        });
+
+                        return response;
+                    })
+                    .catch((error) => {
+                        console.error('[SW] Fetch failed:', error);
+
+                        // Return offline page for navigation requests
+                        if (request.mode === 'navigate') {
+                            return caches.match('/index.html');
+                        }
+
+                        throw error;
+                    });
+            })
+    );
+});
+
+// Background sync for offline actions
+self.addEventListener('sync', (event) => {
+    console.log('[SW] Background sync:', event.tag);
+
+    if (event.tag === 'sync-bookings') {
+        event.waitUntil(syncBookings());
+    }
+
+    if (event.tag === 'sync-attendance') {
+        event.waitUntil(syncAttendance());
+    }
+});
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+    console.log('[SW] Push notification received');
+
+    const data = event.data ? event.data.json() : {};
+    const title = data.title || 'EYSA Language Center';
+    const options = {
+        body: data.body || 'You have a new notification',
+        icon: '/eysa-logo.png',
+        badge: '/eysa-logo.png',
+        vibrate: [200, 100, 200],
+        data: data.url || '/',
+        actions: [
+            {
+                action: 'open',
+                title: 'Open App'
+            },
+            {
+                action: 'close',
+                title: 'Close'
+            }
+        ]
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+    console.log('[SW] Notification clicked:', event.action);
+
+    event.notification.close();
+
+    if (event.action === 'open' || !event.action) {
+        event.waitUntil(
+            clients.openWindow(event.notification.data || '/')
+        );
+    }
+});
+
+// Helper functions for background sync
+async function syncBookings() {
+    try {
+        // Get pending bookings from IndexedDB
+        const pendingBookings = await getPendingBookings();
+
+        if (pendingBookings.length === 0) {
+            return;
+        }
+
+        // Sync each booking
+        for (const booking of pendingBookings) {
+            try {
+                await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(booking)
+                });
+
+                // Remove from pending after successful sync
+                await removePendingBooking(booking.id);
+            } catch (error) {
+                console.error('[SW] Failed to sync booking:', error);
+            }
+        }
+    } catch (error) {
+        console.error('[SW] Sync bookings failed:', error);
+    }
+}
+
+async function syncAttendance() {
+    try {
+        // Get pending attendance from IndexedDB
+        const pendingAttendance = await getPendingAttendance();
+
+        if (pendingAttendance.length === 0) {
+            return;
+        }
+
+        // Sync each attendance record
+        for (const record of pendingAttendance) {
+            try {
+                await fetch('/api/attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(record)
+                });
+
+                // Remove from pending after successful sync
+                await removePendingAttendance(record.id);
+            } catch (error) {
+                console.error('[SW] Failed to sync attendance:', error);
+            }
+        }
+    } catch (error) {
+        console.error('[SW] Sync attendance failed:', error);
+    }
+}
+
+// IndexedDB helpers (placeholder - implement as needed)
+async function getPendingBookings() {
+    // TODO: Implement IndexedDB query
+    return [];
+}
+
+async function removePendingBooking(id) {
+    // TODO: Implement IndexedDB delete
+}
+
+async function getPendingAttendance() {
+    // TODO: Implement IndexedDB query
+    return [];
+}
+
+async function removePendingAttendance(id) {
+    // TODO: Implement IndexedDB delete
+}
+
+console.log('[SW] Service Worker loaded');
