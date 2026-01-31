@@ -178,16 +178,18 @@ const BookingSystemDB = ({ user }) => {
         console.log('✅ User initialized:', user);
     }, [user]);
 
-    // Check if user should see guide (first time login)
+    // Check if user should see guide (first time login per user)
     useEffect(() => {
-        const hasSeenGuide = localStorage.getItem('eysa_guide_seen');
-        if (!hasSeenGuide) {
-            // Show guide after 1 second delay for better UX
-            setTimeout(() => {
-                setShowUserGuide(true);
-            }, 1000);
+        if (userId) {
+            const hasSeenGuide = localStorage.getItem(`eysa_guide_seen_${userId}`);
+            if (!hasSeenGuide) {
+                // Show guide after 1 second delay for better UX
+                setTimeout(() => {
+                    setShowUserGuide(true);
+                }, 1000);
+            }
         }
-    }, []);
+    }, [userId]);
 
     // Load initial data
     useEffect(() => {
@@ -1681,6 +1683,7 @@ const BookingSystemDB = ({ user }) => {
                 <UserGuide
                     onClose={() => setShowUserGuide(false)}
                     userRole="student"
+                    userId={userId}
                 />
             )}
 
