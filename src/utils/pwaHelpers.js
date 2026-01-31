@@ -222,6 +222,41 @@ export const clearAllCaches = async () => {
 };
 
 /**
+ * Force update - Clear cache and reload
+ * Call this from console: window.forceUpdate()
+ */
+export const forceUpdate = async () => {
+    console.log('🔄 Forcing update...');
+
+    // Unregister all service workers
+    if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+            await registration.unregister();
+            console.log('✅ Service Worker unregistered');
+        }
+    }
+
+    // Clear all caches
+    if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+            cacheNames.map(cacheName => caches.delete(cacheName))
+        );
+        console.log('✅ All caches cleared');
+    }
+
+    // Reload the page
+    console.log('🔄 Reloading page...');
+    window.location.reload(true);
+};
+
+// Make forceUpdate available globally for easy console access
+if (typeof window !== 'undefined') {
+    window.forceUpdate = forceUpdate;
+}
+
+/**
  * Helper function to convert VAPID key
  */
 function urlBase64ToUint8Array(base64String) {

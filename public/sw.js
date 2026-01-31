@@ -14,14 +14,16 @@ const PRECACHE_ASSETS = [
 
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installing service worker...');
+    console.log('[SW] Installing service worker v1.0.1...');
+    // Force immediate activation
+    self.skipWaiting();
+
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Precaching assets');
                 return cache.addAll(PRECACHE_ASSETS);
             })
-            .then(() => self.skipWaiting())
     );
 });
 
