@@ -927,40 +927,59 @@ export const submitBatchAttendance = async (attendanceRecords) => {
 export const getAttendanceRecords = async (filters = {}) => {
     console.log('📡 dbHelpers: getAttendanceRecords called with filters:', filters);
 
-    let query = supabase
-        .from('attendance')
-        .select('*')
-        .order('created_at', { ascending: false });
+    // Fetch ALL records using pagination to bypass 1000 row limit
+    let allData = [];
+    let from = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    // Apply filters
-    if (filters.student_id) {
-        query = query.eq('student_id', filters.student_id);
-    }
-    if (filters.teacher_id) {
-        query = query.eq('teacher_id', filters.teacher_id);
-    }
-    if (filters.week_number) {
-        query = query.eq('week_number', filters.week_number);
-    }
-    if (filters.year) {
-        query = query.eq('year', filters.year);
-    }
-    if (filters.status) {
-        query = query.eq('status', filters.status);
-    }
-    if (filters.class_name) {
-        query = query.eq('class_name', filters.class_name);
+    while (hasMore) {
+        let query = supabase
+            .from('attendance')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, from + pageSize - 1);
+
+        // Apply filters
+        if (filters.student_id) {
+            query = query.eq('student_id', filters.student_id);
+        }
+        if (filters.teacher_id) {
+            query = query.eq('teacher_id', filters.teacher_id);
+        }
+        if (filters.week_number) {
+            query = query.eq('week_number', filters.week_number);
+        }
+        if (filters.year) {
+            query = query.eq('year', filters.year);
+        }
+        if (filters.status) {
+            query = query.eq('status', filters.status);
+        }
+        if (filters.class_name) {
+            query = query.eq('class_name', filters.class_name);
+        }
+
+        const { data, error, count } = await query;
+
+        if (error) {
+            console.error('❌ Error fetching attendance:', error);
+            throw error;
+        }
+
+        if (data && data.length > 0) {
+            allData = [...allData, ...data];
+            from += pageSize;
+
+            // Check if there are more records
+            hasMore = data.length === pageSize && allData.length < count;
+        } else {
+            hasMore = false;
+        }
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-        console.error('❌ Error fetching attendance:', error);
-        throw error;
-    }
-
-    console.log('✅ Fetched', data.length, 'attendance records');
-    return data;
+    console.log('✅ Fetched', allData.length, 'attendance records (all pages)');
+    return allData;
 };
 
 /**
