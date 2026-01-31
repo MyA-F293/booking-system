@@ -1089,3 +1089,194 @@ export const deleteAttendance = async (attendanceId) => {
     console.log('✅ Attendance deleted successfully');
     return true;
 };
+
+// ========================================
+// BULK OPERATIONS
+// ========================================
+
+/**
+ * Bulk create users (students)
+ */
+export const bulkCreateUsers = async (users) => {
+    console.log('📡 dbHelpers: bulkCreateUsers called with', users.length, 'users');
+
+    const success = [];
+    const failed = [];
+
+    for (const user of users) {
+        try {
+            // Check if email already exists
+            const { data: existing } = await supabase
+                .from('users')
+                .select('id')
+                .eq('email', user.email)
+                .single();
+
+            if (existing) {
+                failed.push({ ...user, error: 'Email already exists' });
+                continue;
+            }
+
+            // Generate student ID
+            const year = new Date().getFullYear().toString().slice(-2);
+            const batchPadded = user.batch.toString().padStart(2, '0');
+
+            // Get last student ID for this batch
+            const { data: lastStudent } = await supabase
+                .from('users')
+                .select('student_id')
+                .like('student_id', `EYSA${year}${batchPadded}%`)
+                .order('student_id', { ascending: false })
+                .limit(1)
+                .single();
+
+            let sequence = 1;
+            if (lastStudent && lastStudent.student_id) {
+                const lastSequence = parseInt(lastStudent.student_id.slice(-3));
+                sequence = lastSequence + 1;
+            }
+
+            const student_id = `EYSA${year}${batchPadded}${sequence.toString().padStart(3, '0')}`;
+
+            // Create user
+            const { data, error } = await supabase
+                .from('users')
+                .insert([{
+                    ...user,
+                    student_id,
+                    password: 'student123', // Default password
+                    role: 'student'
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            success.push(data);
+        } catch (error) {
+            console.error('Error creating user:', error);
+            failed.push({ ...user, error: error.message });
+        }
+    }
+
+    console.log('✅ Bulk create complete:', success.length, 'success,', failed.length, 'failed');
+    return { success, failed };
+};
+
+/**
+ * Bulk assign students to class
+ */
+export const bulkAssignStudentsToClass = async (assignments) => {
+    console.log('📡 dbHelpers: bulkAssignStudentsToClass called with', assignments.length, 'assignments');
+
+    const success = [];
+    const failed = [];
+
+    for (const assignment of assignments) {
+        try {
+            // Get user ID from student_id
+            const { data: user, error: userError } = await supabase
+                .from('users')
+                .select('id')
+                .eq('student_id', assignment.student_id)
+                .single();
+
+            if (userError || !user) {
+                failed.push({ ...assignment, error: 'Student not found' });
+                continue;
+            }
+
+            // Get or create class
+            let { data: classData } = await supabase
+                .from('classes')
+                .select('id')
+                .eq('name', assignment.class_name)
+                .single();
+
+            if (!classData) {
+                // Create class if doesn't exist
+                const { data: newClass, error: classError } = await supabase
+                    .from('classes')
+                    .insert([{
+                        name: assignment.class_name,
+                        program: assignment.program,
+                        level: assignment.level,
+                        is_active: true
+                    }])
+                    .select()
+                    .single();
+
+                if (classError) throw classError;
+                classData = newClass;
+            }
+
+            // Check if already enrolled
+            const { data: existing } = await supabase
+                .from('class_students')
+                .select('id')
+                .eq('class_id', classData.id)
+                .eq('user_id', user.id)
+                .single();
+
+            if (existing) {
+                failed.push({ ...assignment, error: 'Already enrolled' });
+                continue;
+            }
+
+            // Enroll student
+            const { data, error } = await supabase
+                .from('class_students')
+                .insert([{
+                    class_id: classData.id,
+                    user_id: user.id
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            success.push({ ...assignment, enrollment_id: data.id });
+        } catch (error) {
+            console.error('Error assigning student:', error);
+            failed.push({ ...assignment, error: error.message });
+        }
+    }
+
+    console.log('✅ Bulk assign complete:', success.length, 'success,', failed.length, 'failed');
+    return { success, failed };
+};
+
+/**
+ * Bulk update attendance
+ */
+export const bulkUpdateAttendance = async (updates) => {
+    console.log('📡 dbHelpers: bulkUpdateAttendance called with', updates.length, 'updates');
+
+    const success = [];
+    const failed = [];
+
+    for (const update of updates) {
+        try {
+            const { data, error } = await supabase
+                .from('attendance')
+                .update({
+                    status: update.status.toLowerCase(),
+                    notes: update.notes || null,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', update.id)
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            success.push(data);
+        } catch (error) {
+            console.error('Error updating attendance:', error);
+            failed.push({ ...update, error: error.message });
+        }
+    }
+
+    console.log('✅ Bulk update complete:', success.length, 'success,', failed.length, 'failed');
+    return { success, failed };
+};
