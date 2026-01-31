@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
 import AdminStatsDashboard from './components/AdminStatsDashboard';
+import AttendanceReport from './components/AttendanceReport';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useToast } from './components/Toast';
@@ -49,6 +50,11 @@ const AdminDashboard = ({ user }) => {
     const [teacherFormData, setTeacherFormData] = useState({
         name: ''
     });
+
+    // Teacher ID modal state
+    const [showTeacherIdModal, setShowTeacherIdModal] = useState(false);
+    const [selectedTeacherForId, setSelectedTeacherForId] = useState(null);
+    const [teacherIdCopied, setTeacherIdCopied] = useState(false);
 
     // Form state for students
     const [formData, setFormData] = useState({
@@ -313,6 +319,31 @@ const AdminDashboard = ({ user }) => {
         setTeacherFormData({ name: '' });
     };
 
+    // Teacher ID functions
+    const handleShowTeacherId = (teacher) => {
+        setSelectedTeacherForId(teacher);
+        setShowTeacherIdModal(true);
+        setTeacherIdCopied(false);
+    };
+
+    const handleCopyTeacherId = async (teacherId) => {
+        try {
+            await navigator.clipboard.writeText(teacherId);
+            setTeacherIdCopied(true);
+            toast.success('Teacher ID copied to clipboard!');
+            setTimeout(() => setTeacherIdCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+            toast.error('Failed to copy Teacher ID');
+        }
+    };
+
+    const closeTeacherIdModal = () => {
+        setShowTeacherIdModal(false);
+        setSelectedTeacherForId(null);
+        setTeacherIdCopied(false);
+    };
+
     // ========== STUDENT EDIT/DELETE FUNCTIONS ==========
     const startEditStudent = (student) => {
         setEditingStudent(student);
@@ -527,6 +558,7 @@ const AdminDashboard = ({ user }) => {
                             { id: 'students', icon: Users, label: t('admin.manageStudents'), shortLabel: 'Students' },
                             { id: 'teachers', icon: GraduationCap, label: t('admin.manageTeachers'), shortLabel: 'Teachers' },
                             { id: 'bookings', icon: CalendarDays, label: t('admin.manageBookings'), shortLabel: 'Booking' },
+                            { id: 'attendance', icon: ClipboardList, label: 'Attendance Report', shortLabel: 'Attendance' },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -537,7 +569,7 @@ const AdminDashboard = ({ user }) => {
                                     }`}
                             >
                                 <tab.icon size={16} className={`sm:w-[18px] sm:h-[18px] transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'text-[#F39C32]' : ''}`} />
-                                <span className="font-semibold text-[10px] sm:text-xs lg:text-sm">{tab.shortLabel}</span>
+                                <span className="hidden sm:inline font-semibold text-xs lg:text-sm">{tab.shortLabel}</span>
 
                                 {/* Active indicator */}
                                 {activeTab === tab.id && (
@@ -1216,7 +1248,23 @@ const AdminDashboard = ({ user }) => {
                                                     <td className="px-3 sm:px-6 py-2 sm:py-4 font-semibold text-gray-800 font-poppins text-xs sm:text-sm">
                                                         <div className="flex items-center gap-1.5 sm:gap-2">
                                                             <GraduationCap size={14} className="sm:w-[18px] sm:h-[18px] text-orange-500" />
-                                                            {teacher.name}
+                                                            <div className="flex-1">
+                                                                <div>{teacher.name}</div>
+                                                                <div className="flex items-center gap-2 mt-0.5">
+                                                                    <span className="text-[9px] text-gray-500 font-mono">
+                                                                        ID: {teacher.teacher_id || teacher.id.substring(0, 8) + '...'}
+                                                                    </span>
+                                                                    {!teacher.teacher_id && (
+                                                                        <button
+                                                                            onClick={() => handleShowTeacherId(teacher)}
+                                                                            className="text-[9px] text-blue-600 hover:text-blue-800 font-semibold underline"
+                                                                            title="View Full ID"
+                                                                        >
+                                                                            View ID
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-3 sm:px-6 py-2 sm:py-4 text-gray-600 font-poppins hidden md:table-cell text-sm">
@@ -1291,6 +1339,11 @@ const AdminDashboard = ({ user }) => {
                 {/* ========== STATS TAB ========== */}
                 {activeTab === 'stats' && (
                     <AdminStatsDashboard />
+                )}
+
+                {/* ========== ATTENDANCE TAB ========== */}
+                {activeTab === 'attendance' && (
+                    <AttendanceReport />
                 )}
 
                 {/* Info Box - Modern Design */}
@@ -1405,6 +1458,123 @@ const AdminDashboard = ({ user }) => {
                             >
                                 Cancel
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Teacher ID Modal */}
+            {showTeacherIdModal && selectedTeacherForId && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-orange-100 rounded-xl">
+                                    <GraduationCap className="text-orange-600" size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-800">Teacher Login ID</h3>
+                                    <p className="text-sm text-gray-500">{selectedTeacherForId.name}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={closeTeacherIdModal}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Teacher ID Display */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Teacher ID
+                                </label>
+                                <div className="relative">
+                                    <div className="bg-gray-50 border-2 border-gray-200 rounded-xl p-4 font-mono text-sm text-gray-800 text-center font-bold">
+                                        {selectedTeacherForId.teacher_id || selectedTeacherForId.id}
+                                    </div>
+                                    <button
+                                        onClick={() => handleCopyTeacherId(selectedTeacherForId.teacher_id || selectedTeacherForId.id)}
+                                        className={`absolute top-2 right-2 p-2 rounded-lg transition-all ${teacherIdCopied
+                                            ? 'bg-green-100 text-green-600'
+                                            : 'bg-white hover:bg-gray-100 text-gray-600'
+                                            }`}
+                                        title="Copy to clipboard"
+                                    >
+                                        {teacherIdCopied ? (
+                                            <CheckCircle size={18} />
+                                        ) : (
+                                            <Copy size={18} />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Default Password */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Default Password
+                                </label>
+                                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-mono text-sm text-blue-800 font-semibold">
+                                            teacher123
+                                        </span>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText('teacher123');
+                                                toast.success('Password copied!');
+                                            }}
+                                            className="p-1.5 hover:bg-blue-100 rounded-lg transition-colors text-blue-600"
+                                            title="Copy password"
+                                        >
+                                            <Copy size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Instructions */}
+                            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                                <h4 className="font-semibold text-orange-800 text-sm mb-2 flex items-center gap-2">
+                                    <Key size={16} />
+                                    Login Instructions
+                                </h4>
+                                <ol className="text-xs text-orange-700 space-y-1 ml-5 list-decimal">
+                                    <li>Share the Teacher ID with the teacher</li>
+                                    <li>Share the default password: <code className="bg-orange-100 px-1 py-0.5 rounded">teacher123</code></li>
+                                    <li>Teacher logs in by entering their ID</li>
+                                    <li>After first login, teacher won't need to login again (auto-remember)</li>
+                                </ol>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => handleCopyTeacherId(selectedTeacherForId.teacher_id || selectedTeacherForId.id)}
+                                    className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg"
+                                >
+                                    {teacherIdCopied ? (
+                                        <>
+                                            <CheckCircle size={18} />
+                                            Copied!
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy size={18} />
+                                            Copy Teacher ID
+                                        </>
+                                    )}
+                                </button>
+                                <button
+                                    onClick={closeTeacherIdModal}
+                                    className="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

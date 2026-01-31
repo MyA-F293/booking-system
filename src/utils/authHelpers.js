@@ -303,6 +303,47 @@ export const updateOwnPassword = async (userId, currentPassword, newPassword) =>
 }
 
 /**
+ * Update teacher's own password
+ */
+export const updateTeacherPassword = async (teacherId, currentPassword, newPassword) => {
+    console.log('🔐 Updating password for teacher:', teacherId);
+
+    // Verify current password first
+    const { data: teacher, error: verifyError } = await supabase
+        .from('teachers')
+        .select('*')
+        .eq('id', teacherId)
+        .eq('password', currentPassword)
+        .single()
+
+    if (verifyError || !teacher) {
+        throw new Error('Current password is incorrect');
+    }
+
+    // Update password
+    const { data, error } = await supabase
+        .from('teachers')
+        .update({
+            password: newPassword
+        })
+        .eq('id', teacherId)
+        .select()
+        .single()
+
+    if (error) {
+        console.error('❌ Error updating password:', error);
+        throw error;
+    }
+
+    // Update localStorage
+    const teacherData = { ...data, role: 'teacher' };
+    localStorage.setItem('user', JSON.stringify(teacherData));
+
+    console.log('✅ Teacher password updated successfully');
+    return teacherData;
+}
+
+/**
  * Admin reset user password
  */
 export const adminResetPassword = async (userId, newPassword) => {
@@ -346,4 +387,66 @@ export const getUserPassword = async (userId) => {
 
     if (error) throw error;
     return data;
+}
+
+
+/**
+ * Login teacher/tutor
+ */
+export const teacherLogin = async (teacherId, password) => {
+    console.log('🔐 Attempting teacher login for:', teacherId);
+
+    try {
+        // Try to login with teacher_id first (new format: TCHR0001)
+        let query = supabase
+            .from('teachers')
+            .select('*')
+            .eq('password', password)
+            .eq('is_active', true);
+
+        // Check if it's new format (TCHR) or old format (UUID)
+        if (teacherId.startsWith('TCHR')) {
+            query = query.eq('teacher_id', teacherId);
+        } else {
+            // Old format: try UUID
+            query = query.eq('id', teacherId);
+        }
+
+        const { data, error } = await query.single();
+
+        if (error) {
+            console.error('❌ Teacher login error:', error);
+            throw new Error('Invalid Teacher ID or password');
+        }
+
+        if (!data) {
+            throw new Error('Teacher not found or inactive');
+        }
+
+        console.log('✅ Teacher login successful:', data);
+
+        // Store in localStorage with role
+        const teacherData = { ...data, role: 'teacher' };
+        localStorage.setItem('user', JSON.stringify(teacherData));
+        localStorage.setItem('teacherRemember', 'true'); // Remember teacher login
+
+        return teacherData;
+    } catch (err) {
+        console.error('❌ Teacher login failed:', err);
+        throw err;
+    }
+}
+
+/**
+ * Check if teacher is remembered (auto-login)
+ */
+export const isTeacherRemembered = () => {
+    return localStorage.getItem('teacherRemember') === 'true';
+}
+
+/**
+ * Clear teacher remember status
+ */
+export const clearTeacherRemember = () => {
+    localStorage.removeItem('teacherRemember');
 }

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import Login from './Login';
 import BookingSystemDB from './BookingSystemDB';
 import AdminDashboard from './AdminDashboard';
-import { getCurrentUser } from './utils/authHelpers';
+import TeacherDashboard from './components/TeacherDashboard';
+import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
 
 function App() {
@@ -19,7 +20,21 @@ function App() {
       // Load current user
       const currentUser = getCurrentUser();
       console.log('🔍 App: Checking current user:', currentUser);
-      setUser(currentUser);
+
+      // If teacher is remembered, auto-login
+      if (!currentUser && isTeacherRemembered()) {
+        console.log('👨‍🏫 App: Teacher remembered, checking localStorage');
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.role === 'teacher') {
+            setUser(parsedUser);
+          }
+        }
+      } else {
+        setUser(currentUser);
+      }
+
       setLoading(false);
     };
 
@@ -46,6 +61,12 @@ function App() {
   if (!user) {
     console.log('🔒 App: No user, showing login');
     return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // Teacher
+  if (user.role === 'teacher') {
+    console.log('👨‍🏫 App: User is teacher, showing teacher dashboard');
+    return <TeacherDashboard user={user} />;
   }
 
   // Admin

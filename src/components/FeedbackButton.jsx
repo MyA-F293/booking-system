@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { MessageSquarePlus, X, Send, Star, Loader2, EyeOff, CheckCircle2, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageSquarePlus, X, Send, Star, Loader2, EyeOff, CheckCircle2, Sparkles, GraduationCap } from 'lucide-react';
 import { useToast } from './Toast';
+import { getTeachers } from '../utils/dbHelpers';
 
 const FeedbackButton = ({ user }) => {
     const toast = useToast();
@@ -8,25 +9,52 @@ const FeedbackButton = ({ user }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [teachers, setTeachers] = useState([]);
+    const [loadingTeachers, setLoadingTeachers] = useState(false);
     const [formData, setFormData] = useState({
         category: 'suggestion',
         message: '',
         rating: 0,
-        isAnonymous: false
+        isAnonymous: false,
+        teacherId: '',
+        teacherName: ''
     });
 
     const categories = [
         { id: 'suggestion', label: '💡 Suggestion', color: 'bg-blue-100 text-blue-700 border-blue-200' },
+        { id: 'teacher_feedback', label: '👨‍🏫 Teacher Feedback', color: 'bg-purple-100 text-purple-700 border-purple-200' },
         { id: 'bug', label: '🐛 Bug Report', color: 'bg-red-100 text-red-700 border-red-200' },
-        { id: 'question', label: '❓ Question', color: 'bg-amber-100 text-amber-700 border-amber-200' },
         { id: 'other', label: '📝 Other', color: 'bg-gray-100 text-gray-700 border-gray-200' }
     ];
+
+    useEffect(() => {
+        if (isOpen) {
+            loadTeachers();
+        }
+    }, [isOpen]);
+
+    const loadTeachers = async () => {
+        try {
+            setLoadingTeachers(true);
+            const data = await getTeachers();
+            setTeachers(data);
+        } catch (err) {
+            console.error('Error loading teachers:', err);
+        } finally {
+            setLoadingTeachers(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.message.trim()) {
             toast.warning('Please enter your feedback message');
+            return;
+        }
+
+        if (formData.category === 'teacher_feedback' && !formData.teacherId) {
+            toast.warning('Please select a teacher');
             return;
         }
 
@@ -39,6 +67,7 @@ const FeedbackButton = ({ user }) => {
                 studentName: formData.isAnonymous ? 'Anonymous' : (user?.full_name || 'Anonymous'),
                 batch: formData.isAnonymous ? '-' : (user?.batch || '-'),
                 category: formData.category,
+                teacher: formData.category === 'teacher_feedback' ? formData.teacherName : '-',
                 message: formData.message,
                 rating: formData.rating || '-',
                 isAnonymous: formData.isAnonymous ? 'Yes' : 'No'
@@ -55,7 +84,7 @@ const FeedbackButton = ({ user }) => {
                 });
             }
 
-            setFormData({ category: 'suggestion', message: '', rating: 0, isAnonymous: false });
+            setFormData({ category: 'suggestion', message: '', rating: 0, isAnonymous: false, teacherId: '', teacherName: '' });
             setIsOpen(false);
             setShowSuccessModal(true);
         } catch (err) {
@@ -72,7 +101,6 @@ const FeedbackButton = ({ user }) => {
 
     return (
         <>
-            {/* Floating Button - Smaller on mobile */}
             <div className="fixed bottom-4 sm:bottom-6 right-4 sm:right-6 z-50">
                 {showTooltip && (
                     <div className="absolute bottom-full right-0 mb-2 px-2 sm:px-3 py-1 sm:py-1.5 bg-gray-900 text-white text-[10px] sm:text-xs font-medium rounded-lg whitespace-nowrap animate-fade-in">
@@ -84,18 +112,17 @@ const FeedbackButton = ({ user }) => {
                     onClick={() => setIsOpen(true)}
                     onMouseEnter={() => setShowTooltip(true)}
                     onMouseLeave={() => setShowTooltip(false)}
-                    className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] hover:from-[#183d6e] hover:to-[#1F4E8C] text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 animate-bounce-gentle"
+                    className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] hover:from-[#183d6e] hover:to-[#1F4E8C] text-white p-3 sm:p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                    <MessageSquarePlus size={20} className="sm:w-6 sm:h-6 animate-wiggle" />
+                    <MessageSquarePlus size={20} className="sm:w-6 sm:h-6" />
                     <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-2.5 sm:w-3 h-2.5 sm:h-3 bg-[#F39C32] rounded-full animate-ping"></span>
                     <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 w-2.5 sm:w-3 h-2.5 sm:h-3 bg-[#F39C32] rounded-full"></span>
                 </button>
             </div>
 
-            {/* Feedback Form Modal - Popup Style */}
             {isOpen && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white w-full max-w-xs sm:max-w-md rounded-2xl shadow-2xl overflow-hidden animate-slide-up max-h-[85vh] overflow-y-auto">
+                    <div className="bg-white w-full max-w-xs sm:max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-4 sm:p-5">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -121,7 +148,7 @@ const FeedbackButton = ({ user }) => {
                                         <button
                                             key={cat.id}
                                             type="button"
-                                            onClick={() => setFormData({ ...formData, category: cat.id })}
+                                            onClick={() => setFormData({ ...formData, category: cat.id, teacherId: '', teacherName: '' })}
                                             className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl border-2 text-[10px] sm:text-xs font-medium transition-all ${formData.category === cat.id ? `${cat.color} border-current` : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-gray-300'}`}
                                         >
                                             {cat.label}
@@ -130,12 +157,55 @@ const FeedbackButton = ({ user }) => {
                                 </div>
                             </div>
 
+                            {formData.category === 'teacher_feedback' && (
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-1.5 sm:mb-2 text-xs sm:text-sm">
+                                        Select Teacher *
+                                    </label>
+                                    <div className="relative">
+                                        <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                        <select
+                                            value={formData.teacherId}
+                                            onChange={(e) => {
+                                                const selectedTeacher = teachers.find(t => t.id === e.target.value);
+                                                setFormData({
+                                                    ...formData,
+                                                    teacherId: e.target.value,
+                                                    teacherName: selectedTeacher?.name || ''
+                                                });
+                                            }}
+                                            className="w-full pl-9 pr-3 sm:pl-10 sm:pr-4 py-2 sm:py-3 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-purple-500 text-xs sm:text-sm appearance-none bg-white"
+                                            disabled={loadingTeachers}
+                                        >
+                                            <option value="">
+                                                {loadingTeachers ? 'Loading teachers...' : 'Choose a teacher...'}
+                                            </option>
+                                            {teachers.map(teacher => (
+                                                <option key={teacher.id} value={teacher.id}>
+                                                    {teacher.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    {formData.teacherId && (
+                                        <p className="text-[10px] sm:text-xs text-purple-600 mt-1.5">
+                                            ✓ Selected: {formData.teacherName}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-gray-700 font-semibold mb-1.5 sm:mb-2 text-xs sm:text-sm">Your Feedback *</label>
                                 <textarea
                                     value={formData.message}
                                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                    placeholder="Tell us what you think..."
+                                    placeholder={formData.category === 'teacher_feedback' ? 'Share your experience with this teacher...' : 'Tell us what you think...'}
                                     rows={3}
                                     className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-[#1F4E8C] resize-none text-xs sm:text-sm"
                                     required
@@ -143,7 +213,9 @@ const FeedbackButton = ({ user }) => {
                             </div>
 
                             <div>
-                                <label className="block text-gray-700 font-semibold mb-1.5 sm:mb-2 text-xs sm:text-sm">Rate your experience (optional)</label>
+                                <label className="block text-gray-700 font-semibold mb-1.5 sm:mb-2 text-xs sm:text-sm">
+                                    {formData.category === 'teacher_feedback' ? 'Rate the teacher (optional)' : 'Rate your experience (optional)'}
+                                </label>
                                 <div className="flex gap-0.5 sm:gap-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button key={star} type="button" onClick={() => handleRating(star)} className="p-0.5 sm:p-1 transition-transform hover:scale-110">
@@ -184,30 +256,35 @@ const FeedbackButton = ({ user }) => {
                                 disabled={loading || !formData.message.trim()}
                                 className="w-full bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] hover:from-[#183d6e] hover:to-[#1F4E8C] text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
                             >
-                                {loading ? (<><Loader2 size={16} className="sm:w-[18px] sm:h-[18px] animate-spin" />Sending...</>) : (<><Send size={16} className="sm:w-[18px] sm:h-[18px]" />Submit Feedback</>)}
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={16} className="sm:w-[18px] sm:h-[18px] animate-spin" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send size={16} className="sm:w-[18px] sm:h-[18px]" />
+                                        Submit Feedback
+                                    </>
+                                )}
                             </button>
                         </form>
                     </div>
                 </div>
             )}
 
-            {/* Success Modal - Modern Popup */}
             {showSuccessModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
-                        {/* Success Header with Animation */}
+                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden">
                         <div className="bg-gradient-to-br from-[#1F4E8C] via-[#2a5fa3] to-[#1F4E8C] p-5 sm:p-8 text-center relative overflow-hidden">
-                            {/* Decorative Elements */}
                             <div className="absolute top-0 left-0 w-full h-full">
                                 <div className="absolute top-4 left-4 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
                                 <div className="absolute top-8 right-8 w-3 h-3 bg-[#F39C32]/50 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
                                 <div className="absolute bottom-6 left-1/4 w-2 h-2 bg-white/20 rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-                                <div className="absolute top-1/2 right-4 w-1.5 h-1.5 bg-[#F39C32]/40 rounded-full animate-ping" style={{ animationDelay: '0.3s' }}></div>
                             </div>
 
-                            {/* Success Icon */}
                             <div className="relative z-10">
-                                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 animate-bounce-gentle">
+                                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                                     <div className="w-11 h-11 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center">
                                         <CheckCircle2 size={28} className="sm:w-10 sm:h-10 text-emerald-500" />
                                     </div>
@@ -221,7 +298,6 @@ const FeedbackButton = ({ user }) => {
                             </div>
                         </div>
 
-                        {/* Success Content */}
                         <div className="p-4 sm:p-6 text-center">
                             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-3 sm:p-4 mb-4 sm:mb-5 border border-blue-100">
                                 <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">

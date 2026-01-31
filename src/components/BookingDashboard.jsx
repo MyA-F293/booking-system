@@ -242,43 +242,6 @@ const BookingDashboard = ({ user }) => {
                 </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="p-2 sm:p-3 bg-[#1F4E8C]/10 rounded-lg sm:rounded-xl shrink-0">
-                            <Calendar size={18} className="sm:w-5 sm:h-5 text-[#1F4E8C]" />
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-xl sm:text-2xl font-bold text-gray-800">{schedules.length}</p>
-                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('dashboard.activeClasses')}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="p-2 sm:p-3 bg-[#F39C32]/10 rounded-lg sm:rounded-xl shrink-0">
-                            <Users size={18} className="sm:w-5 sm:h-5 text-[#F39C32]" />
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-xl sm:text-2xl font-bold text-gray-800">{schedules.reduce((acc, s) => acc + s.current_students, 0)}</p>
-                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('dashboard.totalStudents')}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-100 shadow-sm">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="p-2 sm:p-3 bg-emerald-500/10 rounded-lg sm:rounded-xl shrink-0">
-                            <GraduationCap size={18} className="sm:w-5 sm:h-5 text-emerald-600" />
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-xl sm:text-2xl font-bold text-gray-800">{new Set(schedules.map(s => s.teacher?.id)).size}</p>
-                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('dashboard.activeTeachers')}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {/* Loading */}
             {loading && schedules.length === 0 && (
                 <div className="text-center py-16">

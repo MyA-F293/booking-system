@@ -74,10 +74,51 @@ export const getAllTeachers = async () => {
 }
 
 /**
+ * Generate Teacher ID
+ * Format: TCHR0001, TCHR0002, etc.
+ */
+export const generateTeacherId = async () => {
+    console.log('🆔 dbHelpers: Generating teacher ID');
+
+    // Get last teacher ID
+    const { data, error } = await supabase
+        .from('teachers')
+        .select('teacher_id')
+        .not('teacher_id', 'is', null)
+        .order('teacher_id', { ascending: false })
+        .limit(1)
+
+    if (error) {
+        console.error('❌ dbHelpers: Error getting last teacher ID:', error);
+        // If error, start from TCHR0001
+        return 'TCHR0001';
+    }
+
+    let sequence = 1;
+
+    if (data && data.length > 0 && data[0].teacher_id) {
+        // Extract sequence from last ID (TCHR0001 -> 1)
+        const lastId = data[0].teacher_id;
+        const lastSeq = parseInt(lastId.replace('TCHR', ''));
+        sequence = lastSeq + 1;
+    }
+
+    const teacherId = `TCHR${sequence.toString().padStart(4, '0')}`;
+    console.log('✅ dbHelpers: Generated teacher ID:', teacherId);
+    return teacherId;
+}
+
+/**
  * Create new teacher
  */
 export const createTeacher = async (teacherData) => {
     console.log('📡 dbHelpers: createTeacher called with:', teacherData);
+
+    // Generate teacher_id if not provided
+    if (!teacherData.teacher_id) {
+        teacherData.teacher_id = await generateTeacherId();
+    }
+
     const { data, error } = await supabase
         .from('teachers')
         .insert([teacherData])
@@ -299,6 +340,7 @@ export const getSchedules = async (filters = {}) => {
     if (filters.week_number) query = query.eq('week_number', filters.week_number)
     if (filters.year) query = query.eq('year', filters.year)
     if (filters.batch) query = query.eq('batch', filters.batch)
+    if (filters.teacher_id) query = query.eq('teacher_id', filters.teacher_id)
 
     const { data, error } = await query
 
@@ -832,3 +874,199 @@ export const autoCopyBookingsToNextWeek = async () => {
         return { copied: false, reason: 'error', error: err };
     }
 }
+
+
+// ========================================
+// ATTENDANCE FUNCTIONS
+// ========================================
+
+/**
+ * Submit attendance record to Supabase
+ */
+export const submitAttendance = async (attendanceRecord) => {
+    console.log('📡 dbHelpers: submitAttendance called', attendanceRecord);
+
+    const { data, error } = await supabase
+        .from('attendance')
+        .insert([attendanceRecord])
+        .select()
+        .single();
+
+    if (error) {
+        console.error('❌ Error submitting attendance:', error);
+        throw error;
+    }
+
+    console.log('✅ Attendance submitted successfully:', data);
+    return data;
+};
+
+/**
+ * Submit multiple attendance records (batch)
+ */
+export const submitBatchAttendance = async (attendanceRecords) => {
+    console.log('📡 dbHelpers: submitBatchAttendance called', attendanceRecords.length, 'records');
+
+    const { data, error } = await supabase
+        .from('attendance')
+        .insert(attendanceRecords)
+        .select();
+
+    if (error) {
+        console.error('❌ Error submitting batch attendance:', error);
+        throw error;
+    }
+
+    console.log('✅ Batch attendance submitted successfully:', data.length, 'records');
+    return data;
+};
+
+/**
+ * Get attendance records with filters
+ */
+export const getAttendanceRecords = async (filters = {}) => {
+    console.log('📡 dbHelpers: getAttendanceRecords called with filters:', filters);
+
+    let query = supabase
+        .from('attendance')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    // Apply filters
+    if (filters.student_id) {
+        query = query.eq('student_id', filters.student_id);
+    }
+    if (filters.teacher_id) {
+        query = query.eq('teacher_id', filters.teacher_id);
+    }
+    if (filters.week_number) {
+        query = query.eq('week_number', filters.week_number);
+    }
+    if (filters.year) {
+        query = query.eq('year', filters.year);
+    }
+    if (filters.status) {
+        query = query.eq('status', filters.status);
+    }
+    if (filters.class_name) {
+        query = query.eq('class_name', filters.class_name);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('❌ Error fetching attendance:', error);
+        throw error;
+    }
+
+    console.log('✅ Fetched', data.length, 'attendance records');
+    return data;
+};
+
+/**
+ * Get attendance statistics
+ */
+export const getAttendanceStats = async (filters = {}) => {
+    console.log('📡 dbHelpers: getAttendanceStats called');
+
+    const records = await getAttendanceRecords(filters);
+
+    const stats = {
+        total: records.length,
+        present: records.filter(r => r.status === 'present').length,
+        late: records.filter(r => r.status === 'late').length,
+        absent: records.filter(r => r.status === 'absent').length,
+    };
+
+    stats.attendanceRate = stats.total > 0
+        ? ((stats.present / stats.total) * 100).toFixed(1)
+        : 0;
+
+    return stats;
+};
+
+/**
+ * Get student attendance summary
+ */
+export const getStudentAttendanceSummary = async (studentId) => {
+    console.log('📡 dbHelpers: getStudentAttendanceSummary for student:', studentId);
+
+    const records = await getAttendanceRecords({ student_id: studentId });
+
+    const summary = {
+        total: records.length,
+        present: records.filter(r => r.status === 'present').length,
+        late: records.filter(r => r.status === 'late').length,
+        absent: records.filter(r => r.status === 'absent').length,
+        records: records
+    };
+
+    summary.attendanceRate = summary.total > 0
+        ? ((summary.present / summary.total) * 100).toFixed(1)
+        : 0;
+
+    return summary;
+};
+
+/**
+ * Check if attendance already exists for a student in a specific class/schedule
+ */
+export const checkAttendanceExists = async (studentId, scheduleId, weekNumber, year) => {
+    const { data, error } = await supabase
+        .from('attendance')
+        .select('id')
+        .eq('student_id', studentId)
+        .eq('schedule_id', scheduleId)
+        .eq('week_number', weekNumber)
+        .eq('year', year)
+        .maybeSingle();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('❌ Error checking attendance:', error);
+        throw error;
+    }
+
+    return data !== null;
+};
+
+/**
+ * Update attendance record
+ */
+export const updateAttendance = async (attendanceId, updates) => {
+    console.log('📡 dbHelpers: updateAttendance called', attendanceId);
+
+    const { data, error } = await supabase
+        .from('attendance')
+        .update(updates)
+        .eq('id', attendanceId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('❌ Error updating attendance:', error);
+        throw error;
+    }
+
+    console.log('✅ Attendance updated successfully');
+    return data;
+};
+
+/**
+ * Delete attendance record
+ */
+export const deleteAttendance = async (attendanceId) => {
+    console.log('📡 dbHelpers: deleteAttendance called', attendanceId);
+
+    const { error } = await supabase
+        .from('attendance')
+        .delete()
+        .eq('id', attendanceId);
+
+    if (error) {
+        console.error('❌ Error deleting attendance:', error);
+        throw error;
+    }
+
+    console.log('✅ Attendance deleted successfully');
+    return true;
+};
