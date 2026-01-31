@@ -6,7 +6,8 @@ import { useToast } from './components/Toast';
 import BookingDashboard from './components/BookingDashboard';
 // import StudentAttendanceHistory from './components/StudentAttendanceHistory';
 import FeedbackButton from './components/FeedbackButton';
-import { X, Users, Calendar, Clock, User, Loader2, LogOut, Lock, Pencil, LayoutDashboard, PlusCircle, Check, Eye, EyeOff, Key, CheckCircle2, Sparkles, ClipboardList } from 'lucide-react';
+import UserGuide from './components/UserGuide';
+import { X, Users, Calendar, Clock, User, Loader2, LogOut, Lock, Pencil, LayoutDashboard, PlusCircle, Check, Eye, EyeOff, Key, CheckCircle2, Sparkles, ClipboardList, HelpCircle } from 'lucide-react';
 import { logout, updateOwnPassword } from './utils/authHelpers';
 import {
     getClasses,
@@ -70,6 +71,7 @@ const BookingSystemDB = ({ user }) => {
     const [activeView, setActiveView] = useState('dashboard');
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [editBatch, setEditBatch] = useState(1);
+    const [showUserGuide, setShowUserGuide] = useState(false);
 
     // Password change state
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -175,6 +177,17 @@ const BookingSystemDB = ({ user }) => {
         }
         console.log('✅ User initialized:', user);
     }, [user]);
+
+    // Check if user should see guide (first time login)
+    useEffect(() => {
+        const hasSeenGuide = localStorage.getItem('eysa_guide_seen');
+        if (!hasSeenGuide) {
+            // Show guide after 1 second delay for better UX
+            setTimeout(() => {
+                setShowUserGuide(true);
+            }, 1000);
+        }
+    }, []);
 
     // Load initial data
     useEffect(() => {
@@ -737,6 +750,15 @@ const BookingSystemDB = ({ user }) => {
                                         {currentUser.student_id}
                                     </div>
                                 </div>
+                                {/* Help/Guide Button */}
+                                <button
+                                    onClick={() => setShowUserGuide(true)}
+                                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white p-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all shadow-md hover:shadow-lg"
+                                    title="User Guide"
+                                >
+                                    <HelpCircle size={12} className="sm:w-4 sm:h-4" />
+                                    <span className="hidden lg:inline text-[10px] sm:text-sm font-semibold">Guide</span>
+                                </button>
                                 {/* Change Password Button */}
                                 <button
                                     onClick={() => setShowPasswordModal(true)}
@@ -1652,6 +1674,14 @@ const BookingSystemDB = ({ user }) => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* User Guide Modal */}
+            {showUserGuide && (
+                <UserGuide
+                    onClose={() => setShowUserGuide(false)}
+                    userRole="student"
+                />
             )}
 
             {/* Floating Feedback Button */}
