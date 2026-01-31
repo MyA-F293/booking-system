@@ -5,6 +5,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import * as XLSX from 'xlsx';
 import { SkeletonStats, SkeletonTable, SkeletonChart, FadeIn } from './SkeletonLoader';
 import { getAttendanceRecords } from '../utils/dbHelpers';
+import { StudentSummaryTable, ClassSummaryTable, DateSummaryTable } from './AttendanceSummaryTables';
 
 const AttendanceReport = () => {
     const toast = useToast();
@@ -15,7 +16,8 @@ const AttendanceReport = () => {
     const [selectedMonth, setSelectedMonth] = useState('');
     const [selectedClass, setSelectedClass] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('records'); // 'records' or 'summary'
+    const [viewMode, setViewMode] = useState('summary'); // 'records' or 'summary' - Default to summary for better UX
+    const [groupBy, setGroupBy] = useState('student'); // 'student', 'class', 'date'
 
     useEffect(() => {
         const now = new Date();
@@ -86,10 +88,12 @@ const AttendanceReport = () => {
                 summaryMap[key] = {
                     studentId: record.student_id,
                     studentName: record.student_name,
+                    className: record.class_name,
                     present: 0,
                     late: 0,
                     absent: 0,
-                    total: 0
+                    total: 0,
+                    lastAttendance: record.created_at
                 };
             }
 
@@ -97,6 +101,11 @@ const AttendanceReport = () => {
             if (record.status === 'present') summaryMap[key].present++;
             else if (record.status === 'late') summaryMap[key].late++;
             else if (record.status === 'absent') summaryMap[key].absent++;
+
+            // Track most recent attendance
+            if (new Date(record.created_at) > new Date(summaryMap[key].lastAttendance)) {
+                summaryMap[key].lastAttendance = record.created_at;
+            }
         });
 
         return Object.values(summaryMap).map(student => ({
@@ -105,7 +114,77 @@ const AttendanceReport = () => {
         })).sort((a, b) => b.attendanceRate - a.attendanceRate);
     };
 
+    // Calculate class summary (grouped by class)
+    const getClassSummary = () => {
+        const summaryMap = {};
+
+        filteredData.forEach(record => {
+            const key = record.class_name;
+            if (!summaryMap[key]) {
+                summaryMap[key] = {
+                    className: record.class_name,
+                    program: record.program,
+                    level: record.level,
+                    uniqueStudents: new Set(),
+                    present: 0,
+                    late: 0,
+                    absent: 0,
+                    total: 0
+                };
+            }
+
+            summaryMap[key].total++;
+            summaryMap[key].uniqueStudents.add(record.student_id);
+            if (record.status === 'present') summaryMap[key].present++;
+            else if (record.status === 'late') summaryMap[key].late++;
+            else if (record.status === 'absent') summaryMap[key].absent++;
+        });
+
+        return Object.values(summaryMap).map(cls => ({
+            ...cls,
+            studentCount: cls.uniqueStudents.size,
+            attendanceRate: cls.total > 0 ? ((cls.present / cls.total) * 100).toFixed(1) : 0
+        })).sort((a, b) => b.attendanceRate - a.attendanceRate);
+    };
+
+    // Calculate date summary (grouped by date)
+    const getDateSummary = () => {
+        const summaryMap = {};
+
+        filteredData.forEach(record => {
+            const date = new Date(record.created_at).toLocaleDateString();
+            if (!summaryMap[date]) {
+                summaryMap[date] = {
+                    date: date,
+                    rawDate: record.created_at,
+                    uniqueStudents: new Set(),
+                    uniqueClasses: new Set(),
+                    present: 0,
+                    late: 0,
+                    absent: 0,
+                    total: 0
+                };
+            }
+
+            summaryMap[date].total++;
+            summaryMap[date].uniqueStudents.add(record.student_id);
+            summaryMap[date].uniqueClasses.add(record.class_name);
+            if (record.status === 'present') summaryMap[date].present++;
+            else if (record.status === 'late') summaryMap[date].late++;
+            else if (record.status === 'absent') summaryMap[date].absent++;
+        });
+
+        return Object.values(summaryMap).map(day => ({
+            ...day,
+            studentCount: day.uniqueStudents.size,
+            classCount: day.uniqueClasses.size,
+            attendanceRate: day.total > 0 ? ((day.present / day.total) * 100).toFixed(1) : 0
+        })).sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+    };
+
     const studentSummary = getStudentSummary();
+    const classSummary = getClassSummary();
+    const dateSummary = getDateSummary();
 
     const handleExportCSV = () => {
         if (viewMode === 'records' && filteredData.length === 0) {
@@ -471,32 +550,77 @@ const AttendanceReport = () => {
                 </div>
             </div>
 
-            {/* Modern View Mode Toggle */}
-            <div className="bg-gray-50/50 rounded-2xl p-1.5 sm:p-2 inline-flex gap-1 sm:gap-2 w-full max-w-md mx-auto">
-                <button
-                    onClick={() => setViewMode('records')}
-                    className={`flex-1 relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${viewMode === 'records'
-                        ? 'bg-white text-[#A1B2CD] shadow-md'
-                        : 'bg-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                >
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <span className="text-sm sm:text-base">📋</span>
-                        <span>Records</span>
+            {/* Modern View Mode Toggle with Grouping */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {/* View Mode Toggle */}
+                <div className="bg-gray-50/50 rounded-2xl p-1.5 sm:p-2 inline-flex gap-1 sm:gap-2 flex-1 sm:flex-none">
+                    <button
+                        onClick={() => setViewMode('summary')}
+                        className={`flex-1 sm:flex-none relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${viewMode === 'summary'
+                            ? 'bg-white text-[#A1B2CD] shadow-md'
+                            : 'bg-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                    >
+                        <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                            <span className="text-sm sm:text-base">📊</span>
+                            <span>Summary</span>
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => setViewMode('records')}
+                        className={`flex-1 sm:flex-none relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${viewMode === 'records'
+                            ? 'bg-white text-[#A1B2CD] shadow-md'
+                            : 'bg-transparent text-gray-500 hover:text-gray-700'
+                            }`}
+                    >
+                        <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                            <span className="text-sm sm:text-base">📋</span>
+                            <span>All Records</span>
+                        </div>
+                    </button>
+                </div>
+
+                {/* Group By Options (only show in summary mode) */}
+                {viewMode === 'summary' && (
+                    <div className="bg-gray-50/50 rounded-2xl p-1.5 sm:p-2 inline-flex gap-1 sm:gap-2 flex-1 sm:flex-none">
+                        <button
+                            onClick={() => setGroupBy('student')}
+                            className={`flex-1 sm:flex-none relative px-3 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${groupBy === 'student'
+                                ? 'bg-white text-[#A1B2CD] shadow-md'
+                                : 'bg-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <span className="text-sm sm:text-base">👤</span>
+                                <span>By Student</span>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setGroupBy('class')}
+                            className={`flex-1 sm:flex-none relative px-3 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${groupBy === 'class'
+                                ? 'bg-white text-[#A1B2CD] shadow-md'
+                                : 'bg-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <span className="text-sm sm:text-base">🏫</span>
+                                <span>By Class</span>
+                            </div>
+                        </button>
+                        <button
+                            onClick={() => setGroupBy('date')}
+                            className={`flex-1 sm:flex-none relative px-3 py-2.5 sm:px-5 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${groupBy === 'date'
+                                ? 'bg-white text-[#A1B2CD] shadow-md'
+                                : 'bg-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <span className="text-sm sm:text-base">📅</span>
+                                <span>By Date</span>
+                            </div>
+                        </button>
                     </div>
-                </button>
-                <button
-                    onClick={() => setViewMode('summary')}
-                    className={`flex-1 relative px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-300 ${viewMode === 'summary'
-                        ? 'bg-white text-[#A1B2CD] shadow-md'
-                        : 'bg-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                >
-                    <div className="flex items-center justify-center gap-1.5 sm:gap-2">
-                        <span className="text-sm sm:text-base">👤</span>
-                        <span>Summary</span>
-                    </div>
-                </button>
+                )}
             </div>
 
             {/* Charts Section */}
@@ -643,7 +767,18 @@ const AttendanceReport = () => {
             {viewMode === 'summary' && (
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
                     <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-r from-[#A1B2CD] to-[#8a9bb8] text-white flex items-center justify-between">
-                        <h2 className="text-sm sm:text-lg md:text-xl font-bold">Student Attendance Summary</h2>
+                        <div>
+                            <h2 className="text-sm sm:text-lg md:text-xl font-bold">
+                                {groupBy === 'student' && 'Student Attendance Summary'}
+                                {groupBy === 'class' && 'Class Attendance Summary'}
+                                {groupBy === 'date' && 'Daily Attendance Summary'}
+                            </h2>
+                            <p className="text-xs sm:text-sm text-white/80 mt-1">
+                                {groupBy === 'student' && `${studentSummary.length} students`}
+                                {groupBy === 'class' && `${classSummary.length} classes`}
+                                {groupBy === 'date' && `${dateSummary.length} days`}
+                            </p>
+                        </div>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={handleExportExcel}
@@ -665,74 +800,9 @@ const AttendanceReport = () => {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Student</th>
-                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Total</th>
-                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Present</th>
-                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Late</th>
-                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Absent</th>
-                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Rate</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {loading ? (
-                                    <tr>
-                                        <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
-                                            Loading...
-                                        </td>
-                                    </tr>
-                                ) : studentSummary.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
-                                            No student data found
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    studentSummary.map((student, index) => (
-                                        <tr key={index} className="hover:bg-gray-50">
-                                            <td className="px-2 py-2 sm:px-4 sm:py-3">
-                                                <div className="text-[9px] sm:text-sm font-semibold text-gray-800 leading-tight">{student.studentName}</div>
-                                                <div className="text-[8px] sm:text-xs text-gray-500">{student.studentId}</div>
-                                            </td>
-                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                                <span className="text-[10px] sm:text-sm font-bold text-[#A1B2CD]">{student.total}</span>
-                                            </td>
-                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                                <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-green-100 text-green-700 rounded-lg text-[9px] sm:text-xs font-semibold">
-                                                    {student.present}x
-                                                </span>
-                                            </td>
-                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                                <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-yellow-100 text-yellow-700 rounded-lg text-[9px] sm:text-xs font-semibold">
-                                                    {student.late}x
-                                                </span>
-                                            </td>
-                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                                <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-red-100 text-red-700 rounded-lg text-[9px] sm:text-xs font-semibold">
-                                                    {student.absent}x
-                                                </span>
-                                            </td>
-                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
-                                                <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                                                    <span className="text-[10px] sm:text-sm font-bold text-gray-800">{student.attendanceRate}%</span>
-                                                    <div className="w-full bg-gray-200 rounded-full h-1 sm:h-1.5 max-w-[60px]">
-                                                        <div
-                                                            className={`h-full rounded-full ${student.attendanceRate >= 80 ? 'bg-green-500' :
-                                                                student.attendanceRate >= 60 ? 'bg-yellow-500' :
-                                                                    'bg-red-500'
-                                                                }`}
-                                                            style={{ width: `${student.attendanceRate}%` }}
-                                                        ></div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                        {groupBy === 'student' && <StudentSummaryTable data={studentSummary} loading={loading} />}
+                        {groupBy === 'class' && <ClassSummaryTable data={classSummary} loading={loading} />}
+                        {groupBy === 'date' && <DateSummaryTable data={dateSummary} loading={loading} />}
                     </div>
                 </div>
             )}
