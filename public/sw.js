@@ -1,6 +1,6 @@
 // Service Worker for EYSA Language Center PWA
-const CACHE_NAME = 'eysa-v1.0.0';
-const RUNTIME_CACHE = 'eysa-runtime';
+const CACHE_NAME = 'eysa-v1.0.1'; // Updated version to force cache refresh
+const RUNTIME_CACHE = 'eysa-runtime-v1.0.1';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
