@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Upload, Users, FileSpreadsheet, Download, CheckCircle, XCircle, AlertCircle, Loader2, X } from 'lucide-react';
+import { Upload, Users, FileSpreadsheet, Download, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useToast } from './Toast';
-import { bulkCreateUsers, bulkAssignStudentsToClass, bulkUpdateAttendance, getClasses } from '../utils/dbHelpers';
+import { bulkCreateUsers, bulkAssignStudentsToClass, bulkUpdateAttendance } from '../utils/dbHelpers';
 
 const BulkOperations = ({ onClose }) => {
     const toast = useToast();
@@ -40,7 +40,7 @@ const BulkOperations = ({ onClose }) => {
 
             if (type === 'import') {
                 setImportFile(file);
-                setImportPreview(jsonData.slice(0, 5)); // Preview first 5 rows
+                setImportPreview(jsonData.slice(0, 5));
             } else if (type === 'assign') {
                 setAssignFile(file);
                 setAssignPreview(jsonData.slice(0, 5));
@@ -70,7 +70,6 @@ const BulkOperations = ({ onClose }) => {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            // Validate required fields
             const requiredFields = ['full_name', 'email', 'batch'];
             const missingFields = requiredFields.filter(field =>
                 !jsonData[0] || !jsonData[0].hasOwnProperty(field)
@@ -82,7 +81,6 @@ const BulkOperations = ({ onClose }) => {
                 return;
             }
 
-            // Transform data for database
             const students = jsonData.map(row => ({
                 full_name: row.full_name,
                 email: row.email,
@@ -91,7 +89,6 @@ const BulkOperations = ({ onClose }) => {
                 role: 'student'
             }));
 
-            // Bulk create users
             const result = await bulkCreateUsers(students);
 
             setResults({
@@ -129,7 +126,6 @@ const BulkOperations = ({ onClose }) => {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            // Validate required fields
             const requiredFields = ['student_id', 'class_name', 'program', 'level'];
             const missingFields = requiredFields.filter(field =>
                 !jsonData[0] || !jsonData[0].hasOwnProperty(field)
@@ -141,7 +137,6 @@ const BulkOperations = ({ onClose }) => {
                 return;
             }
 
-            // Bulk assign
             const result = await bulkAssignStudentsToClass(jsonData);
 
             setResults({
@@ -179,7 +174,6 @@ const BulkOperations = ({ onClose }) => {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            // Validate required fields
             const requiredFields = ['id', 'status'];
             const missingFields = requiredFields.filter(field =>
                 !jsonData[0] || !jsonData[0].hasOwnProperty(field)
@@ -191,7 +185,6 @@ const BulkOperations = ({ onClose }) => {
                 return;
             }
 
-            // Validate status values
             const validStatuses = ['present', 'late', 'absent'];
             const invalidRows = jsonData.filter(row =>
                 !validStatuses.includes(row.status.toLowerCase())
@@ -203,7 +196,6 @@ const BulkOperations = ({ onClose }) => {
                 return;
             }
 
-            // Bulk update
             const result = await bulkUpdateAttendance(jsonData);
 
             setResults({
@@ -261,38 +253,31 @@ const BulkOperations = ({ onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-5xl w-full max-h-[95vh] overflow-hidden border-2 border-orange-100 animate-slideUp">
-                {/* Modern Header with Admin Theme */}
-                <div className="bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 p-4 sm:p-6 relative overflow-hidden">
-                    {/* Decorative elements */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-
-                    <button
-                        onClick={onClose}
-                        className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all hover:rotate-90 duration-300 group z-10"
-                        title="Close"
-                    >
-                        <X size={20} className="text-white group-hover:scale-110 transition-transform" />
-                    </button>
-
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-2">
-                            <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
-                                <Upload size={24} className="text-white" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl sm:text-2xl font-bold text-white font-montserrat">Bulk Operations</h2>
-                                <p className="text-white/90 text-xs sm:text-sm font-poppins">Import, assign, and manage data efficiently</p>
-                            </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-lg sm:rounded-xl shadow-xl max-w-4xl w-full max-h-[92vh] overflow-hidden">
+                {/* Simple Header */}
+                <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gray-100 rounded-lg">
+                            <Upload size={20} className="text-gray-700" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-bold text-gray-800">Bulk Operations</h2>
+                            <p className="text-xs sm:text-sm text-gray-500">Import, assign, and manage data efficiently</p>
                         </div>
                     </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Close"
+                    >
+                        <X size={20} className="text-gray-600" />
+                    </button>
                 </div>
 
-                {/* Modern Tabs */}
-                <div className="border-b border-gray-200 bg-gradient-to-r from-orange-50 to-amber-50">
-                    <div className="flex overflow-x-auto scrollbar-hide">
+                {/* Clean Tabs */}
+                <div className="border-b border-gray-200 bg-gray-50">
+                    <div className="flex overflow-x-auto scrollbar-hide px-2">
                         {tabs.map(tab => {
                             const Icon = tab.icon;
                             return (
@@ -302,18 +287,17 @@ const BulkOperations = ({ onClose }) => {
                                         setActiveTab(tab.id);
                                         setResults(null);
                                     }}
-                                    className={`flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-4 font-semibold text-xs sm:text-sm transition-all whitespace-nowrap relative group ${activeTab === tab.id
-                                        ? 'text-orange-600 bg-white'
-                                        : 'text-gray-600 hover:text-orange-500 hover:bg-white/50'
+                                    className={`flex items-center gap-2 px-4 sm:px-5 py-3 font-semibold text-xs sm:text-sm transition-all whitespace-nowrap relative ${activeTab === tab.id
+                                        ? 'text-gray-900 bg-white'
+                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                                         }`}
                                 >
-                                    <Icon size={16} className={`sm:w-[18px] sm:h-[18px] transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'text-orange-600' : ''}`} />
+                                    <Icon size={16} />
                                     <span className="hidden sm:inline">{tab.label}</span>
                                     <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
 
-                                    {/* Active indicator */}
                                     {activeTab === tab.id && (
-                                        <span className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500 to-amber-500 rounded-t-full"></span>
+                                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"></span>
                                     )}
                                 </button>
                             );
@@ -322,35 +306,21 @@ const BulkOperations = ({ onClose }) => {
                 </div>
 
                 {/* Content */}
-                <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-180px)] bg-gradient-to-br from-white via-orange-50/30 to-amber-50/30">
+                <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(92vh-140px)] bg-gray-50">
                     {/* Import Students Tab */}
                     {activeTab === 'import-students' && (
-                        <div className="space-y-4 sm:space-y-6">
+                        <div className="space-y-4">
                             {/* Info Card */}
-                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl p-3 sm:p-4 shadow-sm">
-                                <h3 className="font-bold text-blue-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                                    <div className="p-1.5 bg-blue-200 rounded-lg">
-                                        <AlertCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
-                                    </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+                                    <AlertCircle size={16} className="text-blue-600" />
                                     Required Columns
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-blue-800">
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-blue-600" />
-                                        <div><strong>full_name</strong> - Student's full name</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-blue-600" />
-                                        <div><strong>email</strong> - Unique email address</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-blue-600" />
-                                        <div><strong>batch</strong> - Batch number (1, 2, 3...)</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-blue-600" />
-                                        <div><strong>phone</strong> - Phone number (optional)</div>
-                                    </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">
+                                    <div>• <strong>full_name</strong> - Student's full name</div>
+                                    <div>• <strong>email</strong> - Unique email address</div>
+                                    <div>• <strong>batch</strong> - Batch number (1, 2, 3...)</div>
+                                    <div>• <strong>phone</strong> - Phone number (optional)</div>
                                 </div>
                             </div>
 
@@ -358,14 +328,14 @@ const BulkOperations = ({ onClose }) => {
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={() => downloadTemplate('import')}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-all border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow group"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors border border-gray-300 text-sm"
                                 >
-                                    <Download size={18} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm">Download Template</span>
+                                    <Download size={16} />
+                                    Download Template
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg group">
-                                    <Upload size={18} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm">Upload Excel File</span>
+                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
+                                    <Upload size={16} />
+                                    Upload Excel File
                                     <input
                                         type="file"
                                         accept=".xlsx,.xls"
@@ -376,53 +346,50 @@ const BulkOperations = ({ onClose }) => {
                             </div>
 
                             {importPreview.length > 0 && (
-                                <div className="bg-white rounded-xl border-2 border-orange-100 shadow-lg overflow-hidden">
-                                    <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3">
-                                        <h4 className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-                                            <FileSpreadsheet size={18} />
-                                            Preview (First 5 rows)
-                                        </h4>
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    <div className="bg-gray-100 px-4 py-2.5 border-b border-gray-200">
+                                        <h4 className="font-semibold text-gray-900 text-sm">Preview (First 5 rows)</h4>
                                     </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-xs sm:text-sm">
-                                            <thead className="bg-orange-50">
+                                            <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Full Name</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Email</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Batch</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Phone</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Full Name</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Email</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Batch</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Phone</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {importPreview.map((row, idx) => (
-                                                    <tr key={idx} className="border-b border-orange-100 hover:bg-orange-50/50 transition-colors">
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3">{row.full_name}</td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-600">{row.email}</td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3">
-                                                            <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
+                                                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                                                        <td className="px-3 sm:px-4 py-2">{row.full_name}</td>
+                                                        <td className="px-3 sm:px-4 py-2 text-gray-600">{row.email}</td>
+                                                        <td className="px-3 sm:px-4 py-2">
+                                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
                                                                 Batch {row.batch}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-600">{row.phone || '-'}</td>
+                                                        <td className="px-3 sm:px-4 py-2 text-gray-600">{row.phone || '-'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div className="p-4 bg-orange-50/50">
+                                    <div className="p-4 bg-gray-50 border-t border-gray-200">
                                         <button
                                             onClick={handleBulkImportStudents}
                                             disabled={loading}
-                                            className="w-full px-6 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                                            className="w-full px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
                                             {loading ? (
                                                 <>
-                                                    <Loader2 size={20} className="animate-spin" />
-                                                    Importing Students...
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                    Importing...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <CheckCircle size={20} />
+                                                    <CheckCircle size={16} />
                                                     Import {importPreview.length}+ Students
                                                 </>
                                             )}
@@ -435,47 +402,31 @@ const BulkOperations = ({ onClose }) => {
 
                     {/* Assign to Class Tab */}
                     {activeTab === 'assign-class' && (
-                        <div className="space-y-4 sm:space-y-6">
-                            {/* Info Card */}
-                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 rounded-xl p-3 sm:p-4 shadow-sm">
-                                <h3 className="font-bold text-purple-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                                    <div className="p-1.5 bg-purple-200 rounded-lg">
-                                        <AlertCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
-                                    </div>
+                        <div className="space-y-4">
+                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+                                    <AlertCircle size={16} className="text-purple-600" />
                                     Required Columns
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-purple-800">
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-purple-600" />
-                                        <div><strong>student_id</strong> - Student ID (EYSA2601001)</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-purple-600" />
-                                        <div><strong>class_name</strong> - Class name</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-purple-600" />
-                                        <div><strong>program</strong> - Program name</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-purple-600" />
-                                        <div><strong>level</strong> - Level (Beginner, etc.)</div>
-                                    </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">
+                                    <div>• <strong>student_id</strong> - Student ID</div>
+                                    <div>• <strong>class_name</strong> - Class name</div>
+                                    <div>• <strong>program</strong> - Program name</div>
+                                    <div>• <strong>level</strong> - Level</div>
                                 </div>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={() => downloadTemplate('assign')}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-all border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow group"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors border border-gray-300 text-sm"
                                 >
-                                    <Download size={18} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm">Download Template</span>
+                                    <Download size={16} />
+                                    Download Template
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg group">
-                                    <Upload size={18} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm">Upload Excel File</span>
+                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
+                                    <Upload size={16} />
+                                    Upload Excel File
                                     <input
                                         type="file"
                                         accept=".xlsx,.xls"
@@ -486,31 +437,28 @@ const BulkOperations = ({ onClose }) => {
                             </div>
 
                             {assignPreview.length > 0 && (
-                                <div className="bg-white rounded-xl border-2 border-purple-100 shadow-lg overflow-hidden">
-                                    <div className="bg-gradient-to-r from-purple-500 to-purple-600 px-4 py-3">
-                                        <h4 className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-                                            <Users size={18} />
-                                            Preview (First 5 rows)
-                                        </h4>
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    <div className="bg-gray-100 px-4 py-2.5 border-b border-gray-200">
+                                        <h4 className="font-semibold text-gray-900 text-sm">Preview (First 5 rows)</h4>
                                     </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-xs sm:text-sm">
-                                            <thead className="bg-purple-50">
+                                            <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-purple-900">Student ID</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-purple-900">Class</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-purple-900">Program</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-purple-900">Level</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Student ID</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Class</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Program</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Level</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {assignPreview.map((row, idx) => (
-                                                    <tr key={idx} className="border-b border-purple-100 hover:bg-purple-50/50 transition-colors">
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 font-mono text-xs">{row.student_id}</td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 font-semibold">{row.class_name}</td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-600">{row.program}</td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3">
-                                                            <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold">
+                                                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                                                        <td className="px-3 sm:px-4 py-2 font-mono text-xs">{row.student_id}</td>
+                                                        <td className="px-3 sm:px-4 py-2 font-medium">{row.class_name}</td>
+                                                        <td className="px-3 sm:px-4 py-2 text-gray-600">{row.program}</td>
+                                                        <td className="px-3 sm:px-4 py-2">
+                                                            <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
                                                                 {row.level}
                                                             </span>
                                                         </td>
@@ -519,20 +467,20 @@ const BulkOperations = ({ onClose }) => {
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div className="p-4 bg-purple-50/50">
+                                    <div className="p-4 bg-gray-50 border-t border-gray-200">
                                         <button
                                             onClick={handleBulkAssignToClass}
                                             disabled={loading}
-                                            className="w-full px-6 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                                            className="w-full px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
                                             {loading ? (
                                                 <>
-                                                    <Loader2 size={20} className="animate-spin" />
-                                                    Assigning Students...
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                    Assigning...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <CheckCircle size={20} />
+                                                    <CheckCircle size={16} />
                                                     Assign {assignPreview.length}+ Students
                                                 </>
                                             )}
@@ -545,49 +493,33 @@ const BulkOperations = ({ onClose }) => {
 
                     {/* Edit Attendance Tab */}
                     {activeTab === 'edit-attendance' && (
-                        <div className="space-y-4 sm:space-y-6">
-                            {/* Info Card */}
-                            <div className="bg-gradient-to-br from-amber-50 to-orange-100 border-2 border-orange-200 rounded-xl p-3 sm:p-4 shadow-sm">
-                                <h3 className="font-bold text-orange-900 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                                    <div className="p-1.5 bg-orange-200 rounded-lg">
-                                        <AlertCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
-                                    </div>
+                        <div className="space-y-4">
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                                <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
+                                    <AlertCircle size={16} className="text-amber-600" />
                                     Required Columns
                                 </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-orange-800">
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-orange-600" />
-                                        <div><strong>id</strong> - Attendance record ID</div>
-                                    </div>
-                                    <div className="flex items-start gap-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-orange-600" />
-                                        <div><strong>status</strong> - present, late, or absent</div>
-                                    </div>
-                                    <div className="flex items-start gap-2 sm:col-span-2">
-                                        <CheckCircle size={14} className="mt-0.5 flex-shrink-0 text-orange-600" />
-                                        <div><strong>notes</strong> - Reason for change (optional)</div>
-                                    </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">
+                                    <div>• <strong>id</strong> - Attendance record ID</div>
+                                    <div>• <strong>status</strong> - present, late, or absent</div>
+                                    <div className="sm:col-span-2">• <strong>notes</strong> - Reason for change (optional)</div>
                                 </div>
-                                <div className="mt-3 p-2 bg-orange-200/50 rounded-lg flex items-start gap-2">
-                                    <AlertCircle size={14} className="mt-0.5 flex-shrink-0 text-orange-700" />
-                                    <p className="text-xs text-orange-800">
-                                        <strong>Tip:</strong> Export attendance report first to get the record IDs
-                                    </p>
-                                </div>
+                                <p className="text-xs text-gray-600 mt-2">
+                                    💡 Tip: Export attendance report first to get the record IDs
+                                </p>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={() => downloadTemplate('attendance')}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-all border-2 border-gray-200 hover:border-gray-300 shadow-sm hover:shadow group"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-gray-50 text-gray-700 rounded-lg font-medium transition-colors border border-gray-300 text-sm"
                                 >
-                                    <Download size={18} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm">Download Template</span>
+                                    <Download size={16} />
+                                    Download Template
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-semibold cursor-pointer transition-all shadow-md hover:shadow-lg group">
-                                    <Upload size={18} className="group-hover:scale-110 transition-transform" />
-                                    <span className="text-sm">Upload Excel File</span>
+                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
+                                    <Upload size={16} />
+                                    Upload Excel File
                                     <input
                                         type="file"
                                         accept=".xlsx,.xls"
@@ -598,54 +530,51 @@ const BulkOperations = ({ onClose }) => {
                             </div>
 
                             {attendancePreview.length > 0 && (
-                                <div className="bg-white rounded-xl border-2 border-orange-100 shadow-lg overflow-hidden">
-                                    <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-3">
-                                        <h4 className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-                                            <CheckCircle size={18} />
-                                            Preview (First 5 rows)
-                                        </h4>
+                                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                    <div className="bg-gray-100 px-4 py-2.5 border-b border-gray-200">
+                                        <h4 className="font-semibold text-gray-900 text-sm">Preview (First 5 rows)</h4>
                                     </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-xs sm:text-sm">
-                                            <thead className="bg-orange-50">
+                                            <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Record ID</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Status</th>
-                                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left font-semibold text-orange-900">Notes</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Record ID</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Status</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Notes</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {attendancePreview.map((row, idx) => (
-                                                    <tr key={idx} className="border-b border-orange-100 hover:bg-orange-50/50 transition-colors">
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 font-mono text-xs text-gray-600">{row.id}</td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3">
-                                                            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold ${row.status === 'present' ? 'bg-green-100 text-green-700' :
-                                                                row.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
-                                                                    'bg-red-100 text-red-700'
+                                                    <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                                                        <td className="px-3 sm:px-4 py-2 font-mono text-xs text-gray-600">{row.id}</td>
+                                                        <td className="px-3 sm:px-4 py-2">
+                                                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${row.status === 'present' ? 'bg-green-100 text-green-700' :
+                                                                    row.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
+                                                                        'bg-red-100 text-red-700'
                                                                 }`}>
                                                                 {row.status.toUpperCase()}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-2 sm:py-3 text-gray-600">{row.notes || '-'}</td>
+                                                        <td className="px-3 sm:px-4 py-2 text-gray-600">{row.notes || '-'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
-                                    <div className="p-4 bg-orange-50/50">
+                                    <div className="p-4 bg-gray-50 border-t border-gray-200">
                                         <button
                                             onClick={handleBulkEditAttendance}
                                             disabled={loading}
-                                            className="w-full px-6 py-3 sm:py-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                                            className="w-full px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
                                             {loading ? (
                                                 <>
-                                                    <Loader2 size={20} className="animate-spin" />
-                                                    Updating Records...
+                                                    <Loader2 size={16} className="animate-spin" />
+                                                    Updating...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <CheckCircle size={20} />
+                                                    <CheckCircle size={16} />
                                                     Update {attendancePreview.length}+ Records
                                                 </>
                                             )}
@@ -658,45 +587,33 @@ const BulkOperations = ({ onClose }) => {
 
                     {/* Results */}
                     {results && (
-                        <div className="bg-white rounded-xl border-2 border-orange-200 shadow-lg overflow-hidden animate-slideUp">
-                            <div className="bg-gradient-to-r from-orange-500 to-amber-500 px-4 sm:px-6 py-3 sm:py-4">
-                                <h4 className="font-bold text-white text-sm sm:text-base flex items-center gap-2">
-                                    <CheckCircle size={18} />
-                                    Operation Results
-                                </h4>
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <div className="bg-gray-100 px-4 py-2.5 border-b border-gray-200">
+                                <h4 className="font-semibold text-gray-900 text-sm">Operation Results</h4>
                             </div>
 
-                            <div className="p-4 sm:p-6">
-                                <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-4">
-                                    <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-gray-200">
-                                        <div className="text-2xl sm:text-3xl font-bold text-gray-800">{results.total}</div>
-                                        <div className="text-xs sm:text-sm text-gray-600 font-semibold mt-1">Total</div>
+                            <div className="p-4">
+                                <div className="grid grid-cols-3 gap-3 mb-4">
+                                    <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div className="text-2xl font-bold text-gray-800">{results.total}</div>
+                                        <div className="text-xs text-gray-600 font-medium mt-1">Total</div>
                                     </div>
-                                    <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border-2 border-green-200">
-                                        <div className="text-2xl sm:text-3xl font-bold text-green-600 flex items-center justify-center gap-1">
-                                            <CheckCircle size={20} className="hidden sm:inline" />
-                                            {results.success.length}
-                                        </div>
-                                        <div className="text-xs sm:text-sm text-green-700 font-semibold mt-1">Success</div>
+                                    <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+                                        <div className="text-2xl font-bold text-green-600">{results.success.length}</div>
+                                        <div className="text-xs text-green-700 font-medium mt-1">Success</div>
                                     </div>
-                                    <div className="text-center p-3 sm:p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border-2 border-red-200">
-                                        <div className="text-2xl sm:text-3xl font-bold text-red-600 flex items-center justify-center gap-1">
-                                            <AlertCircle size={20} className="hidden sm:inline" />
-                                            {results.failed.length}
-                                        </div>
-                                        <div className="text-xs sm:text-sm text-red-700 font-semibold mt-1">Failed</div>
+                                    <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+                                        <div className="text-2xl font-bold text-red-600">{results.failed.length}</div>
+                                        <div className="text-xs text-red-700 font-medium mt-1">Failed</div>
                                     </div>
                                 </div>
 
                                 {results.failed.length > 0 && (
-                                    <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3 sm:p-4">
-                                        <h5 className="font-bold text-red-800 mb-2 flex items-center gap-2 text-sm sm:text-base">
-                                            <AlertCircle size={16} />
-                                            Failed Records
-                                        </h5>
-                                        <div className="max-h-40 overflow-y-auto space-y-2">
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                        <h5 className="font-semibold text-red-800 mb-2 text-sm">Failed Records</h5>
+                                        <div className="max-h-32 overflow-y-auto space-y-1">
                                             {results.failed.map((fail, idx) => (
-                                                <div key={idx} className="text-xs sm:text-sm text-red-700 bg-white p-2 sm:p-3 rounded-lg border border-red-200">
+                                                <div key={idx} className="text-xs text-red-700 bg-white p-2 rounded border border-red-100">
                                                     {fail.error || JSON.stringify(fail)}
                                                 </div>
                                             ))}
@@ -705,9 +622,9 @@ const BulkOperations = ({ onClose }) => {
                                 )}
 
                                 {results.success.length > 0 && results.failed.length === 0 && (
-                                    <div className="bg-green-50 border-2 border-green-200 rounded-xl p-3 sm:p-4 text-center">
-                                        <CheckCircle size={32} className="mx-auto text-green-600 mb-2" />
-                                        <p className="text-green-800 font-bold text-sm sm:text-base">All operations completed successfully!</p>
+                                    <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                                        <CheckCircle size={24} className="mx-auto text-green-600 mb-2" />
+                                        <p className="text-green-800 font-medium text-sm">All operations completed successfully!</p>
                                     </div>
                                 )}
                             </div>
