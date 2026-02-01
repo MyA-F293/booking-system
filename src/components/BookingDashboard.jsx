@@ -89,7 +89,7 @@ const BookingDashboard = ({ user }) => {
     const [loading, setLoading] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [scheduleStudents, setScheduleStudents] = useState([]);
-    const [selectedWeekTab, setSelectedWeekTab] = useState('next'); // 'current' or 'next'
+    const [selectedWeekTab, setSelectedWeekTab] = useState('current'); // Default to 'current' week
 
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
