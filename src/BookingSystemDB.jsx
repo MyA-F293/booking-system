@@ -847,7 +847,7 @@ const BookingSystemDB = ({ user }) => {
                                         </p>
                                         <p className="text-white/80 text-xs sm:text-sm">
                                             {canBook()
-                                                ? `Booking for Week ${getBookingWeek()} (Jan 26 - Feb 1, 2026)`
+                                                ? `Booking for Week ${getBookingWeek()} - All Days Available`
                                                 : 'Opens on Thursday'}
                                         </p>
                                     </div>
