@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Users, User, Clock, RefreshCw, Loader2, BookOpen, X, GraduationCap, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, getUserBookings } from '../utils/dbHelpers';
 import { useRefreshCooldown } from '../utils/useDebounce';
 
 const dayLabels = {
@@ -90,36 +90,44 @@ const BookingDashboard = ({ user }) => {
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [scheduleStudents, setScheduleStudents] = useState([]);
     const [selectedWeekTab, setSelectedWeekTab] = useState('current'); // Default to 'current' week
+    const [userBookings, setUserBookings] = useState([]); // Store user's bookings
 
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
     const nextWeek = currentWeek + 1;
     const displayWeek = selectedWeekTab === 'current' ? currentWeek : nextWeek;
 
-    // Get user's batch for filtering
+    // Get user's batch and ID for filtering
     const userBatch = user?.batch;
+    const userId = user?.id;
 
     // Refresh cooldown (3 seconds)
-    const { execute: refreshWithCooldown, isOnCooldown, remainingTime } = useRefreshCooldown(loadAllSchedules, 3000);
+    const { execute: refreshWithCooldown, isOnCooldown, remainingTime } = useRefreshCooldown(loadUserBookings, 3000);
 
     useEffect(() => {
-        loadAllSchedules();
-    }, [selectedWeekTab, userBatch]);
+        loadUserBookings();
+    }, [selectedWeekTab, userBatch, userId]);
 
-    async function loadAllSchedules() {
+    async function loadUserBookings() {
+        if (!userId) {
+            console.log('⏭️ No userId, skipping load');
+            return;
+        }
+
         try {
             setLoading(true);
-            // Filter by user's batch if available
-            const filters = {
-                week_number: displayWeek,
-                year: currentYear,
-                batch: userBatch
-            };
-            const data = await getSchedules(filters);
-            const activeSchedules = data.filter(s => s.current_students > 0);
-            setSchedules(activeSchedules);
+            console.log('📡 Loading user bookings for:', { userId, displayWeek, currentYear, userBatch });
+
+            // Get user's bookings for the selected week
+            const bookings = await getUserBookings(userId, displayWeek, currentYear, userBatch);
+            console.log('✅ User bookings loaded:', bookings);
+
+            // Extract schedules from bookings
+            const schedulesFromBookings = bookings.map(b => b.schedule);
+            setSchedules(schedulesFromBookings);
+            setUserBookings(bookings);
         } catch (err) {
-            console.error('Error loading schedules:', err);
+            console.error('❌ Error loading user bookings:', err);
         } finally {
             setLoading(false);
         }
