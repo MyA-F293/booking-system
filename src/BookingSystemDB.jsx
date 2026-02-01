@@ -847,7 +847,7 @@ const BookingSystemDB = ({ user }) => {
                                         </p>
                                         <p className="text-white/80 text-xs sm:text-sm">
                                             {canBook()
-                                                ? 'Available Thursday - Saturday'
+                                                ? 'Booking is OPEN - All Days Available'
                                                 : 'Opens on Thursday'}
                                         </p>
                                     </div>
