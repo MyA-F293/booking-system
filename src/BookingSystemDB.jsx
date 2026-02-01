@@ -322,9 +322,9 @@ const BookingSystemDB = ({ user }) => {
         return true; // Allow booking any day for development
     };
 
-    // Booking for current week (temporary for filling schedule)
+    // Booking for week 5 (temporary for filling schedule)
     const getBookingWeek = () => {
-        return currentWeek; // Changed from currentWeek + 1 to allow booking for current week
+        return currentWeek - 1; // Changed to currentWeek - 1 to allow booking for week 5
     };
 
     const handleProgramSelect = (program) => {
