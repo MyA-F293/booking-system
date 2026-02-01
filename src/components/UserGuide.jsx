@@ -6,15 +6,31 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
 
+    // Detect iOS
+    const isIOS = () => {
+        return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    };
+
     // Handle Install App action
     const handleInstallApp = async () => {
+        // Check if iOS
+        if (isIOS()) {
+            alert('📱 To install on iOS:\n\n1. Tap the Share button (⬆️) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm\n\nThe app icon will appear on your home screen!');
+            return;
+        }
+
+        // For other browsers (Chrome, Edge, etc.)
         try {
             const accepted = await showInstallPrompt();
             if (accepted) {
                 console.log('✅ App installed successfully');
+            } else {
+                // If prompt not available, show manual instructions
+                alert('📱 To install this app:\n\n• Chrome/Edge: Look for the install icon (⊕) in the address bar\n• Or check browser menu for "Install app" option');
             }
         } catch (error) {
             console.error('❌ Install failed:', error);
+            alert('📱 To install this app:\n\n• Chrome/Edge: Look for the install icon (⊕) in the address bar\n• Or check browser menu for "Install app" option');
         }
     };
 
