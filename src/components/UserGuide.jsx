@@ -1,9 +1,22 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, BookOpen, Calendar, CheckCircle, BarChart3, Sparkles } from 'lucide-react';
+import { showInstallPrompt } from '../utils/pwaHelpers';
 
 const UserGuide = ({ onClose, userRole = 'student', userId }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
+
+    // Handle Install App action
+    const handleInstallApp = async () => {
+        try {
+            const accepted = await showInstallPrompt();
+            if (accepted) {
+                console.log('✅ App installed successfully');
+            }
+        } catch (error) {
+            console.error('❌ Install failed:', error);
+        }
+    };
 
     // Guide steps based on user role
     const studentGuideSteps = [
@@ -203,7 +216,15 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
                         {currentStepData.quickActions && (
                             <div className="space-y-2">
                                 {currentStepData.quickActions.map((action, index) => (
-                                    <button key={index} className="w-full p-2 sm:p-3 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] hover:from-[#183d6e] hover:to-[#1F4E8C] text-white rounded-lg sm:rounded-xl flex items-center justify-between transition-all hover:shadow-lg group">
+                                    <button
+                                        key={index}
+                                        onClick={() => {
+                                            if (action.title === "Install App") {
+                                                handleInstallApp();
+                                            }
+                                        }}
+                                        className="w-full p-2 sm:p-3 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] hover:from-[#183d6e] hover:to-[#1F4E8C] text-white rounded-lg sm:rounded-xl flex items-center justify-between transition-all hover:shadow-lg group"
+                                    >
                                         <div className="flex items-center gap-2">
                                             <span className="text-lg sm:text-xl">{action.icon}</span>
                                             <div className="text-left">
