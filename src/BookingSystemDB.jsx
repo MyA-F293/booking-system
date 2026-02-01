@@ -314,17 +314,19 @@ const BookingSystemDB = ({ user }) => {
         }
     }, [userId]);
 
-    // Check if today is Thursday (4), Friday (5), or Saturday (6)
-    // DEVELOPMENT MODE: Temporarily disabled for testing
+    // Check if today is Thursday (4), Friday (5), or Saturday (6) before 22:00
     const canBook = () => {
-        // const today = new Date().getDay();
-        // return today >= 4 && today <= 6; // 4=Kamis, 5=Jumat, 6=Sabtu
-        return true; // Allow booking any day for development
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=Sunday, 4=Thursday, 5=Friday, 6=Saturday
+        const hour = now.getHours();
+
+        // Thursday (4), Friday (5), or Saturday (6) before 22:00 (10 PM)
+        return (dayOfWeek >= 4 && dayOfWeek <= 6) && hour < 22;
     };
 
-    // Booking for current week (Week 5 - includes Feb 1, 2026)
+    // Booking for next week
     const getBookingWeek = () => {
-        return currentWeek; // Book for current week (Week 5)
+        return currentWeek + 1; // Book for next week
     };
 
     const handleProgramSelect = (program) => {
@@ -847,8 +849,8 @@ const BookingSystemDB = ({ user }) => {
                                         </p>
                                         <p className="text-white/80 text-xs sm:text-sm">
                                             {canBook()
-                                                ? `Booking for Week ${getBookingWeek()} - All Days Available`
-                                                : 'Opens on Thursday'}
+                                                ? 'Available Thursday - Saturday (until 22:00)'
+                                                : 'Opens Thursday - Saturday (until 22:00)'}
                                         </p>
                                     </div>
                                 </div>
