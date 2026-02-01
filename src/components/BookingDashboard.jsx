@@ -112,19 +112,26 @@ const BookingDashboard = ({ user }) => {
         try {
             setLoading(true);
             console.log('📡 Loading all schedules for week:', displayWeek);
+            console.log('👤 User batch:', userBatch);
 
-            // Get ALL schedules for the selected week (to show all classes)
+            // Get ALL schedules for the selected week (show all, regardless of batch)
             const filters = {
                 week_number: displayWeek,
-                year: currentYear,
-                batch: userBatch
+                year: currentYear
+                // Don't filter by batch here - show all schedules
             };
             const data = await getSchedules(filters);
             const activeSchedules = data.filter(s => s.current_students > 0);
             console.log('✅ All schedules loaded:', activeSchedules.length);
+            console.log('📋 Schedules:', activeSchedules.map(s => ({
+                id: s.id,
+                class: s.class?.name,
+                batch: s.batch,
+                students: s.current_students
+            })));
             setSchedules(activeSchedules);
 
-            // Also load user's bookings to highlight which ones user has booked
+            // Load user's bookings (filter by batch for user's own bookings)
             if (userId) {
                 const bookings = await getUserBookings(userId, displayWeek, currentYear, userBatch);
                 console.log('✅ User bookings loaded:', bookings.length);
