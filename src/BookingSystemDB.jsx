@@ -322,9 +322,9 @@ const BookingSystemDB = ({ user }) => {
         return true; // Allow booking any day for development
     };
 
-    // Booking for next week
+    // Booking for current week (temporary for filling schedule)
     const getBookingWeek = () => {
-        return currentWeek + 1;
+        return currentWeek; // Changed from currentWeek + 1 to allow booking for current week
     };
 
     const handleProgramSelect = (program) => {
@@ -968,7 +968,7 @@ const BookingSystemDB = ({ user }) => {
                                                     <Calendar size={14} className="text-white" />
                                                 </div>
                                                 <span className={`font-bold text-sm ${isCurrentWeek ? 'text-[#1F4E8C]' : 'text-[#F39C32]'}`}>
-                                                    Week {weekNum} {isCurrentWeek ? '(This Week)' : '(Next Week)'}
+                                                    Week {weekNum} (This Week)
                                                 </span>
                                                 <span className="text-xs text-gray-500 ml-auto">
                                                     {weekBookings.length} booking{weekBookings.length > 1 ? 's' : ''}
