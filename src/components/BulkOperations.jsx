@@ -333,7 +333,7 @@ const BulkOperations = ({ onClose }) => {
                                     <Download size={16} />
                                     Download Template
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
+                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
                                     <Upload size={16} />
                                     Upload Excel File
                                     <input
@@ -380,7 +380,7 @@ const BulkOperations = ({ onClose }) => {
                                         <button
                                             onClick={handleBulkImportStudents}
                                             disabled={loading}
-                                            className="w-full px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                            className="w-full px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
                                             {loading ? (
                                                 <>
@@ -403,9 +403,9 @@ const BulkOperations = ({ onClose }) => {
                     {/* Assign to Class Tab */}
                     {activeTab === 'assign-class' && (
                         <div className="space-y-4">
-                            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-lg p-4">
                                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2 text-sm">
-                                    <AlertCircle size={16} className="text-purple-600" />
+                                    <AlertCircle size={16} className="text-orange-600" />
                                     Required Columns
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">
@@ -424,7 +424,7 @@ const BulkOperations = ({ onClose }) => {
                                     <Download size={16} />
                                     Download Template
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
+                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
                                     <Upload size={16} />
                                     Upload Excel File
                                     <input
@@ -471,7 +471,7 @@ const BulkOperations = ({ onClose }) => {
                                         <button
                                             onClick={handleBulkAssignToClass}
                                             disabled={loading}
-                                            className="w-full px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                            className="w-full px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
                                             {loading ? (
                                                 <>
@@ -517,7 +517,7 @@ const BulkOperations = ({ onClose }) => {
                                     <Download size={16} />
                                     Download Template
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
+                                <label className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-medium cursor-pointer transition-colors text-sm">
                                     <Upload size={16} />
                                     Upload Excel File
                                     <input
@@ -549,8 +549,8 @@ const BulkOperations = ({ onClose }) => {
                                                         <td className="px-3 sm:px-4 py-2 font-mono text-xs text-gray-600">{row.id}</td>
                                                         <td className="px-3 sm:px-4 py-2">
                                                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${row.status === 'present' ? 'bg-green-100 text-green-700' :
-                                                                    row.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
-                                                                        'bg-red-100 text-red-700'
+                                                                row.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
+                                                                    'bg-red-100 text-red-700'
                                                                 }`}>
                                                                 {row.status.toUpperCase()}
                                                             </span>
@@ -565,7 +565,7 @@ const BulkOperations = ({ onClose }) => {
                                         <button
                                             onClick={handleBulkEditAttendance}
                                             disabled={loading}
-                                            className="w-full px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                                            className="w-full px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                                         >
                                             {loading ? (
                                                 <>
