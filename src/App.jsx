@@ -13,10 +13,21 @@ function App() {
 
   useEffect(() => {
     const initApp = async () => {
-      // Check and auto-copy bookings if needed
       console.log('🚀 App: Initializing...');
-      const copyResult = await autoCopyBookingsToNextWeek();
-      console.log('📋 App: Auto-copy result:', copyResult);
+
+      try {
+        // Check and auto-copy bookings with timeout (max 5 seconds)
+        const copyPromise = autoCopyBookingsToNextWeek();
+        const timeoutPromise = new Promise((resolve) =>
+          setTimeout(() => resolve({ copied: false, reason: 'timeout' }), 5000)
+        );
+
+        const copyResult = await Promise.race([copyPromise, timeoutPromise]);
+        console.log('📋 App: Auto-copy result:', copyResult);
+      } catch (error) {
+        console.error('❌ App: Auto-copy error (non-critical):', error);
+        // Continue even if auto-copy fails
+      }
 
       // Load current user
       const currentUser = getCurrentUser();
