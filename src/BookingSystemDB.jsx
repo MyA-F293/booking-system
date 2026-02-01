@@ -322,9 +322,9 @@ const BookingSystemDB = ({ user }) => {
         return true; // Allow booking any day for development
     };
 
-    // Booking for next week (Week 6 - starting Feb 2, 2026)
+    // Booking for current week (Week 5 - includes Feb 1, 2026)
     const getBookingWeek = () => {
-        return currentWeek + 1; // Book for next week (Week 6)
+        return currentWeek; // Book for current week (Week 5)
     };
 
     const handleProgramSelect = (program) => {
@@ -847,7 +847,7 @@ const BookingSystemDB = ({ user }) => {
                                         </p>
                                         <p className="text-white/80 text-xs sm:text-sm">
                                             {canBook()
-                                                ? `Booking for Week ${getBookingWeek()} (Feb 2-8, 2026)`
+                                                ? `Booking for Week ${getBookingWeek()} (Jan 26 - Feb 1, 2026)`
                                                 : 'Opens on Thursday'}
                                         </p>
                                     </div>
