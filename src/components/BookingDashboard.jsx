@@ -109,25 +109,29 @@ const BookingDashboard = ({ user }) => {
     }, [selectedWeekTab, userBatch, userId]);
 
     async function loadUserBookings() {
-        if (!userId) {
-            console.log('⏭️ No userId, skipping load');
-            return;
-        }
-
         try {
             setLoading(true);
-            console.log('📡 Loading user bookings for:', { userId, displayWeek, currentYear, userBatch });
+            console.log('📡 Loading all schedules for week:', displayWeek);
 
-            // Get user's bookings for the selected week
-            const bookings = await getUserBookings(userId, displayWeek, currentYear, userBatch);
-            console.log('✅ User bookings loaded:', bookings);
+            // Get ALL schedules for the selected week (to show all classes)
+            const filters = {
+                week_number: displayWeek,
+                year: currentYear,
+                batch: userBatch
+            };
+            const data = await getSchedules(filters);
+            const activeSchedules = data.filter(s => s.current_students > 0);
+            console.log('✅ All schedules loaded:', activeSchedules.length);
+            setSchedules(activeSchedules);
 
-            // Extract schedules from bookings
-            const schedulesFromBookings = bookings.map(b => b.schedule);
-            setSchedules(schedulesFromBookings);
-            setUserBookings(bookings);
+            // Also load user's bookings to highlight which ones user has booked
+            if (userId) {
+                const bookings = await getUserBookings(userId, displayWeek, currentYear, userBatch);
+                console.log('✅ User bookings loaded:', bookings.length);
+                setUserBookings(bookings);
+            }
         } catch (err) {
-            console.error('❌ Error loading user bookings:', err);
+            console.error('❌ Error loading schedules:', err);
         } finally {
             setLoading(false);
         }
@@ -313,10 +317,13 @@ const BookingDashboard = ({ user }) => {
                                         <div className="space-y-3">
                                             {phaseSchedules.map((schedule) => {
                                                 const status = getStatusColor(schedule.current_students);
+                                                // Check if user has booked this schedule
+                                                const userHasBooked = userBookings.some(b => b.schedule_id === schedule.id);
+
                                                 return (
                                                     <div
                                                         key={schedule.id}
-                                                        className={`bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden border-l-4 ${status.border}`}
+                                                        className={`bg-white rounded-xl border ${userHasBooked ? 'border-green-400 ring-2 ring-green-200' : 'border-gray-200'} shadow-sm hover:shadow-md transition-all overflow-hidden border-l-4 ${status.border}`}
                                                     >
                                                         <div className="p-3">
                                                             <div className="flex justify-between items-start mb-2">
@@ -325,9 +332,16 @@ const BookingDashboard = ({ user }) => {
                                                                         {getClassBadge(schedule.class?.name).emoji}
                                                                     </span>
                                                                     <div>
-                                                                        <h4 className="font-bold text-gray-800 text-sm">
-                                                                            {schedule.class?.name || 'Unknown'}
-                                                                        </h4>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <h4 className="font-bold text-gray-800 text-sm">
+                                                                                {schedule.class?.name || 'Unknown'}
+                                                                            </h4>
+                                                                            {userHasBooked && (
+                                                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[9px] font-bold">
+                                                                                    ✓ Your Booking
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
                                                                         <p className="text-[10px] text-gray-500 mt-0.5">
                                                                             {schedule.program} • {schedule.level}
                                                                             {schedule.batch && <span className="ml-1 text-[#1F4E8C]">• {schedule.batch}</span>}
