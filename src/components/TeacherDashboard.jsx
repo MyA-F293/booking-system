@@ -30,50 +30,50 @@ const TeacherDashboard = ({ user }) => {
 
     // Get current day and time period
     const getCurrentDayAndTime = () => {
-        // TESTING MODE - Set to false for real time
-        const TESTING = false;  // 🔴 PRODUCTION: Disabled for deployment
-        if (TESTING) {
-            return {
-                currentDay: 'all',      // Show all days
-                timePeriod: 'all'       // Show all time periods
-            };
-        }
-
         const now = new Date();
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const currentDay = days[now.getDay()];
         const currentHour = now.getHours();
 
-        // Determine time period
-        let timePeriod;
-        if (currentHour >= 6 && currentHour < 12) {
-            timePeriod = 'morning';
-        } else if (currentHour >= 12 && currentHour < 17) {
-            timePeriod = 'afternoon';
-        } else {
-            timePeriod = 'evening';
+        // Determine which time periods are accessible
+        // Afternoon class: accessible until 18:00 (6 PM)
+        // Evening class: accessible until 21:00 (9 PM)
+        const accessiblePeriods = [];
+
+        if (currentHour < 18) {
+            // Before 6 PM - can access afternoon classes
+            accessiblePeriods.push('afternoon');
         }
 
-        return { currentDay, timePeriod };
+        if (currentHour < 21) {
+            // Before 9 PM - can access evening classes
+            accessiblePeriods.push('evening');
+        }
+
+        return { currentDay, accessiblePeriods };
     };
 
     const filterSchedulesByCurrentTime = (schedules) => {
-        const { currentDay, timePeriod } = getCurrentDayAndTime();
-
-        // If testing mode (show all), return all schedules
-        if (currentDay === 'all' && timePeriod === 'all') {
-            return schedules;
-        }
+        const { currentDay, accessiblePeriods } = getCurrentDayAndTime();
 
         return schedules.filter(schedule => {
             const scheduleDay = schedule.day.toLowerCase();
             const scheduleTime = schedule.time_slot.toLowerCase();
 
-            // Match current day
+            // Must match current day
             if (scheduleDay !== currentDay) return false;
 
-            // Match time period (morning, afternoon, evening)
-            return scheduleTime.includes(timePeriod);
+            // Check if time period is accessible
+            // Afternoon classes accessible until 18:00
+            // Evening classes accessible until 21:00
+            if (scheduleTime.includes('afternoon') && accessiblePeriods.includes('afternoon')) {
+                return true;
+            }
+            if (scheduleTime.includes('evening') && accessiblePeriods.includes('evening')) {
+                return true;
+            }
+
+            return false;
         });
     };
 
