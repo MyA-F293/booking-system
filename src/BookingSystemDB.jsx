@@ -316,25 +316,16 @@ const BookingSystemDB = ({ user }) => {
 
     // Check if today is Thursday (4), Friday (5), or Saturday (6) before 22:00
     const canBook = () => {
-        const now = new Date();
-        const dayOfWeek = now.getDay(); // 0=Sunday, 4=Thursday, 5=Friday, 6=Saturday
-        const hour = now.getHours();
+        // DEVELOPMENT MODE: Allow booking any day
+        return true;
 
-        const isBookingDay = (dayOfWeek >= 4 && dayOfWeek <= 6);
-        const isBeforeCutoff = hour < 22;
-        const canBookNow = isBookingDay && isBeforeCutoff;
-
-        console.log('🔍 canBook check:', {
-            dayOfWeek,
-            dayName: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayOfWeek],
-            hour,
-            isBookingDay,
-            isBeforeCutoff,
-            canBookNow
-        });
-
-        // Thursday (4), Friday (5), or Saturday (6) before 22:00 (10 PM)
-        return canBookNow;
+        // PRODUCTION CODE (commented out):
+        // const now = new Date();
+        // const dayOfWeek = now.getDay(); // 0=Sunday, 4=Thursday, 5=Friday, 6=Saturday
+        // const hour = now.getHours();
+        // const isBookingDay = (dayOfWeek >= 4 && dayOfWeek <= 6);
+        // const isBeforeCutoff = hour < 22;
+        // return isBookingDay && isBeforeCutoff;
     };
 
     // Booking for next week
