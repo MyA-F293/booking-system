@@ -91,21 +91,27 @@ const TeacherDashboard = ({ user }) => {
                 year: currentYear
             });
 
-            console.log('All schedules:', data);
-            console.log('Current day and time:', getCurrentDayAndTime());
+            console.log('📋 All schedules from DB:', data.length);
+            console.log('🕐 Current day and time:', getCurrentDayAndTime());
 
             // Filter schedules by current day and time
             const filteredSchedules = filterSchedulesByCurrentTime(data);
-            console.log('Filtered schedules:', filteredSchedules);
+            console.log('✅ Filtered schedules:', filteredSchedules.length);
 
-            setSchedules(filteredSchedules);
+            // Remove duplicates based on schedule ID
+            const uniqueSchedules = filteredSchedules.filter((schedule, index, self) =>
+                index === self.findIndex(s => s.id === schedule.id)
+            );
+            console.log('🔍 Unique schedules:', uniqueSchedules.length);
+
+            setSchedules(uniqueSchedules);
 
             // Auto-select first schedule if available
-            if (filteredSchedules.length > 0 && !selectedSchedule) {
-                handleSelectSchedule(filteredSchedules[0]);
+            if (uniqueSchedules.length > 0 && !selectedSchedule) {
+                handleSelectSchedule(uniqueSchedules[0]);
             }
         } catch (err) {
-            console.error('Error loading schedules:', err);
+            console.error('❌ Error loading schedules:', err);
             toast.error('Failed to load schedules');
         } finally {
             setLoading(false);
