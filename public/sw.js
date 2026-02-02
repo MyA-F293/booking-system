@@ -1,6 +1,6 @@
 // Service Worker for EYSA Language Center PWA
-const CACHE_NAME = 'eysa-v1.0.2'; // Updated version to force cache refresh
-const RUNTIME_CACHE = 'eysa-runtime-v1.0.2';
+const CACHE_NAME = 'eysa-v1.0.3'; // Updated version to force cache refresh
+const RUNTIME_CACHE = 'eysa-runtime-v1.0.3';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
@@ -14,7 +14,7 @@ const PRECACHE_ASSETS = [
 
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installing service worker v1.0.2...');
+    console.log('[SW] Installing service worker v1.0.3...');
     // Force immediate activation
     self.skipWaiting();
 
