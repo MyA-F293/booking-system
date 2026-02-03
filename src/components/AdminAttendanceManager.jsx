@@ -47,21 +47,36 @@ const AdminAttendanceManager = () => {
                 return;
             }
 
-            // Check which schedules already have attendance submitted
-            const schedulesWithStatus = await Promise.all(
-                data.map(async (schedule) => {
-                    const attendanceRecords = await getAttendanceRecords({
-                        schedule_id: schedule.id
-                    });
-                    return {
-                        ...schedule,
-                        hasAttendance: attendanceRecords.length > 0,
-                        attendanceCount: attendanceRecords.length
-                    };
-                })
-            );
+            // OPTIMIZATION: Get ALL attendance records for this week in ONE query
+            // Instead of querying each schedule individually (which was slow!)
+            console.log('🔍 Fetching attendance for week', selectedWeek, '...');
 
-            console.log('📋 Loaded schedules with attendance status:', schedulesWithStatus.length);
+            const allAttendance = await getAttendanceRecords({
+                week_number: selectedWeek,
+                year: currentYear
+            });
+
+            console.log('📊 Found', allAttendance?.length || 0, 'attendance records');
+
+            // Create a map of schedule_id -> attendance count for fast lookup
+            const attendanceMap = {};
+            if (allAttendance && allAttendance.length > 0) {
+                allAttendance.forEach(record => {
+                    if (!attendanceMap[record.schedule_id]) {
+                        attendanceMap[record.schedule_id] = 0;
+                    }
+                    attendanceMap[record.schedule_id]++;
+                });
+            }
+
+            // Add attendance status to each schedule (no more async calls!)
+            const schedulesWithStatus = data.map(schedule => ({
+                ...schedule,
+                hasAttendance: attendanceMap[schedule.id] > 0,
+                attendanceCount: attendanceMap[schedule.id] || 0
+            }));
+
+            console.log('✅ Loaded schedules with attendance status:', schedulesWithStatus.length);
             console.log('📋 Sample schedule:', schedulesWithStatus[0]);
             setSchedules(schedulesWithStatus);
         } catch (err) {
