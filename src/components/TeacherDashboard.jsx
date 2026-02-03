@@ -151,6 +151,12 @@ const TeacherDashboard = ({ user }) => {
     const handleSubmitAttendance = async () => {
         if (!selectedSchedule) return;
 
+        // Prevent double submission
+        if (submitting) {
+            console.log('⚠️ Already submitting, ignoring duplicate click');
+            return;
+        }
+
         // Check if any attendance has been marked
         const markedAttendance = Object.values(attendance).filter(status => status !== null);
         if (markedAttendance.length === 0) {
@@ -160,6 +166,7 @@ const TeacherDashboard = ({ user }) => {
 
         try {
             setSubmitting(true);
+            console.log('📤 Starting attendance submission...');
 
             // Prepare attendance data for Supabase (only for students with marked attendance)
             const attendanceRecords = students
@@ -181,12 +188,17 @@ const TeacherDashboard = ({ user }) => {
                     status: attendance[student.user_id]
                 }));
 
-            console.log('Submitting attendance to Supabase:', attendanceRecords);
+            console.log('📋 Submitting', attendanceRecords.length, 'attendance records');
 
             // Submit to Supabase
             await submitBatchAttendance(attendanceRecords);
 
-            toast.success(`Attendance submitted for ${attendanceRecords.length} student(s)!`);
+            console.log('✅ Attendance submitted successfully!');
+
+            // Show prominent success message
+            toast.success(`✅ SUCCESS! Attendance submitted for ${attendanceRecords.length} student(s)`, {
+                duration: 5000 // Show for 5 seconds
+            });
 
             // Reset attendance after successful submission
             const resetAttendance = {};
@@ -196,7 +208,7 @@ const TeacherDashboard = ({ user }) => {
             setAttendance(resetAttendance);
 
         } catch (err) {
-            console.error('Error submitting attendance:', err);
+            console.error('❌ Error submitting attendance:', err);
             toast.error('Failed to submit attendance: ' + err.message);
         } finally {
             setSubmitting(false);
