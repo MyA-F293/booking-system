@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
 import AdminStatsDashboard from './components/AdminStatsDashboard';
 import AttendanceReport from './components/AttendanceReport';
+import AdminAttendanceManager from './components/AdminAttendanceManager';
 import BulkOperations from './components/BulkOperations';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
@@ -570,7 +571,8 @@ const AdminDashboard = ({ user }) => {
                             { id: 'students', icon: Users, label: t('admin.manageStudents'), shortLabel: 'Students' },
                             { id: 'teachers', icon: GraduationCap, label: t('admin.manageTeachers'), shortLabel: 'Teachers' },
                             { id: 'bookings', icon: CalendarDays, label: t('admin.manageBookings'), shortLabel: 'Booking' },
-                            { id: 'attendance', icon: ClipboardList, label: 'Attendance Report', shortLabel: 'Attendance' },
+                            { id: 'fillAttendance', icon: UserCheck, label: 'Fill Attendance', shortLabel: 'Fill' },
+                            { id: 'attendance', icon: ClipboardList, label: 'Attendance Report', shortLabel: 'Report' },
                         ].map((tab) => (
                             <button
                                 key={tab.id}
@@ -1351,6 +1353,11 @@ const AdminDashboard = ({ user }) => {
                 {/* ========== STATS TAB ========== */}
                 {activeTab === 'stats' && (
                     <AdminStatsDashboard />
+                )}
+
+                {/* ========== FILL ATTENDANCE TAB ========== */}
+                {activeTab === 'fillAttendance' && (
+                    <AdminAttendanceManager user={user} />
                 )}
 
                 {/* ========== ATTENDANCE TAB ========== */}
