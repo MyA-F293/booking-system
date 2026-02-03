@@ -31,11 +31,21 @@ const AdminAttendanceManager = () => {
     const loadAllSchedules = async () => {
         try {
             setLoading(true);
+            console.log('🔍 AdminAttendanceManager: Loading schedules for week', selectedWeek, 'year', currentYear);
+
             // Get ALL schedules for selected week (no time restriction for admin)
             const data = await getSchedules({
                 week_number: selectedWeek,
                 year: currentYear
             });
+
+            console.log('📊 AdminAttendanceManager: Received', data?.length || 0, 'schedules');
+
+            if (!data || data.length === 0) {
+                console.log('⚠️ No schedules found for week', selectedWeek);
+                setSchedules([]);
+                return;
+            }
 
             // Check which schedules already have attendance submitted
             const schedulesWithStatus = await Promise.all(
@@ -52,10 +62,11 @@ const AdminAttendanceManager = () => {
             );
 
             console.log('📋 Loaded schedules with attendance status:', schedulesWithStatus.length);
+            console.log('📋 Sample schedule:', schedulesWithStatus[0]);
             setSchedules(schedulesWithStatus);
         } catch (err) {
             console.error('❌ Error loading schedules:', err);
-            toast.error('Failed to load schedules');
+            toast.error('Failed to load schedules: ' + err.message);
         } finally {
             setLoading(false);
         }
@@ -289,11 +300,50 @@ const AdminAttendanceManager = () => {
                     {loading ? (
                         <div className="flex items-center justify-center py-20">
                             <Loader2 className="animate-spin text-orange-500" size={48} />
+                            <p className="ml-3 text-gray-600">Loading schedules...</p>
+                        </div>
+                    ) : schedules.length === 0 ? (
+                        <div className="text-center py-20">
+                            <Calendar size={64} className="mx-auto mb-4 text-gray-300" />
+                            <p className="text-xl font-semibold text-gray-700 mb-2">No Schedules Found</p>
+                            <p className="text-gray-500 mb-4">
+                                There are no classes scheduled for Week {selectedWeek}, {currentYear}
+                            </p>
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto text-left">
+                                <p className="text-sm text-blue-800 font-semibold mb-2">💡 Possible reasons:</p>
+                                <ul className="text-sm text-blue-700 space-y-1 ml-4 list-disc">
+                                    <li>No bookings have been made for this week yet</li>
+                                    <li>Try selecting a different week from the dropdown above</li>
+                                    <li>Check if students have booked classes in the Booking tab</li>
+                                </ul>
+                            </div>
+                            <button
+                                onClick={() => setSelectedWeek(getCurrentWeek())}
+                                className="mt-4 bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg transition-colors"
+                            >
+                                Go to Current Week ({getCurrentWeek()})
+                            </button>
                         </div>
                     ) : filteredSchedules.length === 0 ? (
                         <div className="text-center py-20 text-gray-500">
-                            <Calendar size={48} className="mx-auto mb-4 text-gray-300" />
-                            <p>No classes found</p>
+                            <Search size={48} className="mx-auto mb-4 text-gray-300" />
+                            <p className="text-lg font-semibold text-gray-700 mb-2">No Classes Match Your Filter</p>
+                            <p className="text-gray-500 mb-4">
+                                {filterStatus === 'pending'
+                                    ? 'All classes for this week already have attendance filled! 🎉'
+                                    : filterStatus === 'completed'
+                                        ? 'No classes have attendance filled yet for this week'
+                                        : 'Try adjusting your search or filter'}
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setFilterStatus('all');
+                                    setSearchQuery('');
+                                }}
+                                className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-2 rounded-lg transition-colors"
+                            >
+                                Clear Filters
+                            </button>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
