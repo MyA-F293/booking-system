@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Users, Clock, CheckCircle, XCircle, AlertCircle, Loader2, Search } from 'lucide-react';
 import { useToast } from './Toast';
-import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, submitBatchAttendance, getAttendanceRecords } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, submitBatchAttendance, getAttendanceRecords, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
 
 const AdminAttendanceManager = () => {
     const toast = useToast();
@@ -200,6 +200,23 @@ const AdminAttendanceManager = () => {
     const pendingCount = schedules.filter(s => !s.hasAttendance).length;
     const completedCount = schedules.filter(s => s.hasAttendance).length;
 
+    // Helper function to get time range for time_slot
+    const getTimeRange = (timeSlot) => {
+        if (timeSlot === 'afternoon') return '15:30 - 17:30';
+        if (timeSlot === 'evening') return '18:00 - 20:30';
+        return timeSlot;
+    };
+
+    // Helper function to format schedule date
+    const getScheduleDate = (schedule) => {
+        try {
+            const date = getDateForDayInWeek(schedule.day, schedule.week_number, schedule.year);
+            return formatDateShort(date);
+        } catch (err) {
+            return schedule.day;
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -357,17 +374,22 @@ const AdminAttendanceManager = () => {
                                         }`}
                                 >
                                     <div className="flex items-start justify-between mb-2">
-                                        <div className="font-semibold text-gray-800">{schedule.class?.name}</div>
+                                        <div>
+                                            <div className="font-semibold text-gray-800">{schedule.class?.name}</div>
+                                            <div className="text-xs text-blue-600 font-medium mt-1">
+                                                📅 {getScheduleDate(schedule)} • 🕐 {getTimeRange(schedule.time_slot)}
+                                            </div>
+                                        </div>
                                         {schedule.hasAttendance ? (
-                                            <CheckCircle size={20} className="text-green-600" />
+                                            <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
                                         ) : (
-                                            <AlertCircle size={20} className="text-red-600" />
+                                            <AlertCircle size={20} className="text-red-600 flex-shrink-0" />
                                         )}
                                     </div>
                                     <div className="text-sm text-gray-600 space-y-1">
                                         <div>{schedule.program} • {schedule.level}</div>
-                                        <div>{schedule.day} • {schedule.time_slot}</div>
-                                        <div className="text-xs text-gray-500">{schedule.teacher?.name}</div>
+                                        <div className="capitalize">{schedule.day}</div>
+                                        <div className="text-xs text-gray-500">👨‍🏫 {schedule.teacher?.name || 'No teacher assigned'}</div>
                                     </div>
                                     {schedule.hasAttendance && (
                                         <div className="mt-2 text-xs text-green-600 font-medium">
@@ -388,6 +410,9 @@ const AdminAttendanceManager = () => {
                                 <h2 className="text-xl font-bold">Mark Attendance</h2>
                                 <p className="text-orange-100 text-sm mt-1">
                                     {selectedSchedule.class?.name} • {students.length} Students
+                                </p>
+                                <p className="text-orange-100 text-xs mt-1">
+                                    📅 {getScheduleDate(selectedSchedule)} • 🕐 {getTimeRange(selectedSchedule.time_slot)} • 👨‍🏫 {selectedSchedule.teacher?.name || 'No teacher'}
                                 </p>
                             </div>
                             <button
