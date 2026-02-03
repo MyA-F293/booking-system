@@ -153,12 +153,22 @@ const AdminAttendanceManager = () => {
                     status: attendance[student.user_id]
                 }));
 
-            await submitBatchAttendance(attendanceRecords);
+            const result = await submitBatchAttendance(attendanceRecords);
 
-            console.log('✅ Attendance submitted successfully!');
-            toast.success(`✅ SUCCESS! Attendance submitted for ${attendanceRecords.length} student(s)`, {
-                duration: 5000
-            });
+            console.log('✅ Attendance submitted successfully!', result);
+
+            // Show success message with details
+            if (result.skipped > 0) {
+                toast.success(
+                    `✅ SUCCESS! ${result.inserted} new record(s) submitted. ${result.skipped} already existed (skipped duplicates)`,
+                    { duration: 6000 }
+                );
+            } else {
+                toast.success(
+                    `✅ SUCCESS! Attendance submitted for ${result.inserted} student(s)`,
+                    { duration: 5000 }
+                );
+            }
 
             // Reload schedules to update status
             await loadAllSchedules();

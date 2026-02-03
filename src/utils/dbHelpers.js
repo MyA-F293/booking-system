@@ -903,13 +903,56 @@ export const submitAttendance = async (attendanceRecord) => {
 
 /**
  * Submit multiple attendance records (batch)
+ * Includes duplicate prevention - will not insert if attendance already exists for schedule_id + student_id
  */
 export const submitBatchAttendance = async (attendanceRecords) => {
     console.log('📡 dbHelpers: submitBatchAttendance called', attendanceRecords.length, 'records');
 
+    // Check for existing attendance records to prevent duplicates
+    const scheduleIds = [...new Set(attendanceRecords.map(r => r.schedule_id))];
+    const studentIds = [...new Set(attendanceRecords.map(r => r.student_id))];
+
+    console.log('🔍 Checking for existing attendance records...');
+    const { data: existingRecords, error: checkError } = await supabase
+        .from('attendance')
+        .select('schedule_id, student_id')
+        .in('schedule_id', scheduleIds);
+
+    if (checkError) {
+        console.error('❌ Error checking existing attendance:', checkError);
+        throw checkError;
+    }
+
+    // Create a Set of existing combinations for fast lookup
+    const existingSet = new Set(
+        existingRecords?.map(r => `${r.schedule_id}_${r.student_id}`) || []
+    );
+
+    // Filter out records that already exist
+    const newRecords = attendanceRecords.filter(record => {
+        const key = `${record.schedule_id}_${record.student_id}`;
+        const exists = existingSet.has(key);
+        if (exists) {
+            console.log('⚠️ Skipping duplicate attendance for student:', record.student_name, 'schedule:', record.schedule_id);
+        }
+        return !exists;
+    });
+
+    if (newRecords.length === 0) {
+        console.log('⚠️ All attendance records already exist - no new records to insert');
+        return {
+            success: true,
+            inserted: 0,
+            skipped: attendanceRecords.length,
+            message: 'Attendance already submitted for all students'
+        };
+    }
+
+    console.log(`📝 Inserting ${newRecords.length} new records (skipped ${attendanceRecords.length - newRecords.length} duplicates)`);
+
     const { data, error } = await supabase
         .from('attendance')
-        .insert(attendanceRecords)
+        .insert(newRecords)
         .select();
 
     if (error) {
@@ -918,7 +961,12 @@ export const submitBatchAttendance = async (attendanceRecords) => {
     }
 
     console.log('✅ Batch attendance submitted successfully:', data.length, 'records');
-    return data;
+    return {
+        success: true,
+        inserted: data.length,
+        skipped: attendanceRecords.length - newRecords.length,
+        data
+    };
 };
 
 /**

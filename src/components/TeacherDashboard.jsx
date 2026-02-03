@@ -191,14 +191,22 @@ const TeacherDashboard = ({ user }) => {
             console.log('📋 Submitting', attendanceRecords.length, 'attendance records');
 
             // Submit to Supabase
-            await submitBatchAttendance(attendanceRecords);
+            const result = await submitBatchAttendance(attendanceRecords);
 
-            console.log('✅ Attendance submitted successfully!');
+            console.log('✅ Attendance submitted successfully!', result);
 
-            // Show prominent success message
-            toast.success(`✅ SUCCESS! Attendance submitted for ${attendanceRecords.length} student(s)`, {
-                duration: 5000 // Show for 5 seconds
-            });
+            // Show success message with details
+            if (result.skipped > 0) {
+                toast.success(
+                    `✅ SUCCESS! ${result.inserted} new record(s) submitted. ${result.skipped} already existed (skipped duplicates)`,
+                    { duration: 6000 }
+                );
+            } else {
+                toast.success(
+                    `✅ SUCCESS! Attendance submitted for ${result.inserted} student(s)`,
+                    { duration: 5000 }
+                );
+            }
 
             // Reset attendance after successful submission
             const resetAttendance = {};
