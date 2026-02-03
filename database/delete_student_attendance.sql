@@ -1,8 +1,8 @@
 -- =====================================================
--- DELETE ATTENDANCE FOR SPECIFIC STUDENT
+-- DELETE ATTENDANCE FOR SPECIFIC STUDENT - SPECIFIC STATUS
 -- =====================================================
 -- This script deletes attendance records for a specific student
--- Use this when you need to remove attendance data for one student
+-- with a specific status (present/late/absent)
 -- =====================================================
 
 -- Step 1: Check attendance records for this student (BEFORE deletion)
@@ -23,68 +23,77 @@ SELECT
     created_at
 FROM attendance
 WHERE student_id = 'EYSA26010054'  -- Muh Fikri Syahputra
-ORDER BY created_at DESC;
+ORDER BY status, created_at DESC;
 
--- Step 2: Count how many records will be deleted
+-- Step 2: Count records by status
 SELECT 
+    status,
     COUNT(*) as total_records,
-    student_name,
-    student_id
+    student_name
 FROM attendance
 WHERE student_id = 'EYSA26010054'
-GROUP BY student_name, student_id;
+GROUP BY status, student_name;
 
--- Step 3: DELETE attendance for this student
--- WARNING: This will permanently delete all attendance records!
+-- Step 3: DELETE ONLY "present" records (KEEP "late" records!)
+-- This will delete the green (present) but keep yellow (late)
 DELETE FROM attendance
-WHERE student_id = 'EYSA26010054';  -- Muh Fikri Syahputra
+WHERE student_id = 'EYSA26010054'
+  AND status = 'present';  -- Only delete "present" status
 
--- Step 4: Verify deletion (should return 0 rows)
+-- Step 4: Verify deletion - check remaining records
 SELECT 
+    status,
     COUNT(*) as remaining_records
 FROM attendance
-WHERE student_id = 'EYSA26010054';
+WHERE student_id = 'EYSA26010054'
+GROUP BY status;
+
+-- Should show:
+-- late: 1 (or however many late records exist)
+-- present: 0 (deleted)
 
 -- =====================================================
--- ALTERNATIVE: Delete for specific week only
+-- ALTERNATIVE: Delete specific status for specific week
 -- =====================================================
--- If you only want to delete attendance for a specific week:
+-- If you only want to delete "present" for Week 6:
 /*
 DELETE FROM attendance
 WHERE student_id = 'EYSA26010054'
-  AND week_number = 6  -- Change week number here
+  AND status = 'present'
+  AND week_number = 6
   AND year = 2026;
 */
 
 -- =====================================================
--- ALTERNATIVE: Delete for specific class only
+-- ALTERNATIVE: Delete "absent" records only
 -- =====================================================
--- If you only want to delete attendance for Tsinghua Class:
+-- If you want to delete "absent" records:
 /*
 DELETE FROM attendance
 WHERE student_id = 'EYSA26010054'
-  AND class_name = 'Tsinghua Class';
+  AND status = 'absent';
 */
 
 -- =====================================================
--- MULTIPLE STUDENTS
+-- MULTIPLE STUDENTS - Delete "present" only
 -- =====================================================
--- If you want to delete for multiple students at once:
+-- If you want to delete "present" for multiple students:
 /*
 DELETE FROM attendance
 WHERE student_id IN (
     'EYSA26010054',  -- Muh Fikri Syahputra
     'EYSA26010055',  -- Another student
     'EYSA26010056'   -- Another student
-);
+)
+AND status = 'present';
 */
 
 -- =====================================================
 -- NOTES:
 -- =====================================================
 -- 1. Run Step 1 & 2 first to see what will be deleted
--- 2. Step 3 will permanently delete the records
--- 3. Step 4 verifies the deletion was successful
--- 4. Use alternatives if you only want to delete specific records
--- 5. This does NOT delete the student account, only attendance records
+-- 2. Step 3 will ONLY delete "present" records
+-- 3. "late" and "absent" records will be KEPT
+-- 4. Step 4 verifies the deletion was successful
+-- 5. This does NOT delete the student account
 -- =====================================================

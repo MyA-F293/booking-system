@@ -1,6 +1,8 @@
-# Cara Menghapus Attendance Siswa Tertentu
+# Cara Menghapus Attendance Siswa Berdasarkan Status
 
 ## 🎯 Untuk: Muh Fikri Syahputra (EYSA26010054)
+## ✅ Hapus: "Present" (Hijau) saja
+## ⚠️ Pertahankan: "Late" (Kuning)
 
 ## 📋 Langkah-Langkah
 
@@ -9,8 +11,8 @@
 - Pilih project Anda
 - Klik **SQL Editor** di sidebar kiri
 
-### 2️⃣ Cek Data yang Akan Dihapus (PENTING!)
-Copy paste query ini untuk melihat data attendance siswa:
+### 2️⃣ Cek Data Berdasarkan Status (PENTING!)
+Copy paste query ini untuk melihat attendance berdasarkan status:
 
 ```sql
 SELECT 
@@ -18,125 +20,140 @@ SELECT
     student_id,
     student_name,
     class_name,
-    program,
-    level,
-    day,
-    time_slot,
     week_number,
-    year,
     status,
-    teacher_name,
     created_at
 FROM attendance
 WHERE student_id = 'EYSA26010054'
-ORDER BY created_at DESC;
+ORDER BY status, created_at DESC;
 ```
 
-**Klik Run** - Ini akan menampilkan semua attendance record siswa ini.
+**Klik Run** - Akan tampil semua record, dikelompokkan berdasarkan status.
 
-### 3️⃣ Hitung Berapa Record yang Akan Dihapus
+### 3️⃣ Hitung Record per Status
 ```sql
 SELECT 
+    status,
     COUNT(*) as total_records,
-    student_name,
-    student_id
+    student_name
 FROM attendance
 WHERE student_id = 'EYSA26010054'
-GROUP BY student_name, student_id;
+GROUP BY status, student_name;
 ```
 
-**Klik Run** - Akan tampil berapa total record yang akan dihapus.
+**Klik Run** - Akan tampil:
+- `present`: 1 (ini yang akan dihapus)
+- `late`: 1 (ini akan dipertahankan)
 
-### 4️⃣ HAPUS Attendance (MAIN STEP) ⚠️
-**PERHATIAN:** Ini akan menghapus SEMUA attendance record siswa ini!
+### 4️⃣ HAPUS Hanya "Present" (MAIN STEP) ⚠️
+**Query ini HANYA hapus yang status "present", pertahankan "late"!**
 
 ```sql
 DELETE FROM attendance
-WHERE student_id = 'EYSA26010054';
+WHERE student_id = 'EYSA26010054'
+  AND status = 'present';
 ```
 
-**Klik Run** - Akan tampil message: "DELETE X" (X = jumlah record yang dihapus)
+**Klik Run** - Akan tampil message: "DELETE 1" (atau berapa banyak record "present")
 
 ### 5️⃣ Verifikasi Berhasil
 ```sql
 SELECT 
+    status,
     COUNT(*) as remaining_records
 FROM attendance
-WHERE student_id = 'EYSA26010054';
+WHERE student_id = 'EYSA26010054'
+GROUP BY status;
 ```
 
-**Klik Run** - Harusnya return **0** (tidak ada record lagi)
+**Klik Run** - Harusnya tampil:
+- `late`: 1 ✅ (masih ada)
+- `present`: tidak muncul ✅ (sudah dihapus)
+
+## 🎯 Hasil yang Diharapkan
+
+### Sebelum:
+```
+Muh Fikri Syahputra
+Present: 1 (hijau)
+Late: 1 (kuning)
+```
+
+### Setelah:
+```
+Muh Fikri Syahputra
+Present: 0 (dihapus)
+Late: 1 (tetap ada) ✅
+```
 
 ## 🎯 Opsi Alternatif
 
-### Opsi A: Hapus Hanya untuk Week Tertentu
-Jika hanya mau hapus attendance untuk Week 6 saja:
-
+### Opsi A: Hapus "Present" untuk Week Tertentu Saja
 ```sql
 DELETE FROM attendance
 WHERE student_id = 'EYSA26010054'
+  AND status = 'present'
   AND week_number = 6
   AND year = 2026;
 ```
 
-### Opsi B: Hapus Hanya untuk Class Tertentu
-Jika hanya mau hapus attendance untuk Tsinghua Class:
-
+### Opsi B: Hapus "Absent" Saja (Pertahankan Present & Late)
 ```sql
 DELETE FROM attendance
 WHERE student_id = 'EYSA26010054'
-  AND class_name = 'Tsinghua Class';
+  AND status = 'absent';
 ```
 
-### Opsi C: Hapus untuk Beberapa Siswa Sekaligus
-Jika mau hapus attendance untuk beberapa siswa:
-
+### Opsi C: Hapus "Present" untuk Beberapa Siswa
 ```sql
 DELETE FROM attendance
 WHERE student_id IN (
     'EYSA26010054',  -- Muh Fikri Syahputra
     'EYSA26010055',  -- Siswa lain
     'EYSA26010056'   -- Siswa lain
-);
+)
+AND status = 'present';
 ```
+
+## 📊 Status Attendance
+
+| Status | Warna | Arti | Action |
+|--------|-------|------|--------|
+| `present` | 🟢 Hijau | Hadir | **DIHAPUS** |
+| `late` | 🟡 Kuning | Terlambat | **DIPERTAHANKAN** ✅ |
+| `absent` | 🔴 Merah | Tidak Hadir | Tidak terpengaruh |
 
 ## ⚠️ PENTING!
 
 ### Yang Dihapus:
-- ✅ Attendance records (hadir/telat/tidak hadir)
-- ✅ Semua history attendance siswa ini
+- ✅ Record dengan status "present" (hijau)
+- ✅ Hanya untuk siswa EYSA26010054
 
 ### Yang TIDAK Dihapus:
-- ❌ Akun siswa (masih bisa login)
-- ❌ Booking siswa (booking tetap ada)
-- ❌ Data siswa di tabel users
-
-## 🔄 Jika Salah Hapus
-
-Jika tidak sengaja hapus yang salah, **TIDAK BISA di-undo**! Data sudah hilang permanen.
-
-**Solusi:**
-- Admin bisa isi ulang attendance lewat tab "Fill" di Admin Dashboard
-- Atau tutor bisa isi ulang attendance
+- ❌ Record dengan status "late" (kuning) - **TETAP ADA**
+- ❌ Record dengan status "absent" (merah)
+- ❌ Akun siswa
+- ❌ Booking siswa
 
 ## 💡 Tips
 
-1. **Selalu jalankan Step 2 & 3 dulu** untuk melihat data sebelum dihapus
-2. **Screenshot data** sebelum dihapus (untuk backup)
-3. **Gunakan opsi alternatif** jika hanya mau hapus sebagian data
-4. **Pastikan Student ID benar** sebelum menjalankan DELETE
+1. **Selalu jalankan Step 2 & 3 dulu** untuk melihat data
+2. **Pastikan status yang dihapus benar** (`present`, `late`, atau `absent`)
+3. **Screenshot sebelum dihapus** untuk backup
+4. **Jika salah, tidak bisa di-undo** - data hilang permanen
 
 ## 📁 File SQL Lengkap
 Semua query ada di: `database/delete_student_attendance.sql`
 
-## 🎉 Hasil Akhir
+## 🎉 Kesimpulan
 
-Setelah dihapus:
-- ✅ Attendance siswa ini hilang dari database
-- ✅ Tidak muncul di Attendance Report
-- ✅ Angka Present/Late/Absent jadi 0
-- ✅ Siswa masih bisa booking dan hadir ke kelas
+Query ini akan:
+- ✅ Hapus attendance "present" (hijau)
+- ✅ Pertahankan attendance "late" (kuning)
+- ✅ Siswa tetap punya record "late" di database
+- ✅ Di Attendance Report: Present = 0, Late = 1
 
 ---
 **Dibuat:** 3 Februari 2026
 **Student:** Muh Fikri Syahputra (EYSA26010054)
+**Action:** Delete "present" only, keep "late"
