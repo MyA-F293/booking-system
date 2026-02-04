@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
 import AdminStatsDashboard from './components/AdminStatsDashboard';
 import AttendanceReport from './components/AttendanceReport';
 import AdminAttendanceManager from './components/AdminAttendanceManager';
+import AdminGuide from './components/AdminGuide';
 import BulkOperations from './components/BulkOperations';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
@@ -80,6 +81,16 @@ const AdminDashboard = ({ user }) => {
 
     const [activeTab, setActiveTab] = useState('stats');
     const [showBulkOperations, setShowBulkOperations] = useState(false);
+    const [showAdminGuide, setShowAdminGuide] = useState(false);
+
+    // Check if admin has seen the guide
+    useEffect(() => {
+        const hasSeenGuide = localStorage.getItem(`eysa_admin_guide_seen_${user.id}`);
+        if (!hasSeenGuide) {
+            // Show guide on first visit
+            setShowAdminGuide(true);
+        }
+    }, [user.id]);
 
     // Filter students based on search query
     const getFilteredStudents = () => {
@@ -541,6 +552,14 @@ const AdminDashboard = ({ user }) => {
                                 </div>
                             </div>
                             <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowAdminGuide(true)}
+                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-1.5 sm:px-3 sm:py-2 lg:px-4 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
+                                    title="Admin Guide"
+                                >
+                                    <BookOpen size={12} className="sm:w-4 sm:h-4" />
+                                    <span className="hidden sm:inline">Guide</span>
+                                </button>
                                 <button
                                     onClick={() => setShowBulkOperations(true)}
                                     className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-1.5 sm:px-3 sm:py-2 lg:px-4 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
@@ -1602,6 +1621,11 @@ const AdminDashboard = ({ user }) => {
             {/* Bulk Operations Modal */}
             {showBulkOperations && (
                 <BulkOperations onClose={() => setShowBulkOperations(false)} />
+            )}
+
+            {/* Admin Guide Modal */}
+            {showAdminGuide && (
+                <AdminGuide onClose={() => setShowAdminGuide(false)} userId={user.id} />
             )}
         </div>
     );
