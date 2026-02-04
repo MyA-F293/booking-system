@@ -1,6 +1,7 @@
 // Service Worker for EYSA Language Center PWA
-const CACHE_NAME = 'eysa-v1.0.3'; // Updated version to force cache refresh
-const RUNTIME_CACHE = 'eysa-runtime-v1.0.3';
+const CACHE_NAME = 'eysa-v1.0.4'; // Updated version for performance improvements
+const RUNTIME_CACHE = 'eysa-runtime-v1.0.4';
+const IMAGE_CACHE = 'eysa-images-v1.0.4';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
@@ -14,7 +15,7 @@ const PRECACHE_ASSETS = [
 
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installing service worker v1.0.3...');
+    console.log('[SW] Installing service worker v1.0.4...');
     // Force immediate activation
     self.skipWaiting();
 
@@ -29,12 +30,12 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activating service worker...');
+    console.log('[SW] Activating service worker v1.0.4...');
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames
-                    .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE)
+                    .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE && name !== IMAGE_CACHE)
                     .map((name) => {
                         console.log('[SW] Deleting old cache:', name);
                         return caches.delete(name);
@@ -56,6 +57,27 @@ self.addEventListener('fetch', (event) => {
 
     // Skip Supabase API calls (always fetch fresh)
     if (url.hostname.includes('supabase')) {
+        return;
+    }
+
+    // Stale-while-revalidate for images (fast load + background update)
+    if (request.destination === 'image' || url.pathname.match(/\.(jpg|jpeg|png|gif|svg|webp)$/i)) {
+        event.respondWith(
+            caches.open(IMAGE_CACHE).then(async (cache) => {
+                const cachedResponse = await cache.match(request);
+
+                // Fetch in background and update cache
+                const fetchPromise = fetch(request).then((response) => {
+                    if (response.ok) {
+                        cache.put(request, response.clone());
+                    }
+                    return response;
+                }).catch(() => cachedResponse); // Fallback to cache on error
+
+                // Return cached immediately if available, otherwise wait for fetch
+                return cachedResponse || fetchPromise;
+            })
+        );
         return;
     }
 

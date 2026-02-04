@@ -1,11 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import Login from './Login';
-import BookingSystemDB from './BookingSystemDB';
-import AdminDashboard from './AdminDashboard';
-import TeacherDashboard from './components/TeacherDashboard';
-import InstallPWA from './components/InstallPWA';
 import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
+
+// Lazy load heavy components
+const BookingSystemDB = lazy(() => import('./BookingSystemDB'));
+const AdminDashboard = lazy(() => import('./AdminDashboard'));
+const TeacherDashboard = lazy(() => import('./components/TeacherDashboard'));
+const InstallPWA = lazy(() => import('./components/InstallPWA'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+    <div className="text-center">
+      <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#1F4E8C] mb-4"></div>
+      <p className="text-gray-600 font-semibold">Loading...</p>
+    </div>
+  </div>
+);
 
 function App() {
   const [user, setUser] = useState(null);
@@ -75,7 +87,9 @@ function App() {
     return (
       <>
         <Login onLoginSuccess={handleLoginSuccess} />
-        <InstallPWA />
+        <Suspense fallback={<LoadingFallback />}>
+          <InstallPWA />
+        </Suspense>
       </>
     );
   }
@@ -84,10 +98,10 @@ function App() {
   if (user.role === 'teacher') {
     console.log('👨‍🏫 App: User is teacher, showing teacher dashboard');
     return (
-      <>
+      <Suspense fallback={<LoadingFallback />}>
         <TeacherDashboard user={user} />
         <InstallPWA />
-      </>
+      </Suspense>
     );
   }
 
@@ -95,20 +109,20 @@ function App() {
   if (user.role === 'admin') {
     console.log('👑 App: User is admin, showing dashboard');
     return (
-      <>
+      <Suspense fallback={<LoadingFallback />}>
         <AdminDashboard user={user} />
         <InstallPWA />
-      </>
+      </Suspense>
     );
   }
 
   // Student
   console.log('👨‍🎓 App: User is student, showing booking system');
   return (
-    <>
+    <Suspense fallback={<LoadingFallback />}>
       <BookingSystemDB user={user} />
       <InstallPWA />
-    </>
+    </Suspense>
   );
 }
 
