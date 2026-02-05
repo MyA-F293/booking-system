@@ -92,8 +92,8 @@ export const showNotification = async (title, options = {}) => {
     }
 
     const defaultOptions = {
-        icon: '/eysa-logo.png',
-        badge: '/eysa-logo.png',
+        icon: '/eysa-logo.svg',
+        badge: '/eysa-logo.svg',
         vibrate: [200, 100, 200],
         ...options
     };

@@ -7,8 +7,8 @@ const IMAGE_CACHE = 'eysa-images-v1.0.4';
 const PRECACHE_ASSETS = [
     '/',
     '/index.html',
-    '/eysa-logo.png',
     '/eysa-logo.svg',
+    '/eysa-logo.png',
     '/booking-illustration.png',
     '/manifest.json'
 ];
@@ -163,8 +163,8 @@ self.addEventListener('push', (event) => {
     const title = data.title || 'EYSA Language Center';
     const options = {
         body: data.body || 'You have a new notification',
-        icon: '/eysa-logo.png',
-        badge: '/eysa-logo.png',
+        icon: '/eysa-logo.svg',
+        badge: '/eysa-logo.svg',
         vibrate: [200, 100, 200],
         data: data.url || '/',
         actions: [

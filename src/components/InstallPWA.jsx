@@ -64,7 +64,7 @@ const InstallPWA = () => {
 
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0">
-                            <img src="/eysa-logo.png" alt="EYSA" className="w-10 h-10" />
+                            <img src="/eysa-logo.svg" alt="EYSA" className="w-10 h-10" />
                         </div>
                         <div>
                             <h3 className="text-white font-bold text-lg">Install EYSA App</h3>

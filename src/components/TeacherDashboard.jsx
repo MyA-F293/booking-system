@@ -295,7 +295,7 @@ const TeacherDashboard = ({ user }) => {
                         {/* Left: Logo & Title */}
                         <div className="flex items-center gap-2 sm:gap-4">
                             <img
-                                src="/eysa-logo.png"
+                                src="/eysa-logo.svg"
                                 alt="EYSA Logo"
                                 className="h-8 sm:h-12 md:h-16 w-auto"
                             />
