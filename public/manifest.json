@@ -9,16 +9,28 @@
     "orientation": "portrait-primary",
     "icons": [
         {
-            "src": "/eysa-logo.png",
+            "src": "/icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
         },
         {
-            "src": "/eysa-logo.png",
+            "src": "/icon-512.png",
             "sizes": "512x512",
             "type": "image/png",
-            "purpose": "any maskable"
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
     "categories": [
@@ -41,7 +53,7 @@
             "url": "/?action=book",
             "icons": [
                 {
-                    "src": "/eysa-logo.png",
+                    "src": "/icon-192.png",
                     "sizes": "96x96"
                 }
             ]
@@ -53,7 +65,7 @@
             "url": "/?action=attendance",
             "icons": [
                 {
-                    "src": "/eysa-logo.png",
+                    "src": "/icon-192.png",
                     "sizes": "96x96"
                 }
             ]

@@ -1,14 +1,18 @@
 // Service Worker for EYSA Language Center PWA
-const CACHE_NAME = 'eysa-v1.0.4'; // Updated version for performance improvements
-const RUNTIME_CACHE = 'eysa-runtime-v1.0.4';
-const IMAGE_CACHE = 'eysa-images-v1.0.4';
+const CACHE_NAME = 'eysa-v1.0.5'; // Updated version for new PWA icons
+const RUNTIME_CACHE = 'eysa-runtime-v1.0.5';
+const IMAGE_CACHE = 'eysa-images-v1.0.5';
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
     '/',
     '/index.html',
     '/eysa-logo.svg',
-    '/eysa-logo.png',
+    '/icon-192.png',
+    '/icon-512.png',
+    '/icon-maskable-192.png',
+    '/icon-maskable-512.png',
+    '/apple-touch-icon.png',
     '/booking-illustration.png',
     '/manifest.json'
 ];
