@@ -297,3 +297,33 @@ textarea {
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
+
+
+/* ===============================
+   MOBILE INPUT FIX - PREVENT AUTO-ZOOM
+   iOS Safari auto-zooms when input font-size < 16px
+================================ */
+
+/* Ensure all inputs have minimum 16px font-size on mobile */
+input,
+textarea,
+select {
+    font-size: 16px !important;
+}
+
+/* For desktop, allow smaller sizes if needed */
+@media (min-width: 768px) {
+
+    input,
+    textarea,
+    select {
+        font-size: inherit;
+    }
+}
+
+/* Prevent zoom on focus for iOS */
+input:focus,
+textarea:focus,
+select:focus {
+    font-size: 16px !important;
+}
