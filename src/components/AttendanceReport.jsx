@@ -3,6 +3,7 @@ import { Calendar, Users, Download, Filter, Search, FileSpreadsheet } from 'luci
 import { useToast } from './Toast';
 import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Pie, Bar } from 'react-chartjs-2';
+import { PieChart, Pie as RechartsPie, Cell, BarChart, Bar as RechartsBar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend as RechartsLegend, ResponsiveContainer } from 'recharts';
 import * as XLSX from 'xlsx';
 import { getAttendanceRecords } from '../utils/dbHelpers';
 import { StudentSummaryTable, ClassSummaryTable, DateSummaryTable } from './AttendanceSummaryTables';
