@@ -8,6 +8,8 @@ import { getAttendanceRecords } from '../utils/dbHelpers';
 import { StudentSummaryTable, ClassSummaryTable, DateSummaryTable } from './AttendanceSummaryTables';
 
 const AttendanceReport = () => {
+    console.log('📊 AttendanceReport: Component rendering');
+
     const toast = useToast();
     const [attendanceData, setAttendanceData] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -18,38 +20,74 @@ const AttendanceReport = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState('summary'); // 'records' or 'summary' - Default to summary for better UX
     const [groupBy, setGroupBy] = useState('student'); // 'student', 'class', 'date'
+    const [chartError, setChartError] = useState(null);
 
     useEffect(() => {
-        const now = new Date();
-        const currentWeek = getWeekNumber(now);
-        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        setSelectedWeek(currentWeek.toString());
-        setSelectedMonth(currentMonth);
+        console.log('📊 AttendanceReport: useEffect - Setting initial dates');
+        try {
+            const now = new Date();
+            const currentWeek = getWeekNumber(now);
+            const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            setSelectedWeek(currentWeek.toString());
+            setSelectedMonth(currentMonth);
+            console.log('✅ AttendanceReport: Initial dates set', { currentWeek, currentMonth });
+        } catch (error) {
+            console.error('❌ AttendanceReport: Error in useEffect', error);
+            setChartError(error);
+        }
     }, []);
 
     const getWeekNumber = (date) => {
-        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        try {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        } catch (error) {
+            console.error('❌ getWeekNumber error:', error);
+            return 1;
+        }
     };
 
     const fetchAttendanceData = async () => {
+        console.log('📊 AttendanceReport: Fetching attendance data');
         setLoading(true);
         try {
             // Fetch from Supabase instead of Google Sheets
             const data = await getAttendanceRecords();
+            console.log('✅ AttendanceReport: Data fetched', { count: data.length });
             setAttendanceData(data);
             toast.success(`Loaded ${data.length} attendance records`);
         } catch (error) {
-            console.error('Error fetching attendance:', error);
+            console.error('❌ AttendanceReport: Error fetching attendance:', error);
             toast.error('Failed to fetch attendance data');
             setAttendanceData([]);
+            setChartError(error);
         } finally {
             setLoading(false);
         }
     };
+
+    // Show error if chart rendering fails
+    if (chartError) {
+        return (
+            <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
+                <h2 className="text-xl font-bold text-red-800 mb-2">
+                    ⚠️ Chart Error
+                </h2>
+                <p className="text-red-600 mb-4">
+                    {chartError.message || 'Failed to render charts'}
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg"
+                >
+                    Reload Page
+                </button>
+            </div>
+        );
+    }
 
     useEffect(() => {
         fetchAttendanceData();
