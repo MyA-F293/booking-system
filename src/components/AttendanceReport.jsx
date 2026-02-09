@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Users, Download, Filter, Search, FileSpreadsheet } from 'lucide-react';
 import { useToast } from './Toast';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Chart as ChartJS, ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
 import * as XLSX from 'xlsx';
-import { SkeletonStats, SkeletonTable, SkeletonChart, FadeIn } from './SkeletonLoader';
 import { getAttendanceRecords } from '../utils/dbHelpers';
 import { StudentSummaryTable, ClassSummaryTable, DateSummaryTable } from './AttendanceSummaryTables';
+
+// Register Chart.js components
+ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const AttendanceReport = () => {
     console.log('📊 AttendanceReport: Component rendering');
