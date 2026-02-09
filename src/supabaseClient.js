@@ -8,9 +8,3 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-   ```
-
-5. Update **`.gitignore`** (tambahkan ini):
-```
-   .env.local
-   .env
