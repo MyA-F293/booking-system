@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
@@ -83,6 +83,7 @@ const AdminDashboard = ({ user }) => {
     const [activeTab, setActiveTab] = useState('stats');
     const [showBulkOperations, setShowBulkOperations] = useState(false);
     const [showAdminGuide, setShowAdminGuide] = useState(false);
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
 
     // Check if admin has seen the guide
     useEffect(() => {
@@ -542,8 +543,8 @@ const AdminDashboard = ({ user }) => {
                             </div>
                         </div>
 
-                        {/* Right: User Info & Logout */}
-                        <div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
+                        {/* Right: User Info & Actions */}
+                        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                             <div className="text-right hidden md:block">
                                 <div className="text-sm font-semibold text-gray-800 truncate max-w-[120px] lg:max-w-none">
                                     {user.full_name}
@@ -552,32 +553,92 @@ const AdminDashboard = ({ user }) => {
                                     {user.student_id}
                                 </div>
                             </div>
-                            <div className="flex gap-2">
+
+                            {/* Actions Dropdown */}
+                            <div className="relative">
                                 <button
-                                    onClick={() => setShowAdminGuide(true)}
-                                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-1.5 sm:px-3 sm:py-2 lg:px-4 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
-                                    title="Admin Guide"
+                                    onClick={() => setShowActionsMenu(!showActionsMenu)}
+                                    className="bg-gradient-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl flex items-center gap-2 transition-all font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg"
                                 >
-                                    <BookOpen size={12} className="sm:w-4 sm:h-4" />
-                                    <span className="hidden sm:inline">Guide</span>
+                                    <ClipboardList size={16} className="sm:w-4 sm:h-4" />
+                                    <span className="hidden sm:inline">Actions</span>
+                                    <svg className={`w-4 h-4 transition-transform ${showActionsMenu ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
                                 </button>
-                                <BackupButton />
-                                <button
-                                    onClick={() => setShowBulkOperations(true)}
-                                    className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-1.5 sm:px-3 sm:py-2 lg:px-4 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
-                                    title="Bulk Operations"
-                                >
-                                    <Upload size={12} className="sm:w-4 sm:h-4" />
-                                    <span className="hidden sm:inline">Bulk</span>
-                                </button>
-                                <button
-                                    onClick={handleLogout}
-                                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white p-1.5 sm:px-3 sm:py-2 lg:px-4 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
-                                >
-                                    <LogOut size={12} className="sm:w-4 sm:h-4" />
-                                    <span className="hidden sm:inline">{t('common.logout')}</span>
-                                </button>
+
+                                {showActionsMenu && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setShowActionsMenu(false)}></div>
+                                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="py-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setShowAdminGuide(true);
+                                                        setShowActionsMenu(false);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 group"
+                                                >
+                                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                                        <BookOpen size={18} className="text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-gray-800 text-sm">Admin Guide</div>
+                                                        <div className="text-xs text-gray-500">View documentation</div>
+                                                    </div>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => {
+                                                        setShowActionsMenu(false);
+                                                        // Trigger backup
+                                                        document.querySelector('[title="Backup Database to Google Drive"]')?.click();
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 group"
+                                                >
+                                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                                                        <Cloud size={18} className="text-blue-600" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-gray-800 text-sm">Backup Database</div>
+                                                        <div className="text-xs text-gray-500">Save to Google Drive</div>
+                                                    </div>
+                                                </button>
+
+                                                <button
+                                                    onClick={() => {
+                                                        setShowBulkOperations(true);
+                                                        setShowActionsMenu(false);
+                                                    }}
+                                                    className="w-full px-4 py-3 text-left hover:bg-purple-50 transition-colors flex items-center gap-3 group"
+                                                >
+                                                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                                                        <Upload size={18} className="text-purple-600" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-semibold text-gray-800 text-sm">Bulk Operations</div>
+                                                        <div className="text-xs text-gray-500">Import & manage data</div>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
+
+                            {/* Hidden BackupButton for triggering */}
+                            <div className="hidden">
+                                <BackupButton />
+                            </div>
+
+                            {/* Logout Button */}
+                            <button
+                                onClick={handleLogout}
+                                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl flex items-center gap-2 transition-all font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg"
+                            >
+                                <LogOut size={16} className="sm:w-4 sm:h-4" />
+                                <span className="hidden sm:inline">{t('common.logout')}</span>
+                            </button>
                         </div>
                     </div>
                 </div>

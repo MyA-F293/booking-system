@@ -130,8 +130,8 @@ const BackupButton = () => {
             </button>
 
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full my-8 overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
                         {loading ? (
                             <div className="p-8">
                                 <div className="text-center">
@@ -153,8 +153,8 @@ const BackupButton = () => {
                                 </div>
                             </div>
                         ) : backupResult?.success ? (
-                            <div>
-                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white">
+                            <div className="flex flex-col max-h-full">
+                                <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white flex-shrink-0">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -174,7 +174,7 @@ const BackupButton = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-6 space-y-4">
+                                <div className="p-6 space-y-4 overflow-y-auto flex-1">
                                     <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
                                         <div className="flex items-center gap-3 mb-3">
                                             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -198,11 +198,11 @@ const BackupButton = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex-shrink-0">
                                         <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
                                             <p className="text-xs font-semibold text-gray-700">Backup Contents</p>
                                         </div>
-                                        <div className="p-3 max-h-40 overflow-y-auto">
+                                        <div className="p-3 max-h-32 overflow-y-auto">
                                             <div className="space-y-2">
                                                 {backupResult.tableDetails?.map((table, idx) => (
                                                     <div key={idx} className="flex items-center justify-between py-1.5 px-2 hover:bg-gray-50 rounded-lg transition-colors">
@@ -248,8 +248,8 @@ const BackupButton = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div>
-                                <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white">
+                            <div className="flex flex-col max-h-full">
+                                <div className="bg-gradient-to-r from-red-500 to-red-600 p-6 text-white flex-shrink-0">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -269,7 +269,7 @@ const BackupButton = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-6">
+                                <div className="p-6 overflow-y-auto flex-1">
                                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
                                         <p className="text-sm text-red-800">{backupResult?.error || 'Unknown error occurred'}</p>
                                     </div>
