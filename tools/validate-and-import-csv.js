@@ -94,7 +94,58 @@ const CONFIG = {
 
 function normalizeString(str) {
     if (!str) return '';
-    return str.toString().toLowerCase().trim();
+    return str.toString().toLowerCase().trim()
+        .replace(/\s+/g, ' ') // Multiple spaces to single space
+        .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''); // Remove punctuation
+}
+
+// Fuzzy matching untuk nama yang mirip
+function calculateSimilarity(str1, str2) {
+    const s1 = normalizeString(str1);
+    const s2 = normalizeString(str2);
+
+    if (s1 === s2) return 1.0; // Exact match
+
+    // Levenshtein distance
+    const matrix = [];
+    for (let i = 0; i <= s2.length; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= s1.length; j++) {
+        matrix[0][j] = j;
+    }
+    for (let i = 1; i <= s2.length; i++) {
+        for (let j = 1; j <= s1.length; j++) {
+            if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    matrix[i][j - 1] + 1,
+                    matrix[i - 1][j] + 1
+                );
+            }
+        }
+    }
+
+    const distance = matrix[s2.length][s1.length];
+    const maxLength = Math.max(s1.length, s2.length);
+    return 1 - (distance / maxLength);
+}
+
+function findBestMatch(name, existingNames) {
+    let bestMatch = null;
+    let bestScore = 0;
+
+    for (const existing of existingNames) {
+        const score = calculateSimilarity(name, existing);
+        if (score > bestScore) {
+            bestScore = score;
+            bestMatch = existing;
+        }
+    }
+
+    return { match: bestMatch, score: bestScore };
 }
 
 function parseDate(dateStr) {
@@ -299,6 +350,20 @@ async function processCSV() {
         if (warnings.length > 10) {
             console.log(`   ... and ${warnings.length - 10} more warnings\n`);
         }
+    }
+
+    console.log('🔗 AUTO-MATCHED (fuzzy matching):');
+    console.log(`   - ${fuzzyMatches.length} names matched automatically\n`);
+
+    if (fuzzyMatches.length > 0) {
+        console.log('   Matched Names:');
+        fuzzyMatches.slice(0, 10).forEach(m => {
+            console.log(`      ${m.type}: "${m.csv}" → "${m.database}" (${(m.score * 100).toFixed(0)}% match)`);
+        });
+        if (fuzzyMatches.length > 10) {
+            console.log(`      ... and ${fuzzyMatches.length - 10} more matches`);
+        }
+        console.log();
     }
 
     console.log('🆕 NEW DATA (not in database):');

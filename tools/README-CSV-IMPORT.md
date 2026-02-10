@@ -5,7 +5,12 @@
 ### 1️⃣ Simpan CSV
 Simpan file CSV Anda sebagai **`attendance-to-import.csv`** di folder `tools/`
 
-### 2️⃣ Jalankan Tool
+### 2️⃣ Jalankan Tool (v2 - Smart Matching)
+```bash
+node tools/validate-and-import-csv-v2.js
+```
+
+**Atau versi lama (tanpa smart matching):**
 ```bash
 node tools/validate-and-import-csv.js
 ```
@@ -13,6 +18,7 @@ node tools/validate-and-import-csv.js
 ### 3️⃣ Review & Approve
 Tool akan tampilkan:
 - ✅ Data yang sudah ada di database
+- 🔗 Data yang auto-matched (85%+ mirip)
 - 🆕 Data baru yang akan ditambahkan
 - 📝 Sample 3 records
 
@@ -20,13 +26,30 @@ Ketik `yes` untuk import, `no` untuk batalkan.
 
 ---
 
+## 🎯 Fitur Smart Matching (v2)
+
+Tool v2 akan otomatis mencocokkan nama yang mirip:
+
+**Contoh Auto-Match:**
+- `sir brian` → `Sir Brian` ✅
+- `mrs feby` → `Mrs Feby` ✅
+- `oxford` → `Oxford` ✅
+- `Madina Azzahara` → `Madina Azzahra` ✅ (typo)
+- `Savira  Juliawardani` → `Savira Juliawardani` ✅ (extra space)
+
+**Tidak perlu khawatir** tentang perbedaan huruf besar/kecil, spasi, atau typo kecil!
+
+---
+
 ## 🔍 Tool Akan Cek
 
-✅ **Nama Siswa** - Apakah sudah ada di database?  
-✅ **Nama Teacher** - Apakah sudah ada di database?  
-✅ **Nama Class** - Apakah sudah ada di database?  
+✅ **Nama Siswa** - Apakah sudah ada di database? (smart matching 85%+)  
+✅ **Nama Teacher** - Apakah sudah ada di database? (smart matching 85%+)  
+✅ **Nama Class** - Apakah sudah ada di database? (smart matching 85%+)  
 ✅ **Format Tanggal** - Apakah valid?  
-✅ **Status** - Apakah valid (present/late/absent)?
+✅ **Status** - Apakah valid (present/late/absent)?  
+
+**Smart Matching:** Tool akan otomatis cocokkan nama yang mirip (typo, spasi, huruf besar/kecil)
 
 ---
 

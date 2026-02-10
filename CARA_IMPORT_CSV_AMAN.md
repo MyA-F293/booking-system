@@ -13,14 +13,28 @@ Anda punya data attendance dalam format CSV dengan kolom:
 
 **Kekhawatiran:** Format penulisan mungkin berbeda dengan database, takut membuat identitas baru.
 
-## ✅ Solusi: Tool Validasi & Import Otomatis
+## ✅ Solusi: Tool Validasi & Import Otomatis (v2 - Smart Matching)
 
 Tool ini akan:
 1. ✅ **Validasi** - Cek apakah nama sudah ada di database
-2. ✅ **Preview** - Tampilkan data baru vs data lama
-3. ✅ **Mapping** - Cocokkan format otomatis
-4. ✅ **Konfirmasi** - Minta persetujuan sebelum import
-5. ✅ **Import** - Import hanya jika Anda approve
+2. ✅ **Smart Matching** - Cocokkan nama yang mirip (typo, spasi, huruf besar/kecil)
+3. ✅ **Auto-Adjust** - Gunakan nama dari database untuk konsistensi
+4. ✅ **Preview** - Tampilkan data baru vs data yang di-match
+5. ✅ **Konfirmasi** - Minta persetujuan sebelum import
+6. ✅ **Import** - Import hanya jika Anda approve
+
+### 🎯 Fitur Smart Matching
+
+Tool akan otomatis mencocokkan nama yang **85%+ mirip**:
+
+**Contoh:**
+- CSV: `sir brian` → Database: `Sir Brian` ✅ Auto-matched
+- CSV: `mrs feby` → Database: `Mrs Feby` ✅ Auto-matched
+- CSV: `oxford` → Database: `Oxford` ✅ Auto-matched
+- CSV: `Madina Azzahara` → Database: `Madina Azzahra` ✅ Auto-matched (typo)
+- CSV: `Savira  Juliawardani` → Database: `Savira Juliawardani` ✅ Auto-matched (extra space)
+
+Jadi **tidak perlu khawatir** tentang perbedaan penulisan kecil!
 
 ---
 
@@ -42,6 +56,11 @@ Simpan file CSV Anda dengan nama **`attendance-to-import.csv`** di folder **`too
 Buka terminal dan jalankan:
 
 ```bash
+node tools/validate-and-import-csv-v2.js
+```
+
+**Atau gunakan versi lama (tanpa smart matching):**
+```bash
 node tools/validate-and-import-csv.js
 ```
 
@@ -55,30 +74,31 @@ Tool akan menampilkan:
 ✅ Valid records: 65
 ⚠️  Warnings: 0
 
-🆕 NEW DATA (not in database):
-   - 15 new students
-   - 2 new teachers
-   - 1 new classes
+🔗 AUTO-MATCHED (smart fuzzy matching):
+   - 45 names matched automatically
 
-   New Students:
-      - Madina Azzahara
-      - Savira Juliawardani Laururu
-      - Zahrukushita Anindya
+   Matched Names:
+      student : "sir brian" → "Sir Brian" (95% match)
+      teacher : "mrs feby" → "Mrs Feby" (92% match)
+      class   : "oxford" → "Oxford" (100% match)
+      student : "Madina Azzahara" → "Madina Azzahra" (97% match)
       ... (dan lainnya)
 
-   New Teachers:
-      - sir brian
-      - mrs feby
+🆕 NEW DATA (not in database):
+   - 5 new students
+   - 0 new teachers
+   - 0 new classes
 
-   New Classes:
-      - oxford
-      - tanghua
-      - tokyo
+   New Students:
+      - Ahmad Budi (benar-benar baru)
+      - Siti Nurhaliza (benar-benar baru)
 ```
 
-**PENTING:** Perhatikan bagian "NEW DATA"
-- Jika nama **sudah ada** di database → akan di-link ke data yang sama ✅
-- Jika nama **belum ada** → akan ditampilkan sebagai "new" ⚠️
+**PENTING:** Perhatikan bagian "AUTO-MATCHED" dan "NEW DATA"
+- **AUTO-MATCHED** → Nama di CSV cocok dengan database (akan menggunakan nama dari database) ✅
+- **NEW DATA** → Nama benar-benar baru, belum ada di database ⚠️
+
+Dengan smart matching, kebanyakan nama akan ter-match otomatis!
 
 ### 4. Cek Sample Records
 
