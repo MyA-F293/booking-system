@@ -8,6 +8,7 @@ import AttendanceReport from './components/AttendanceReport';
 import AdminAttendanceManager from './components/AdminAttendanceManager';
 import AdminGuide from './components/AdminGuide';
 import BulkOperations from './components/BulkOperations';
+import BackupButton from './components/BackupButton';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useToast } from './components/Toast';
@@ -560,6 +561,7 @@ const AdminDashboard = ({ user }) => {
                                     <BookOpen size={12} className="sm:w-4 sm:h-4" />
                                     <span className="hidden sm:inline">Guide</span>
                                 </button>
+                                <BackupButton />
                                 <button
                                     onClick={() => setShowBulkOperations(true)}
                                     className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white p-1.5 sm:px-3 sm:py-2 lg:px-4 rounded-lg sm:rounded-xl flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
