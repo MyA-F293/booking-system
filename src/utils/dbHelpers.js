@@ -1328,3 +1328,45 @@ export const bulkUpdateAttendance = async (updates) => {
     console.log('✅ Bulk update complete:', success.length, 'success,', failed.length, 'failed');
     return { success, failed };
 };
+
+
+/**
+ * Bulk create attendance records
+ */
+export const bulkCreateAttendance = async (records) => {
+    console.log('📡 dbHelpers: bulkCreateAttendance called with', records.length, 'records');
+
+    const success = [];
+    const failed = [];
+
+    // Insert in batches of 100
+    const batchSize = 100;
+    for (let i = 0; i < records.length; i += batchSize) {
+        const batch = records.slice(i, i + batchSize);
+
+        try {
+            const { data, error } = await supabase
+                .from('attendance')
+                .insert(batch)
+                .select();
+
+            if (error) {
+                console.error('❌ Batch insert error:', error);
+                // Add all batch records to failed
+                batch.forEach(record => {
+                    failed.push({ ...record, error: error.message });
+                });
+            } else {
+                success.push(...data);
+            }
+        } catch (error) {
+            console.error('❌ Exception during batch insert:', error);
+            batch.forEach(record => {
+                failed.push({ ...record, error: error.message });
+            });
+        }
+    }
+
+    console.log('✅ Bulk create attendance complete:', success.length, 'success,', failed.length, 'failed');
+    return { success, failed };
+};

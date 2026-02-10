@@ -1,0 +1,427 @@
+{
+  "timestamp": "2026-02-10T15:47:58.521Z",
+  "fileType": "CSV",
+  "totalRows": 165,
+  "validRecords": 165,
+  "imported": 165,
+  "failed": 0,
+  "warnings": [],
+  "fuzzyMatches": [
+    {
+      "type": "student",
+      "csv": "Mutiara Azzahara",
+      "database": "Mutiara Azzahra",
+      "score": 0.9375
+    },
+    {
+      "type": "student",
+      "csv": "Rezki Awayah",
+      "database": "Rezki Awalyah",
+      "score": 0.9230769230769231
+    },
+    {
+      "type": "student",
+      "csv": "Reski Andrinai",
+      "database": "Reski Andriani",
+      "score": 0.8571428571428572
+    },
+    {
+      "type": "student",
+      "csv": "A.M Fathir Mesyar Ananta",
+      "database": "A. M. Fathir Meysar Ananta",
+      "score": 0.875
+    },
+    {
+      "type": "student",
+      "csv": "Ahmad Zayni Asyarifa",
+      "database": "Ahmad Zayni Asyarifain",
+      "score": 0.9090909090909091
+    },
+    {
+      "type": "student",
+      "csv": "Liska Nur Awalia, S. Gz",
+      "database": "Liska Nur Awalia, S.Gz",
+      "score": 0.9523809523809523
+    },
+    {
+      "type": "student",
+      "csv": "Fany Arfadilla",
+      "database": "Fany Arfadila",
+      "score": 0.9285714285714286
+    },
+    {
+      "type": "student",
+      "csv": "Elsa Adelia",
+      "database": "Elsa Adeliya",
+      "score": 0.9166666666666666
+    },
+    {
+      "type": "student",
+      "csv": "Diva Nur Auliah",
+      "database": "Diva Nur Aulia",
+      "score": 0.9333333333333333
+    },
+    {
+      "type": "student",
+      "csv": "Fatima Azzahra",
+      "database": "Fatimah Azzahra",
+      "score": 0.9333333333333333
+    },
+    {
+      "type": "student",
+      "csv": "Yan Lita Mahaputty",
+      "database": "Yan Lita Mahuputty",
+      "score": 0.9444444444444444
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "student",
+      "csv": "A.M Fathir Mesyar Ananta",
+      "database": "A. M. Fathir Meysar Ananta",
+      "score": 0.875
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "student",
+      "csv": "Fitrii Nurfadillah",
+      "database": "Fitri Nurfadillah",
+      "score": 0.9444444444444444
+    },
+    {
+      "type": "student",
+      "csv": "Farel Dy Satnkovic",
+      "database": "Farel Dy Stankovic",
+      "score": 0.8888888888888888
+    },
+    {
+      "type": "student",
+      "csv": "Qanita Aikatul Hikma AZ",
+      "database": " Qanita Aikatul Hikmah AZ",
+      "score": 0.9583333333333334
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "student",
+      "csv": "Fidhita Putri Prilia Hehi",
+      "database": "Fiditha Putri prilia Hehi",
+      "score": 0.92
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "student",
+      "csv": "Fatima Azzahra",
+      "database": "Fatimah Azzahra",
+      "score": 0.9333333333333333
+    },
+    {
+      "type": "student",
+      "csv": "Sayyidina Awin",
+      "database": "Sayyidina Awrin",
+      "score": 0.9333333333333333
+    },
+    {
+      "type": "student",
+      "csv": "Rhesa Asymala",
+      "database": "Rhesa Asyamala ",
+      "score": 0.9285714285714286
+    },
+    {
+      "type": "student",
+      "csv": "Zhaezha Nur Amria",
+      "database": "Zhaezha Nur Amriana",
+      "score": 0.8947368421052632
+    },
+    {
+      "type": "student",
+      "csv": "Nurul Jumriani",
+      "database": "Nurul Jumriani S",
+      "score": 0.875
+    },
+    {
+      "type": "student",
+      "csv": "A.M Fathir Mesyar Ananta",
+      "database": "A. M. Fathir Meysar Ananta",
+      "score": 0.875
+    },
+    {
+      "type": "student",
+      "csv": "Sayyidina Awin",
+      "database": "Sayyidina Awrin",
+      "score": 0.9333333333333333
+    },
+    {
+      "type": "student",
+      "csv": "Reski Andrinai",
+      "database": "Reski Andriani",
+      "score": 0.8571428571428572
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "student",
+      "csv": "Qanita Aikatul Hikma AZ",
+      "database": " Qanita Aikatul Hikmah AZ",
+      "score": 0.9583333333333334
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "teacher",
+      "csv": "mis tenri",
+      "database": "Miss Tenri",
+      "score": 0.9
+    },
+    {
+      "type": "student",
+      "csv": "Faditha Putri Aprilia Hehi",
+      "database": "Fiditha Putri prilia Hehi",
+      "score": 0.9230769230769231
+    },
+    {
+      "type": "student",
+      "csv": "Yan Lita Mahaputty",
+      "database": "Yan Lita Mahuputty",
+      "score": 0.9444444444444444
+    },
+    {
+      "type": "student",
+      "csv": "Zhaezha Nur Amria",
+      "database": "Zhaezha Nur Amriana",
+      "score": 0.8947368421052632
+    },
+    {
+      "type": "student",
+      "csv": "Reski Andrinai",
+      "database": "Reski Andriani",
+      "score": 0.8571428571428572
+    }
+  ],
+  "newStudents": [
+    "Asrul Arifin",
+    "Andi Alif Afwan",
+    "Muh. Ahyar",
+    "Nur Dwifanni",
+    "Andi Nur Intang Permatasari",
+    "Andi Nadila Salsabila",
+    "Andriani Tenri",
+    "Irfan",
+    "Dhian Chintya Sari",
+    "Putri Reskiyanti",
+    "Annur Awalia Riadi",
+    "Chentia Putri",
+    "Ahmad",
+    "Nurfadilah",
+    "Syulviana Najmi Warahma S. Sampara",
+    "Aulia MS",
+    "Andi Muh. Akbar Faatir",
+    "Muh Fatwah Fajriansyah M",
+    "Hikmah Lestari",
+    "Syamsul Rizal",
+    "Nurul Mutmainnah",
+    "Miftahul",
+    "Maisarah Sabri",
+    "Mutia Dwi Putri",
+    "Azzahra Nur Mawaddah",
+    "Kayla Maghfirah",
+    "Fahrul Islami",
+    "Alisyah Destrianty Halik",
+    "Nia",
+    "Muhaimin",
+    "Ade Sherina",
+    "Shaula Bunga Cikitha B.",
+    "Taufiq Hidayat",
+    "Ahmad Zayni",
+    "Nur Fadillah Syam",
+    "Andi Fathir Meysar"
+  ],
+  "newTeachers": [
+    "sir brian",
+    "mrs feby",
+    "sir nasrullah",
+    "mis tabita"
+  ],
+  "newClasses": [
+    "oxford",
+    "tsinghua",
+    "tokyo",
+    "harvard"
+  ]
+}
