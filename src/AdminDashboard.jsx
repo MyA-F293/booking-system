@@ -645,34 +645,89 @@ const AdminDashboard = ({ user }) => {
             </div>
 
             <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6">
-                {/* Tab Navigation - Modern Style */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg mb-4 sm:mb-6 overflow-hidden">
-                    <div className="flex border-b border-gray-100">
-                        {[
-                            { id: 'stats', icon: BarChart3, label: 'Dashboard', shortLabel: 'Stats' },
-                            { id: 'students', icon: Users, label: t('admin.manageStudents'), shortLabel: 'Students' },
-                            { id: 'teachers', icon: GraduationCap, label: t('admin.manageTeachers'), shortLabel: 'Teachers' },
-                            { id: 'bookings', icon: CalendarDays, label: t('admin.manageBookings'), shortLabel: 'Booking' },
-                            { id: 'fillAttendance', icon: UserCheck, label: 'Fill Attendance', shortLabel: 'Fill' },
-                            { id: 'attendance', icon: ClipboardList, label: 'Attendance Report', shortLabel: 'Report' },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex-1 relative py-2.5 sm:py-3 lg:py-4 px-1 sm:px-3 lg:px-6 font-poppins transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 group ${activeTab === tab.id
-                                    ? 'text-[#F39C32]'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                    }`}
-                            >
-                                <tab.icon size={16} className={`sm:w-[18px] sm:h-[18px] transition-transform group-hover:scale-110 ${activeTab === tab.id ? 'text-[#F39C32]' : ''}`} />
-                                <span className="hidden sm:inline font-semibold text-xs lg:text-sm">{tab.shortLabel}</span>
+                {/* Tab Navigation - Professional & Modern */}
+                <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-xl mb-4 sm:mb-6 overflow-hidden border border-gray-100">
+                    {/* Tab Header with Gradient */}
+                    <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] p-1">
+                        <div className="bg-white rounded-t-xl">
+                            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 p-2">
+                                {[
+                                    { id: 'stats', icon: BarChart3, label: 'Dashboard', shortLabel: 'Stats', color: 'blue' },
+                                    { id: 'students', icon: Users, label: t('admin.manageStudents'), shortLabel: 'Students', color: 'green' },
+                                    { id: 'teachers', icon: GraduationCap, label: t('admin.manageTeachers'), shortLabel: 'Teachers', color: 'purple' },
+                                    { id: 'bookings', icon: CalendarDays, label: t('admin.manageBookings'), shortLabel: 'Booking', color: 'indigo' },
+                                    { id: 'fillAttendance', icon: UserCheck, label: 'Fill Attendance', shortLabel: 'Fill', color: 'teal' },
+                                    { id: 'attendance', icon: ClipboardList, label: 'Attendance Report', shortLabel: 'Report', color: 'orange' },
+                                ].map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`group relative py-3 sm:py-4 px-2 sm:px-4 rounded-xl font-poppins transition-all duration-300 flex flex-col items-center justify-center gap-1.5 sm:gap-2 ${activeTab === tab.id
+                                                ? 'bg-gradient-to-br from-[#F39C32] to-[#f5a847] text-white shadow-lg scale-105'
+                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100 hover:text-gray-900 hover:shadow-md'
+                                            }`}
+                                    >
+                                        {/* Icon with Animation */}
+                                        <div className={`relative ${activeTab === tab.id ? 'animate-bounce-slow' : ''}`}>
+                                            <div className={`absolute inset-0 rounded-full blur-md transition-opacity ${activeTab === tab.id ? 'bg-white/30 opacity-100' : 'opacity-0'
+                                                }`}></div>
+                                            <tab.icon
+                                                size={20}
+                                                className={`relative sm:w-6 sm:h-6 transition-all duration-300 ${activeTab === tab.id
+                                                        ? 'text-white'
+                                                        : 'text-gray-500 group-hover:text-[#F39C32] group-hover:scale-110'
+                                                    }`}
+                                            />
+                                        </div>
 
-                                {/* Active indicator */}
-                                {activeTab === tab.id && (
-                                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 sm:w-12 lg:w-16 h-0.5 sm:h-1 bg-gradient-to-r from-[#F39C32] to-[#f5a847] rounded-t-full" />
-                                )}
-                            </button>
-                        ))}
+                                        {/* Label */}
+                                        <span className={`text-[10px] sm:text-xs font-bold transition-all duration-300 ${activeTab === tab.id ? 'text-white' : 'text-gray-600 group-hover:text-gray-900'
+                                            }`}>
+                                            <span className="hidden sm:inline">{tab.shortLabel}</span>
+                                            <span className="sm:hidden">{tab.shortLabel.slice(0, 4)}</span>
+                                        </span>
+
+                                        {/* Active Indicator - Dot */}
+                                        {activeTab === tab.id && (
+                                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full shadow-lg animate-pulse">
+                                                <div className="absolute inset-0.5 bg-[#F39C32] rounded-full"></div>
+                                            </div>
+                                        )}
+
+                                        {/* Hover Effect */}
+                                        <div className={`absolute inset-0 rounded-xl transition-opacity ${activeTab === tab.id
+                                                ? 'bg-white/10 opacity-0 group-hover:opacity-100'
+                                                : 'bg-[#F39C32]/5 opacity-0 group-hover:opacity-100'
+                                            }`}></div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Active Tab Title Bar */}
+                    <div className="bg-gradient-to-r from-gray-50 to-white px-4 sm:px-6 py-3 border-t border-gray-100">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1 h-6 bg-gradient-to-b from-[#F39C32] to-[#f5a847] rounded-full"></div>
+                            <div>
+                                <h2 className="text-sm sm:text-base font-bold text-gray-800">
+                                    {activeTab === 'stats' && '📊 Dashboard Overview'}
+                                    {activeTab === 'students' && '👥 Student Management'}
+                                    {activeTab === 'teachers' && '🎓 Teacher Management'}
+                                    {activeTab === 'bookings' && '📅 Booking Management'}
+                                    {activeTab === 'fillAttendance' && '✅ Fill Attendance'}
+                                    {activeTab === 'attendance' && '📈 Attendance Report'}
+                                </h2>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    {activeTab === 'stats' && 'View system statistics and analytics'}
+                                    {activeTab === 'students' && 'Manage student accounts and information'}
+                                    {activeTab === 'teachers' && 'Manage teacher accounts and schedules'}
+                                    {activeTab === 'bookings' && 'View and manage class bookings'}
+                                    {activeTab === 'fillAttendance' && 'Record student attendance'}
+                                    {activeTab === 'attendance' && 'Analyze attendance data and reports'}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
