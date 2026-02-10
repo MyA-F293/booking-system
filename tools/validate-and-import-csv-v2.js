@@ -1,13 +1,14 @@
 /**
- * TOOL: Validasi dan Import CSV Attendance (v2 - Smart Matching)
+ * TOOL: Validasi dan Import Excel/CSV Attendance (v2 - Smart Matching)
  * 
- * FITUR BARU:
+ * FITUR:
+ * ✅ Support Excel (.xlsx) dan CSV (.csv)
  * ✅ Fuzzy matching - Cocokkan nama yang mirip (typo, spasi, huruf besar/kecil)
  * ✅ Auto-adjust - Gunakan nama dari database untuk konsistensi
  * ✅ Smart detection - Deteksi nama yang 85%+ mirip
  * 
  * CARA PAKAI:
- * 1. Simpan CSV Anda sebagai 'attendance-to-import.csv' di folder tools/
+ * 1. Simpan file Excel/CSV Anda sebagai 'attendance-to-import.xlsx' atau 'attendance-to-import.csv' di folder tools/
  * 2. Update .env.local dengan Supabase credentials
  * 3. Jalankan: node tools/validate-and-import-csv-v2.js
  */
@@ -16,6 +17,7 @@ import fs from 'fs';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@supabase/supabase-js';
 import readline from 'readline';
+import * as XLSX from 'xlsx';
 
 // ========================================
 // LOAD ENVIRONMENT VARIABLES
@@ -45,6 +47,8 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 // ========================================
 
 const CONFIG = {
+    // Tool akan coba file Excel dulu, kalau tidak ada baru CSV
+    excelFilePath: './tools/attendance-to-import.xlsx',
     csvFilePath: './tools/attendance-to-import.csv',
     fuzzyMatchThreshold: 0.85, // 85% similarity untuk auto-match
 

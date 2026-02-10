@@ -2,7 +2,7 @@
 
 ## 📋 Masalah
 
-Anda punya data attendance dalam format CSV dengan kolom:
+Anda punya data attendance dalam format **Excel (.xlsx)** atau **CSV (.csv)** dengan kolom:
 - `date` - Tanggal (contoh: "Friday,Feb 6th 2026")
 - `time` - Waktu (afternoon/evening)
 - `teacher` - Nama teacher (contoh: "sir brian", "mrs feby")
@@ -40,15 +40,20 @@ Jadi **tidak perlu khawatir** tentang perbedaan penulisan kecil!
 
 ## 🚀 Langkah-Langkah
 
-### 1. Simpan CSV Anda
+### 1. Simpan File Anda
 
-Simpan file CSV Anda dengan nama **`attendance-to-import.csv`** di folder **`tools/`**
+Simpan file Excel atau CSV Anda dengan nama:
+- **`attendance-to-import.xlsx`** (Excel), ATAU
+- **`attendance-to-import.csv`** (CSV)
+
+di folder **`tools/`**
 
 ```
 📁 project-root/
   📁 tools/
-    📄 attendance-to-import.csv  ← Simpan di sini
-    📄 validate-and-import-csv.js
+    📄 attendance-to-import.xlsx  ← Simpan Excel di sini, ATAU
+    📄 attendance-to-import.csv   ← Simpan CSV di sini
+    📄 import-excel.js
 ```
 
 ### 2. Jalankan Tool Validasi
@@ -56,12 +61,14 @@ Simpan file CSV Anda dengan nama **`attendance-to-import.csv`** di folder **`too
 Buka terminal dan jalankan:
 
 ```bash
-node tools/validate-and-import-csv-v2.js
+node tools/import-excel.js
 ```
 
-**Atau gunakan versi lama (tanpa smart matching):**
+Tool akan otomatis detect Excel atau CSV.
+
+**Alternatif (CSV only):**
 ```bash
-node tools/validate-and-import-csv.js
+node tools/validate-and-import-csv-v2.js
 ```
 
 ### 3. Review Hasil Validasi
@@ -236,11 +243,13 @@ Otomatis dihitung dari tanggal:
 
 ## ⚠️ Troubleshooting
 
-### Error: "CSV file not found"
+### Error: "No file found"
 
 **Solusi:**
 ```bash
 # Pastikan file ada di folder tools/
+ls tools/attendance-to-import.xlsx
+# atau
 ls tools/attendance-to-import.csv
 
 # Jika tidak ada, pindahkan file Anda ke sana
@@ -381,9 +390,13 @@ Sir Brian,Oxford  ← Samakan dengan database
 
 ---
 
-## 📝 Format CSV yang Diharapkan
+## 📝 Format File yang Diharapkan
 
-Tool ini support format CSV dengan kolom:
+Tool ini support:
+- ✅ **Excel** (.xlsx, .xls)
+- ✅ **CSV** (.csv)
+
+### Kolom yang Diperlukan:
 
 ### Minimal (Required):
 - `date` - Tanggal attendance
@@ -413,7 +426,7 @@ date,time,teacher,class,name,present or absent,late or not
 
 Sebelum import:
 
-- [ ] CSV file sudah disimpan sebagai `attendance-to-import.csv` di folder `tools/`
+- [ ] File Excel/CSV sudah disimpan sebagai `attendance-to-import.xlsx` atau `attendance-to-import.csv` di folder `tools/`
 - [ ] File `.env.local` ada dan berisi Supabase credentials
 - [ ] Dependencies sudah di-install (`npm install`)
 - [ ] Sudah backup database (jika import data besar)
