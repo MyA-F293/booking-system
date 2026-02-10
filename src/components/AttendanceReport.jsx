@@ -647,106 +647,220 @@ const AttendanceReport = () => {
                 </div>
             </div>
 
-            {/* Consecutive Absences Alert */}
+            {/* Consecutive Absences Alert - Professional & Detailed */}
             {consecutiveAbsences.length > 0 && (
-                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl sm:rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
-                    <div className="bg-gradient-to-r from-red-500 to-orange-500 p-3 sm:p-4 text-white">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center animate-pulse">
-                                <AlertTriangle size={20} className="sm:w-6 sm:h-6" />
+                <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+                    {/* Header with Gradient */}
+                    <div className="relative bg-gradient-to-r from-red-500 via-red-600 to-orange-500 p-4 sm:p-6">
+                        <div className="absolute inset-0 bg-black/5"></div>
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+
+                        <div className="relative flex items-start justify-between">
+                            <div className="flex items-start gap-3 sm:gap-4">
+                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center animate-pulse shadow-lg">
+                                    <AlertTriangle size={24} className="sm:w-7 sm:h-7 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg sm:text-xl font-bold text-white mb-1 flex items-center gap-2">
+                                        Consecutive Absences Alert
+                                        <span className="px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold">
+                                            {consecutiveAbsences.length}
+                                        </span>
+                                    </h3>
+                                    <p className="text-sm text-white/90">
+                                        Students requiring immediate attention due to consecutive absences
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-base sm:text-lg font-bold">⚠️ Consecutive Absences Alert</h3>
-                                <p className="text-xs sm:text-sm text-white/90">
-                                    {consecutiveAbsences.length} student{consecutiveAbsences.length > 1 ? 's' : ''} with multiple consecutive absences
-                                </p>
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div className="relative grid grid-cols-3 gap-3 mt-4">
+                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                                <div className="text-2xl font-bold text-white">
+                                    {consecutiveAbsences.filter(s => s.severity === 'critical').length}
+                                </div>
+                                <div className="text-xs text-white/80 mt-1">Critical Cases</div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                                <div className="text-2xl font-bold text-white">
+                                    {consecutiveAbsences.filter(s => s.severity === 'warning').length}
+                                </div>
+                                <div className="text-xs text-white/80 mt-1">Warnings</div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/20">
+                                <div className="text-2xl font-bold text-white">
+                                    {consecutiveAbsences.filter(s => s.severity === 'attention').length}
+                                </div>
+                                <div className="text-xs text-white/80 mt-1">Attention</div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="p-3 sm:p-4 space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
+                    {/* Student Cards */}
+                    <div className="p-4 sm:p-6 space-y-3 max-h-[600px] overflow-y-auto bg-gray-50">
                         {consecutiveAbsences.map((student, index) => (
                             <div
                                 key={index}
-                                className={`rounded-xl p-3 sm:p-4 border-2 transition-all hover:shadow-md ${student.severity === 'critical'
-                                        ? 'bg-red-50 border-red-300 hover:border-red-400'
-                                        : student.severity === 'warning'
-                                            ? 'bg-orange-50 border-orange-300 hover:border-orange-400'
-                                            : 'bg-yellow-50 border-yellow-300 hover:border-yellow-400'
+                                className={`group relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-l-4 ${student.severity === 'critical'
+                                    ? 'border-red-500 hover:border-red-600'
+                                    : student.severity === 'warning'
+                                        ? 'border-orange-500 hover:border-orange-600'
+                                        : 'border-yellow-500 hover:border-yellow-600'
                                     }`}
                             >
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className={`text-xl sm:text-2xl ${student.severity === 'critical' ? 'animate-bounce' : ''
-                                                }`}>
-                                                {student.severity === 'critical' ? '🚨' : student.severity === 'warning' ? '⚠️' : '⚡'}
-                                            </span>
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-sm sm:text-base font-bold text-gray-800 truncate">
+                                {/* Background Pattern */}
+                                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full -mr-16 -mt-16 opacity-5 ${student.severity === 'critical'
+                                    ? 'bg-red-500'
+                                    : student.severity === 'warning'
+                                        ? 'bg-orange-500'
+                                        : 'bg-yellow-500'
+                                    }`}></div>
+
+                                <div className="relative p-4 sm:p-5">
+                                    <div className="flex items-start justify-between gap-4">
+                                        {/* Left: Student Info */}
+                                        <div className="flex-1 min-w-0">
+                                            {/* Severity Badge */}
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className={`text-2xl ${student.severity === 'critical' ? 'animate-bounce' : ''}`}>
+                                                    {student.severity === 'critical' ? '🚨' : student.severity === 'warning' ? '⚠️' : '⚡'}
+                                                </span>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${student.severity === 'critical'
+                                                    ? 'bg-red-100 text-red-700'
+                                                    : student.severity === 'warning'
+                                                        ? 'bg-orange-100 text-orange-700'
+                                                        : 'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                    {student.severity === 'critical' ? 'Critical' : student.severity === 'warning' ? 'Warning' : 'Attention'}
+                                                </span>
+                                            </div>
+
+                                            {/* Student Name & ID */}
+                                            <div className="mb-3">
+                                                <h4 className="text-base sm:text-lg font-bold text-gray-900 mb-1">
                                                     {student.studentName}
                                                 </h4>
-                                                <p className="text-xs text-gray-600">
-                                                    {student.studentId} • {student.className}
-                                                </p>
+                                                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                                                    <span className="font-mono font-semibold bg-gray-100 px-2 py-0.5 rounded">
+                                                        {student.studentId}
+                                                    </span>
+                                                    <span className="text-gray-400">•</span>
+                                                    <span className="font-medium">{student.className}</span>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex items-center gap-2 mt-2">
-                                            <div className={`px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${student.severity === 'critical'
-                                                    ? 'bg-red-200 text-red-800'
+                                            {/* Absence Details */}
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className={`rounded-xl p-3 ${student.severity === 'critical'
+                                                    ? 'bg-red-50 border border-red-200'
                                                     : student.severity === 'warning'
-                                                        ? 'bg-orange-200 text-orange-800'
-                                                        : 'bg-yellow-200 text-yellow-800'
-                                                }`}>
-                                                {student.consecutiveAbsences}x Consecutive Absences
+                                                        ? 'bg-orange-50 border border-orange-200'
+                                                        : 'bg-yellow-50 border border-yellow-200'
+                                                    }`}>
+                                                    <div className="text-xs text-gray-600 mb-1">Consecutive Absences</div>
+                                                    <div className={`text-2xl font-bold ${student.severity === 'critical'
+                                                        ? 'text-red-700'
+                                                        : student.severity === 'warning'
+                                                            ? 'text-orange-700'
+                                                            : 'text-yellow-700'
+                                                        }`}>
+                                                        {student.consecutiveAbsences}x
+                                                    </div>
+                                                </div>
+                                                <div className="rounded-xl p-3 bg-gray-50 border border-gray-200">
+                                                    <div className="text-xs text-gray-600 mb-1">Last Absent</div>
+                                                    <div className="text-sm font-bold text-gray-900">
+                                                        {student.lastAbsentDate.toLocaleDateString('en-US', {
+                                                            month: 'short',
+                                                            day: 'numeric',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </div>
+                                                </div>
                                             </div>
+
+                                            {/* Critical Warning */}
+                                            {student.severity === 'critical' && (
+                                                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-xl">
+                                                    <div className="flex items-start gap-2">
+                                                        <AlertTriangle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
+                                                        <div>
+                                                            <p className="text-xs font-bold text-red-900 mb-1">
+                                                                Critical Status - Immediate Action Required
+                                                            </p>
+                                                            <p className="text-xs text-red-700">
+                                                                Student has been absent for {student.consecutiveAbsences} consecutive sessions.
+                                                                Please contact student/parent immediately.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Warning Message */}
+                                            {student.severity === 'warning' && (
+                                                <div className="mt-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                                                    <p className="text-xs text-orange-800">
+                                                        <span className="font-bold">Follow-up recommended:</span> Student showing pattern of consecutive absences.
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <p className="text-xs text-gray-600 mt-2">
-                                            Last absent: {student.lastAbsentDate.toLocaleDateString()}
-                                        </p>
-                                    </div>
-
-                                    <div className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold text-lg sm:text-xl ${student.severity === 'critical'
-                                            ? 'bg-red-200 text-red-700'
-                                            : student.severity === 'warning'
-                                                ? 'bg-orange-200 text-orange-700'
-                                                : 'bg-yellow-200 text-yellow-700'
-                                        }`}>
-                                        {student.consecutiveAbsences}
+                                        {/* Right: Large Counter */}
+                                        <div className="flex-shrink-0">
+                                            <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex flex-col items-center justify-center shadow-lg ${student.severity === 'critical'
+                                                ? 'bg-gradient-to-br from-red-500 to-red-600'
+                                                : student.severity === 'warning'
+                                                    ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                                                    : 'bg-gradient-to-br from-yellow-500 to-yellow-600'
+                                                }`}>
+                                                <div className="text-2xl sm:text-3xl font-bold text-white">
+                                                    {student.consecutiveAbsences}
+                                                </div>
+                                                <div className="text-[8px] sm:text-xs text-white/80 font-semibold uppercase">
+                                                    Days
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-
-                                {student.severity === 'critical' && (
-                                    <div className="mt-3 pt-3 border-t border-red-200">
-                                        <p className="text-xs font-semibold text-red-700 flex items-center gap-1">
-                                            <AlertTriangle size={14} />
-                                            Critical: Immediate follow-up recommended
-                                        </p>
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>
 
-                    <div className="bg-gray-50 p-3 border-t border-gray-200">
-                        <div className="flex items-center justify-between text-xs text-gray-600">
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded bg-red-400"></div>
-                                    <span>Critical (4+)</span>
+                    {/* Footer with Legend */}
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                            <div className="flex flex-wrap items-center gap-4">
+                                <div className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                                    Severity Levels:
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded bg-orange-400"></div>
-                                    <span>Warning (3)</span>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <span className="text-xs text-gray-700">
+                                        <span className="font-semibold">Critical</span> (4+ absences)
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                    <div className="w-3 h-3 rounded bg-yellow-400"></div>
-                                    <span>Attention (2)</span>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                                    <span className="text-xs text-gray-700">
+                                        <span className="font-semibold">Warning</span> (3 absences)
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <span className="text-xs text-gray-700">
+                                        <span className="font-semibold">Attention</span> (2 absences)
+                                    </span>
                                 </div>
                             </div>
-                            <span className="font-semibold">Total: {consecutiveAbsences.length}</span>
+                            <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <span className="text-xs text-gray-600">Total Students: </span>
+                                <span className="text-sm font-bold text-gray-900">{consecutiveAbsences.length}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
