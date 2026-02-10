@@ -1,7 +1,7 @@
 // PWA Helper Functions
 
 /**
- * Register Service Worker
+ * Register Service Worker with Auto-Reload on Update
  */
 export const registerServiceWorker = async () => {
     if ('serviceWorker' in navigator) {
@@ -12,6 +12,29 @@ export const registerServiceWorker = async () => {
 
             console.log('✅ Service Worker registered:', registration.scope);
 
+            // Listen for messages from service worker
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                    console.log('🔄 New version detected, reloading...');
+                    // Auto-reload after 1 second
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                }
+            });
+
+            // Check for updates periodically (every 60 seconds)
+            setInterval(() => {
+                registration.update();
+            }, 60000);
+
+            // Check for updates on page visibility change
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    registration.update();
+                }
+            });
+
             // Check for updates
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
@@ -19,10 +42,8 @@ export const registerServiceWorker = async () => {
 
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // New service worker available, prompt user to refresh
-                        if (confirm('New version available! Reload to update?')) {
-                            window.location.reload();
-                        }
+                        // New service worker available
+                        console.log('✅ New version installed, will reload soon...');
                     }
                 });
             });

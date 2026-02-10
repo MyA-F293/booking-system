@@ -1,7 +1,9 @@
 // Service Worker for EYSA Language Center PWA
-const CACHE_NAME = 'eysa-v1.0.5'; // Updated version for new PWA icons
-const RUNTIME_CACHE = 'eysa-runtime-v1.0.5';
-const IMAGE_CACHE = 'eysa-images-v1.0.5';
+// Auto-generated version based on build timestamp
+const BUILD_VERSION = new Date().getTime(); // This will be unique per build
+const CACHE_NAME = `eysa-v${BUILD_VERSION}`;
+const RUNTIME_CACHE = `eysa-runtime-v${BUILD_VERSION}`;
+const IMAGE_CACHE = `eysa-images-v${BUILD_VERSION}`;
 
 // Assets to cache on install
 const PRECACHE_ASSETS = [
@@ -13,14 +15,13 @@ const PRECACHE_ASSETS = [
     '/icon-maskable-192.png',
     '/icon-maskable-512.png',
     '/apple-touch-icon.png',
-    '/booking-illustration.png',
     '/manifest.json'
 ];
 
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
-    console.log('[SW] Installing service worker v1.0.4...');
-    // Force immediate activation
+    console.log(`[SW] Installing service worker v${BUILD_VERSION}...`);
+    // Force immediate activation - skip waiting
     self.skipWaiting();
 
     event.waitUntil(
@@ -32,20 +33,36 @@ self.addEventListener('install', (event) => {
     );
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up ALL old caches
 self.addEventListener('activate', (event) => {
-    console.log('[SW] Activating service worker v1.0.4...');
+    console.log(`[SW] Activating service worker v${BUILD_VERSION}...`);
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames
-                    .filter((name) => name !== CACHE_NAME && name !== RUNTIME_CACHE && name !== IMAGE_CACHE)
+                    .filter((name) => {
+                        // Delete ALL caches that don't match current version
+                        return name !== CACHE_NAME && name !== RUNTIME_CACHE && name !== IMAGE_CACHE;
+                    })
                     .map((name) => {
                         console.log('[SW] Deleting old cache:', name);
                         return caches.delete(name);
                     })
             );
-        }).then(() => self.clients.claim())
+        }).then(() => {
+            // Take control of all clients immediately
+            return self.clients.claim();
+        }).then(() => {
+            // Notify all clients to reload
+            return self.clients.matchAll().then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({
+                        type: 'SW_UPDATED',
+                        version: BUILD_VERSION
+                    });
+                });
+            });
+        })
     );
 });
 
