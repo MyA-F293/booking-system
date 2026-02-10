@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Users, Download, Filter, Search, FileSpreadsheet } from 'lucide-react';
+import { Calendar, Users, Download, Filter, Search, FileSpreadsheet, AlertTriangle } from 'lucide-react';
 import { useToast } from './Toast';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as XLSX from 'xlsx';
@@ -222,6 +222,66 @@ const AttendanceReport = () => {
     const studentSummary = getStudentSummary();
     const classSummary = getClassSummary();
     const dateSummary = getDateSummary();
+
+    // Calculate consecutive absences for each student
+    const getConsecutiveAbsences = () => {
+        const studentAbsences = {};
+
+        // Group attendance by student and sort by date
+        filteredData.forEach(record => {
+            if (!studentAbsences[record.student_id]) {
+                studentAbsences[record.student_id] = {
+                    studentId: record.student_id,
+                    studentName: record.student_name,
+                    className: record.class_name,
+                    records: []
+                };
+            }
+            studentAbsences[record.student_id].records.push({
+                date: new Date(record.created_at),
+                status: record.status
+            });
+        });
+
+        // Calculate consecutive absences for each student
+        const consecutiveAbsencesList = [];
+
+        Object.values(studentAbsences).forEach(student => {
+            // Sort records by date (newest first)
+            student.records.sort((a, b) => b.date - a.date);
+
+            let consecutiveCount = 0;
+            let lastAbsentDate = null;
+
+            // Count consecutive absences from most recent
+            for (const record of student.records) {
+                if (record.status === 'absent') {
+                    consecutiveCount++;
+                    if (!lastAbsentDate) {
+                        lastAbsentDate = record.date;
+                    }
+                } else {
+                    break; // Stop counting when we hit a non-absent record
+                }
+            }
+
+            if (consecutiveCount >= 2) {
+                consecutiveAbsencesList.push({
+                    studentId: student.studentId,
+                    studentName: student.studentName,
+                    className: student.className,
+                    consecutiveAbsences: consecutiveCount,
+                    lastAbsentDate: lastAbsentDate,
+                    severity: consecutiveCount >= 4 ? 'critical' : consecutiveCount >= 3 ? 'warning' : 'attention'
+                });
+            }
+        });
+
+        // Sort by consecutive count (highest first)
+        return consecutiveAbsencesList.sort((a, b) => b.consecutiveAbsences - a.consecutiveAbsences);
+    };
+
+    const consecutiveAbsences = getConsecutiveAbsences();
 
     const handleExportCSV = () => {
         if (viewMode === 'records' && filteredData.length === 0) {
@@ -586,6 +646,111 @@ const AttendanceReport = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Consecutive Absences Alert */}
+            {consecutiveAbsences.length > 0 && (
+                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl sm:rounded-2xl shadow-lg border-2 border-red-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-red-500 to-orange-500 p-3 sm:p-4 text-white">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center animate-pulse">
+                                <AlertTriangle size={20} className="sm:w-6 sm:h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-base sm:text-lg font-bold">⚠️ Consecutive Absences Alert</h3>
+                                <p className="text-xs sm:text-sm text-white/90">
+                                    {consecutiveAbsences.length} student{consecutiveAbsences.length > 1 ? 's' : ''} with multiple consecutive absences
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-3 sm:p-4 space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
+                        {consecutiveAbsences.map((student, index) => (
+                            <div
+                                key={index}
+                                className={`rounded-xl p-3 sm:p-4 border-2 transition-all hover:shadow-md ${student.severity === 'critical'
+                                        ? 'bg-red-50 border-red-300 hover:border-red-400'
+                                        : student.severity === 'warning'
+                                            ? 'bg-orange-50 border-orange-300 hover:border-orange-400'
+                                            : 'bg-yellow-50 border-yellow-300 hover:border-yellow-400'
+                                    }`}
+                            >
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`text-xl sm:text-2xl ${student.severity === 'critical' ? 'animate-bounce' : ''
+                                                }`}>
+                                                {student.severity === 'critical' ? '🚨' : student.severity === 'warning' ? '⚠️' : '⚡'}
+                                            </span>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm sm:text-base font-bold text-gray-800 truncate">
+                                                    {student.studentName}
+                                                </h4>
+                                                <p className="text-xs text-gray-600">
+                                                    {student.studentId} • {student.className}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <div className={`px-3 py-1 rounded-lg text-xs sm:text-sm font-bold ${student.severity === 'critical'
+                                                    ? 'bg-red-200 text-red-800'
+                                                    : student.severity === 'warning'
+                                                        ? 'bg-orange-200 text-orange-800'
+                                                        : 'bg-yellow-200 text-yellow-800'
+                                                }`}>
+                                                {student.consecutiveAbsences}x Consecutive Absences
+                                            </div>
+                                        </div>
+
+                                        <p className="text-xs text-gray-600 mt-2">
+                                            Last absent: {student.lastAbsentDate.toLocaleDateString()}
+                                        </p>
+                                    </div>
+
+                                    <div className={`flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center font-bold text-lg sm:text-xl ${student.severity === 'critical'
+                                            ? 'bg-red-200 text-red-700'
+                                            : student.severity === 'warning'
+                                                ? 'bg-orange-200 text-orange-700'
+                                                : 'bg-yellow-200 text-yellow-700'
+                                        }`}>
+                                        {student.consecutiveAbsences}
+                                    </div>
+                                </div>
+
+                                {student.severity === 'critical' && (
+                                    <div className="mt-3 pt-3 border-t border-red-200">
+                                        <p className="text-xs font-semibold text-red-700 flex items-center gap-1">
+                                            <AlertTriangle size={14} />
+                                            Critical: Immediate follow-up recommended
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-gray-50 p-3 border-t border-gray-200">
+                        <div className="flex items-center justify-between text-xs text-gray-600">
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1">
+                                    <div className="w-3 h-3 rounded bg-red-400"></div>
+                                    <span>Critical (4+)</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <div className="w-3 h-3 rounded bg-orange-400"></div>
+                                    <span>Warning (3)</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <div className="w-3 h-3 rounded bg-yellow-400"></div>
+                                    <span>Attention (2)</span>
+                                </div>
+                            </div>
+                            <span className="font-semibold">Total: {consecutiveAbsences.length}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modern View Mode Toggle with Grouping */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
