@@ -668,9 +668,30 @@ const AttendanceReport = () => {
                                             {consecutiveAbsences.length}
                                         </span>
                                     </h3>
-                                    <p className="text-sm text-white/90">
+                                    <p className="text-sm text-white/90 mb-2">
                                         Students requiring immediate attention due to consecutive absences
                                     </p>
+                                    {/* Active Filters Info */}
+                                    {(selectedClass !== 'all' || filterType === 'month' || filterType === 'week') && (
+                                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                                            <span className="text-xs text-white/70">Filtered by:</span>
+                                            {selectedClass !== 'all' && (
+                                                <span className="px-2 py-1 bg-white/10 backdrop-blur-sm rounded-lg text-xs font-semibold text-white border border-white/20">
+                                                    📚 {selectedClass}
+                                                </span>
+                                            )}
+                                            {filterType === 'week' && (
+                                                <span className="px-2 py-1 bg-white/10 backdrop-blur-sm rounded-lg text-xs font-semibold text-white border border-white/20">
+                                                    📅 Week {selectedWeek}
+                                                </span>
+                                            )}
+                                            {filterType === 'month' && (
+                                                <span className="px-2 py-1 bg-white/10 backdrop-blur-sm rounded-lg text-xs font-semibold text-white border border-white/20">
+                                                    📅 {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
