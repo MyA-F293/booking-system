@@ -156,10 +156,13 @@ const AttendanceReport = () => {
         const summaryMap = {};
 
         filteredData.forEach(record => {
-            const key = record.class_name;
+            // Normalize class name to handle case-insensitive duplicates
+            const normalizedClassName = record.class_name?.trim() || 'Unknown';
+            const key = normalizedClassName.toLowerCase();
+
             if (!summaryMap[key]) {
                 summaryMap[key] = {
-                    className: record.class_name,
+                    className: normalizedClassName, // Use the original name from first occurrence
                     program: record.program,
                     level: record.level,
                     uniqueStudents: new Set(),
