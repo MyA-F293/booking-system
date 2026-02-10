@@ -340,11 +340,11 @@ const AdminStatsDashboard = () => {
             </div>
 
             <div ref={dashboardRef} className="space-y-6" style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '16px' }}>
-                {/* Summary Cards */}
+                {/* Summary Cards with Animations */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="rounded-2xl p-5 border shadow-sm" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInLeft stagger-1" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
                         <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: '#dbeafe' }}>
+                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#dbeafe' }}>
                                 <Users size={24} style={{ color: '#1F4E8C' }} />
                             </div>
                             <div>
@@ -353,9 +353,9 @@ const AdminStatsDashboard = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-2xl p-5 border shadow-sm" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInLeft stagger-2" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
                         <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: '#d1fae5' }}>
+                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#d1fae5', animationDelay: '0.5s' }}>
                                 <GraduationCap size={24} style={{ color: '#059669' }} />
                             </div>
                             <div>
@@ -364,9 +364,9 @@ const AdminStatsDashboard = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-2xl p-5 border shadow-sm" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInRight stagger-3" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
                         <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: '#ffedd5' }}>
+                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#ffedd5', animationDelay: '1s' }}>
                                 <Calendar size={24} style={{ color: '#F39C32' }} />
                             </div>
                             <div>
@@ -375,9 +375,9 @@ const AdminStatsDashboard = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-2xl p-5 border shadow-sm" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInRight stagger-4" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
                         <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl" style={{ backgroundColor: '#ede9fe' }}>
+                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#ede9fe', animationDelay: '1.5s' }}>
                                 <BookOpen size={24} style={{ color: '#7c3aed' }} />
                             </div>
                             <div>
@@ -388,9 +388,9 @@ const AdminStatsDashboard = () => {
                     </div>
                 </div>
 
-                {/* Charts Row 1 */}
+                {/* Charts Row 1 with Animations */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="rounded-2xl p-6 border shadow-sm" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
+                    <div className="rounded-2xl p-6 border shadow-sm hover-lift animate-scaleIn stagger-1" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#1f2937' }}>
                             <Clock size={20} style={{ color: '#F39C32' }} />
                             {t('statsDashboard.bookingPerPhase')}
