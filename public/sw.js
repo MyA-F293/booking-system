@@ -1,5 +1,6 @@
 // Service Worker for EYSA Language Center PWA
 // Auto-generated version based on build timestamp
+// Last updated: 2025-02-11 - AdminBookingDashboard Redesign
 const BUILD_VERSION = new Date().getTime(); // This will be unique per build
 const CACHE_NAME = `eysa-v${BUILD_VERSION}`;
 const RUNTIME_CACHE = `eysa-runtime-v${BUILD_VERSION}`;
