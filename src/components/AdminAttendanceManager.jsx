@@ -274,8 +274,8 @@ const AdminAttendanceManager = () => {
     const completedCount = schedules.filter(s => s.hasAttendance).length;
 
     const getTimeRange = (timeSlot) => {
-        if (timeSlot === 'afternoon') return '15:30 - 17:30';
-        if (timeSlot === 'evening') return '18:00 - 20:30';
+        if (timeSlot === 'afternoon') return '16:00 - 17:30';
+        if (timeSlot === 'evening') return '19:00 - 20:30';
         return timeSlot;
     };
 
