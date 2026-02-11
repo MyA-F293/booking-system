@@ -159,7 +159,24 @@ const AdminBookingDashboard = () => {
     const loadAllSchedules = async () => {
         const filters = { week_number: displayWeek, year: currentYear };
         const data = await getSchedules(filters);
-        setSchedules(data);
+
+        // DEDUPLICATION: Remove duplicate schedules based on unique combination
+        // of class_id, day, time_slot, phase, week_number
+        const uniqueSchedules = [];
+        const seenKeys = new Set();
+
+        data.forEach(schedule => {
+            const uniqueKey = `${schedule.class_id}-${schedule.day}-${schedule.time_slot}-${schedule.phase}-${schedule.week_number}`;
+            if (!seenKeys.has(uniqueKey)) {
+                seenKeys.add(uniqueKey);
+                uniqueSchedules.push(schedule);
+            } else {
+                console.log('🔍 Duplicate schedule found and removed:', schedule.class?.name, schedule.day, schedule.time_slot);
+            }
+        });
+
+        console.log(`📊 Loaded ${data.length} schedules, removed ${data.length - uniqueSchedules.length} duplicates, showing ${uniqueSchedules.length} unique schedules`);
+        setSchedules(uniqueSchedules);
     };
 
     const loadAllStudents = async () => {
