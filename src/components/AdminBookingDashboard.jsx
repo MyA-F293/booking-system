@@ -102,6 +102,11 @@ const AdminBookingDashboard = () => {
     const [isOnCooldown, setIsOnCooldown] = useState(false);
     const [remainingTime, setRemainingTime] = useState(0);
 
+    // NEW: Grouping and filtering states
+    const [viewMode, setViewMode] = useState('grouped'); // 'grouped' or 'list'
+    const [filterDay, setFilterDay] = useState('all'); // 'all', 'monday', 'tuesday', etc.
+    const [expandedClasses, setExpandedClasses] = useState(new Set()); // Track which classes are expanded
+
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
     const nextWeek = currentWeek + 1;
@@ -120,6 +125,41 @@ const AdminBookingDashboard = () => {
         sunday: 7
     };
 
+    // NEW: Group schedules by class
+    const groupSchedulesByClass = (scheduleList) => {
+        const grouped = {};
+        scheduleList.forEach(schedule => {
+            const className = schedule.class?.name || 'Unknown';
+            if (!grouped[className]) {
+                grouped[className] = [];
+            }
+            grouped[className].push(schedule);
+        });
+
+        // Sort schedules within each class by day and time
+        Object.keys(grouped).forEach(className => {
+            grouped[className].sort((a, b) => {
+                const dayA = dayOrder[a.day?.toLowerCase()] || 99;
+                const dayB = dayOrder[b.day?.toLowerCase()] || 99;
+                if (dayA !== dayB) return dayA - dayB;
+                // If same day, sort by time_slot
+                const timeOrder = { afternoon: 1, evening: 2 };
+                return (timeOrder[a.time_slot] || 99) - (timeOrder[b.time_slot] || 99);
+            });
+        });
+
+        return grouped;
+    };
+
+    // Filter schedules by day
+    const filteredSchedules = filterDay === 'all'
+        ? schedules
+        : schedules.filter(s => s.day?.toLowerCase() === filterDay);
+
+    // Group filtered schedules by class
+    const groupedByClass = groupSchedulesByClass(filteredSchedules);
+
+    // OLD: Group by phase (for backward compatibility)
     const groupedSchedules = phases.reduce((acc, phase) => {
         acc[phase] = schedules
             .filter(s => s.phase === phase)
@@ -133,6 +173,17 @@ const AdminBookingDashboard = () => {
 
     // Check if any schedules are grouped
     const hasGroupedSchedules = phases.some(phase => groupedSchedules[phase]?.length > 0);
+
+    // Toggle class expansion
+    const toggleClassExpansion = (className) => {
+        const newExpanded = new Set(expandedClasses);
+        if (newExpanded.has(className)) {
+            newExpanded.delete(className);
+        } else {
+            newExpanded.add(className);
+        }
+        setExpandedClasses(newExpanded);
+    };
 
     const getDayLabel = (day, phase) => {
         if (day) {
@@ -609,6 +660,70 @@ const AdminBookingDashboard = () => {
                 </div>
             </div>
 
+            {/* NEW: Filters and View Mode */}
+            {!loading && schedules.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-lg p-4 border border-gray-200">
+                    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                        {/* View Mode Toggle */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-700">View:</span>
+                            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                                <button
+                                    onClick={() => setViewMode('grouped')}
+                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${viewMode === 'grouped'
+                                        ? 'bg-[#F39C32] text-white shadow'
+                                        : 'text-gray-600 hover:text-gray-800'
+                                        }`}
+                                >
+                                    📚 Grouped by Class
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${viewMode === 'list'
+                                        ? 'bg-[#F39C32] text-white shadow'
+                                        : 'text-gray-600 hover:text-gray-800'
+                                        }`}
+                                >
+                                    📋 List by Phase
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Day Filter */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-gray-700">Filter by Day:</span>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {['all', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                                    <button
+                                        key={day}
+                                        onClick={() => setFilterDay(day)}
+                                        className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${filterDay === day
+                                            ? 'bg-[#1F4E8C] text-white shadow'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        {day === 'all' ? 'All Days' : day.charAt(0).toUpperCase() + day.slice(1, 3)}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Active Filter Info */}
+                    {filterDay !== 'all' && (
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                            <div className="flex items-center gap-2 text-sm">
+                                <span className="text-gray-600">Showing schedules for:</span>
+                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg font-semibold">
+                                    {dayLabels[filterDay] || filterDay}
+                                </span>
+                                <span className="text-gray-500">({filteredSchedules.length} schedule{filteredSchedules.length !== 1 ? 's' : ''})</span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Loading */}
             {loading && schedules.length === 0 && (
                 <div className="text-center py-16">
@@ -628,8 +743,144 @@ const AdminBookingDashboard = () => {
                 </div>
             )}
 
-            {/* Schedule Cards Grouped by Phase */}
-            {!loading && schedules.length > 0 && hasGroupedSchedules && (
+            {/* NEW: Grouped by Class View */}
+            {!loading && schedules.length > 0 && viewMode === 'grouped' && (
+                <div className="space-y-4">
+                    {Object.entries(groupedByClass).map(([className, classSchedules]) => {
+                        const badge = getClassBadge(className);
+                        const isExpanded = expandedClasses.has(className);
+                        const totalStudents = classSchedules.reduce((sum, s) => sum + s.current_students, 0);
+                        const maxCapacity = classSchedules.length * 10;
+
+                        return (
+                            <div key={className} className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                                {/* Class Header - Clickable to expand/collapse */}
+                                <button
+                                    onClick={() => toggleClassExpansion(className)}
+                                    className="w-full bg-gradient-to-r from-gray-50 to-slate-50 hover:from-orange-50 hover:to-amber-50 px-6 py-4 transition-all"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            {/* Class Badge */}
+                                            <div className={`${badge.color} w-14 h-14 rounded-xl flex items-center justify-center text-2xl shadow-md`}>
+                                                {badge.emoji}
+                                            </div>
+
+                                            {/* Class Info */}
+                                            <div className="text-left">
+                                                <h3 className="text-xl font-bold text-gray-800">{className}</h3>
+                                                <div className="flex items-center gap-3 mt-1">
+                                                    <span className="text-sm text-gray-600">
+                                                        📅 {classSchedules.length} schedule{classSchedules.length !== 1 ? 's' : ''}
+                                                    </span>
+                                                    <span className="text-sm text-gray-400">•</span>
+                                                    <span className="text-sm text-gray-600">
+                                                        👥 {totalStudents}/{maxCapacity} students
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Expand/Collapse Icon */}
+                                        <div className="flex items-center gap-3">
+                                            <div className={`px-4 py-2 rounded-lg font-semibold text-sm ${totalStudents >= maxCapacity * 0.8
+                                                    ? 'bg-red-100 text-red-700'
+                                                    : totalStudents >= maxCapacity * 0.5
+                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                        : 'bg-amber-100 text-amber-700'
+                                                }`}>
+                                                {Math.round((totalStudents / maxCapacity) * 100)}% Full
+                                            </div>
+                                            <div className={`w-8 h-8 rounded-lg bg-[#F39C32] text-white flex items-center justify-center transition-transform ${isExpanded ? 'rotate-180' : ''
+                                                }`}>
+                                                ▼
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+
+                                {/* Expanded Schedule Details */}
+                                {isExpanded && (
+                                    <div className="border-t border-gray-200 bg-white">
+                                        <div className="p-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {classSchedules.map((schedule) => {
+                                                    const status = getStatusColor(schedule.current_students);
+                                                    return (
+                                                        <div key={schedule.id} className={`bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border-2 ${status.border} p-4 hover:shadow-md transition-all`}>
+                                                            {/* Schedule Header */}
+                                                            <div className="flex items-center justify-between mb-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={`${status.bg} ${status.text} px-3 py-1 rounded-full text-xs font-bold`}>
+                                                                        {schedule.current_students}/10
+                                                                    </div>
+                                                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
+                                                                        {schedule.program}
+                                                                    </span>
+                                                                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-semibold">
+                                                                        {schedule.level}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Schedule Details */}
+                                                            <div className="space-y-2 text-sm mb-4">
+                                                                <div className="flex items-center gap-2 text-gray-700">
+                                                                    <Calendar size={16} className="text-[#F39C32]" />
+                                                                    <span className="font-semibold">{getDayLabel(schedule.day, schedule.phase)}</span>
+                                                                    {schedule.day && (
+                                                                        <span className="text-gray-400">
+                                                                            ({formatDateShort(getDateForDay(schedule.day, displayWeek, currentYear))})
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-700">
+                                                                    <Clock size={16} className="text-[#F39C32]" />
+                                                                    <span>{getTimeLabel(schedule.time_slot)} • {getTimeHours(schedule.time_slot)}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-700">
+                                                                    <GraduationCap size={16} className="text-[#F39C32]" />
+                                                                    <span>{schedule.teacher?.name || t('adminBooking.noTeacherYet')}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-gray-600 text-xs">
+                                                                    <span className="px-2 py-0.5 bg-gray-200 rounded">
+                                                                        {getPhaseLabel(schedule.phase)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Action Buttons */}
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => handleViewDetails(schedule)}
+                                                                    className="flex-1 bg-[#F39C32] hover:bg-[#e08a1f] text-white py-2 rounded-lg font-medium text-sm transition-all flex items-center justify-center gap-2"
+                                                                >
+                                                                    <Users size={14} />
+                                                                    Manage ({schedule.current_students})
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteSchedule(schedule)}
+                                                                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-all"
+                                                                    title="Delete Schedule"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* OLD: Schedule Cards Grouped by Phase (List View) */}
+            {!loading && schedules.length > 0 && viewMode === 'list' && hasGroupedSchedules && (
                 <div className="space-y-6">
                     {phases.map((phase) => {
                         const phaseSchedules = groupedSchedules[phase];
