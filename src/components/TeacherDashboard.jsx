@@ -413,23 +413,23 @@ const TeacherDashboard = ({ user }) => {
                             {/* Title & Info Column */}
                             <div className="min-w-0 flex-1">
                                 {/* Row 1: Language + Badge */}
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                    <h1 className="text-sm sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
+                                <div className="flex items-center gap-1.5 sm:gap-3">
+                                    <h1 className="text-xs sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
                                         Language
                                     </h1>
                                     {/* Teacher Badge */}
-                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[8px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-md uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[7px] sm:text-[10px] font-bold px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-md uppercase tracking-wider whitespace-nowrap flex-shrink-0">
                                         Teacher
                                     </span>
                                 </div>
 
                                 {/* Row 2: Center */}
-                                <h2 className="text-sm sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
+                                <h2 className="text-xs sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
                                     Center
                                 </h2>
 
                                 {/* Row 3: Batch | Week | Name */}
-                                <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-sm text-gray-600 mt-1">
+                                <div className="flex items-center gap-0.5 sm:gap-2 text-[8px] sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
                                     <span className="whitespace-nowrap">Batch {user.batch || 1}</span>
                                     <span>|</span>
                                     <span className="whitespace-nowrap">Week {currentWeek}</span>
@@ -443,16 +443,16 @@ const TeacherDashboard = ({ user }) => {
                         <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
                             <button
                                 onClick={() => setShowPasswordModal(true)}
-                                className="p-1.5 sm:p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all shadow-md hover:shadow-lg"
+                                className="p-1 sm:p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md sm:rounded-lg transition-all shadow-md hover:shadow-lg"
                                 title="Change Password"
                             >
-                                <Key size={14} className="sm:w-5 sm:h-5" />
+                                <Key size={12} className="sm:w-5 sm:h-5" />
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="p-1.5 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center gap-2 transition-all font-semibold text-xs sm:text-sm shadow-md hover:shadow-lg"
+                                className="p-1 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
                             >
-                                <LogOut size={14} className="sm:w-[18px] sm:h-[18px]" />
+                                <LogOut size={12} className="sm:w-[18px] sm:h-[18px]" />
                                 <span className="hidden sm:inline">Logout</span>
                             </button>
                         </div>
@@ -685,134 +685,136 @@ const TeacherDashboard = ({ user }) => {
             </div>
 
             {/* Change Password Modal */}
-            {showPasswordModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-blue-100 rounded-xl">
-                                    <Key className="text-blue-600" size={24} />
+            {
+                showPasswordModal && (
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-blue-100 rounded-xl">
+                                        <Key className="text-blue-600" size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
+                                        <p className="text-sm text-gray-500">Update your password</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
-                                    <p className="text-sm text-gray-500">Update your password</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={closePasswordModal}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <XCircle size={20} />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handlePasswordChange} className="space-y-4">
-                            {/* Current Password */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Current Password
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showCurrentPassword ? 'text' : 'password'}
-                                        value={passwordData.currentPassword}
-                                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
-                                        placeholder="Enter current password"
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    >
-                                        {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* New Password */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    New Password
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showNewPassword ? 'text' : 'password'}
-                                        value={passwordData.newPassword}
-                                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
-                                        placeholder="Enter new password"
-                                        required
-                                        minLength={6}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowNewPassword(!showNewPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    >
-                                        {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
-                            </div>
-
-                            {/* Confirm Password */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Confirm New Password
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showConfirmPassword ? 'text' : 'password'}
-                                        value={passwordData.confirmPassword}
-                                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
-                                        placeholder="Confirm new password"
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                                    >
-                                        {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex gap-3 pt-2">
                                 <button
-                                    type="submit"
-                                    disabled={passwordLoading}
-                                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
-                                >
-                                    {passwordLoading ? (
-                                        <>
-                                            <Loader2 size={18} className="animate-spin" />
-                                            Updating...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle size={18} />
-                                            Update Password
-                                        </>
-                                    )}
-                                </button>
-                                <button
-                                    type="button"
                                     onClick={closePasswordModal}
-                                    className="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors"
+                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                 >
-                                    Cancel
+                                    <XCircle size={20} />
                                 </button>
                             </div>
-                        </form>
+
+                            <form onSubmit={handlePasswordChange} className="space-y-4">
+                                {/* Current Password */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Current Password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showCurrentPassword ? 'text' : 'password'}
+                                            value={passwordData.currentPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                            placeholder="Enter current password"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* New Password */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        New Password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showNewPassword ? 'text' : 'password'}
+                                            value={passwordData.newPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                            placeholder="Enter new password"
+                                            required
+                                            minLength={6}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                                </div>
+
+                                {/* Confirm Password */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Confirm New Password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            value={passwordData.confirmPassword}
+                                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                            placeholder="Confirm new password"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={passwordLoading}
+                                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+                                    >
+                                        {passwordLoading ? (
+                                            <>
+                                                <Loader2 size={18} className="animate-spin" />
+                                                Updating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle size={18} />
+                                                Update Password
+                                            </>
+                                        )}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={closePasswordModal}
+                                        className="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 
