@@ -399,37 +399,37 @@ const TeacherDashboard = ({ user }) => {
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
             {/* Modern Header - Mobile Optimized */}
             <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
-                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-4">
-                    <div className="flex items-start justify-between gap-2">
+                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-1.5 sm:py-4">
+                    <div className="flex items-start justify-between gap-1.5 sm:gap-2">
                         {/* Left: Logo, Title & Info */}
-                        <div className="flex items-start gap-2 sm:gap-4 min-w-0 flex-1">
+                        <div className="flex items-start gap-1.5 sm:gap-4 min-w-0 flex-1">
                             {/* Logo */}
                             <img
                                 src="/eysa-logo.svg"
                                 alt="EYSA Logo"
-                                className="h-10 sm:h-12 md:h-16 w-auto flex-shrink-0"
+                                className="h-8 sm:h-12 md:h-16 w-auto flex-shrink-0"
                             />
 
                             {/* Title & Info Column */}
                             <div className="min-w-0 flex-1">
                                 {/* Row 1: Language + Badge */}
-                                <div className="flex items-center gap-1.5 sm:gap-3">
-                                    <h1 className="text-xs sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
+                                <div className="flex items-center gap-1 sm:gap-3">
+                                    <h1 className="text-[10px] sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
                                         Language
                                     </h1>
                                     {/* Teacher Badge */}
-                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[7px] sm:text-[10px] font-bold px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-md uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[6px] sm:text-[10px] font-bold px-1 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-md uppercase tracking-wider whitespace-nowrap flex-shrink-0">
                                         Teacher
                                     </span>
                                 </div>
 
                                 {/* Row 2: Center */}
-                                <h2 className="text-xs sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
+                                <h2 className="text-[10px] sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
                                     Center
                                 </h2>
 
                                 {/* Row 3: Batch | Week | Name */}
-                                <div className="flex items-center gap-0.5 sm:gap-2 text-[8px] sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
+                                <div className="flex items-center gap-0.5 sm:gap-2 text-[7px] sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
                                     <span className="whitespace-nowrap">Batch {user.batch || 1}</span>
                                     <span>|</span>
                                     <span className="whitespace-nowrap">Week {currentWeek}</span>
@@ -446,13 +446,13 @@ const TeacherDashboard = ({ user }) => {
                                 className="p-1 sm:p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-md sm:rounded-lg transition-all shadow-md hover:shadow-lg"
                                 title="Change Password"
                             >
-                                <Key size={12} className="sm:w-5 sm:h-5" />
+                                <Key size={10} className="sm:w-5 sm:h-5" />
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="p-1 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg flex items-center gap-1 sm:gap-2 transition-all font-semibold text-[10px] sm:text-sm shadow-md hover:shadow-lg"
+                                className="p-1 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg flex items-center gap-2 transition-all font-semibold text-sm shadow-md hover:shadow-lg"
                             >
-                                <LogOut size={12} className="sm:w-[18px] sm:h-[18px]" />
+                                <LogOut size={10} className="sm:w-[18px] sm:h-[18px]" />
                                 <span className="hidden sm:inline">Logout</span>
                             </button>
                         </div>
