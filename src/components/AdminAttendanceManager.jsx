@@ -244,20 +244,31 @@ const AdminAttendanceManager = () => {
 
             console.log('✅ Attendance submitted successfully!', result);
 
+            // Show success notification with clear feedback
+            const successMessage = result.skipped > 0
+                ? `✅ SUCCESS!\n\n${result.inserted} new record(s) submitted.\n${result.skipped} already existed (skipped duplicates).`
+                : `✅ SUCCESS!\n\nAttendance submitted for ${result.inserted} student(s).`;
+
+            // Show toast notification
             if (result.skipped > 0) {
                 toast.success(
-                    `✅ SUCCESS! ${result.inserted} new record(s) submitted. ${result.skipped} already existed (skipped duplicates)`,
+                    `✅ SUCCESS! ${result.inserted} new, ${result.skipped} skipped (duplicates)`,
                     { duration: 6000 }
                 );
             } else {
                 toast.success(
-                    `✅ SUCCESS! Attendance submitted for ${result.inserted} student(s)`,
+                    `✅ SUCCESS! ${result.inserted} student(s) marked`,
                     { duration: 5000 }
                 );
             }
 
+            // Show browser alert for extra confirmation
+            alert(successMessage);
+
+            // Reload schedules to update status
             await loadAllSchedules();
 
+            // Clear form and go back to list
             setSelectedSchedule(null);
             setStudents([]);
             setAttendance({});
