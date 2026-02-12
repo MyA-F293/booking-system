@@ -9,6 +9,7 @@ import AdminAttendanceManager from './components/AdminAttendanceManager';
 import AdminGuide from './components/AdminGuide';
 import BulkOperations from './components/BulkOperations';
 import BackupButton from './components/BackupButton';
+import FullBackupButton from './components/FullBackupButton';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useToast } from './components/Toast';
@@ -600,10 +601,13 @@ const AdminDashboard = ({ user }) => {
                                                         <Cloud size={18} className="text-blue-600" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-semibold text-gray-800 text-sm">Backup Database</div>
-                                                        <div className="text-xs text-gray-500">Save to Google Drive</div>
+                                                        <div className="font-semibold text-gray-800 text-sm">Quick Backup</div>
+                                                        <div className="text-xs text-gray-500">Attendance to Google Drive</div>
                                                     </div>
                                                 </button>
+
+                                                {/* Full Database Backup & Restore */}
+                                                <FullBackupButton />
 
                                                 <button
                                                     onClick={() => {
@@ -669,15 +673,15 @@ const AdminDashboard = ({ user }) => {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 relative py-2.5 sm:py-3 lg:py-4 px-1 sm:px-3 lg:px-6 font-poppins transition-all duration-300 flex items-center justify-center gap-1 sm:gap-2 group z-10 ${activeTab === tab.id
-                                        ? 'text-[#F39C32]'
-                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
+                                    ? 'text-[#F39C32]'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
                                     }`}
                             >
                                 <tab.icon
                                     size={16}
                                     className={`sm:w-[18px] sm:h-[18px] transition-all duration-300 ${activeTab === tab.id
-                                            ? 'text-[#F39C32] scale-110 drop-shadow-md'
-                                            : 'group-hover:scale-110'
+                                        ? 'text-[#F39C32] scale-110 drop-shadow-md'
+                                        : 'group-hover:scale-110'
                                         }`}
                                 />
                                 <span className={`hidden sm:inline font-semibold text-xs lg:text-sm transition-all duration-300 ${activeTab === tab.id ? 'scale-105' : ''
