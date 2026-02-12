@@ -3,6 +3,7 @@ import { LogOut, Users, Calendar, Clock, CheckCircle, XCircle, AlertCircle, Load
 import { useToast } from './Toast';
 import { logout, updateTeacherPassword } from '../utils/authHelpers';
 import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, submitBatchAttendance } from '../utils/dbHelpers';
+import { supabase } from '../supabaseClient';
 
 const TeacherDashboard = ({ user }) => {
     const toast = useToast();
@@ -12,6 +13,7 @@ const TeacherDashboard = ({ user }) => {
     const [attendance, setAttendance] = useState({});
     const [loading, setLoading] = useState(false);
     const [submitting, setSubmitting] = useState(false);
+    const [hasExistingAttendance, setHasExistingAttendance] = useState(false); // NEW: Track if attendance already submitted
 
     // Password change state
     const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -127,6 +129,25 @@ const TeacherDashboard = ({ user }) => {
             const studentsData = await getScheduleStudents(schedule.id);
             setStudents(studentsData);
 
+            // Check if attendance already exists for this schedule
+            const { data: existingAttendance, error: checkError } = await supabase
+                .from('attendance')
+                .select('id')
+                .eq('schedule_id', schedule.id)
+                .limit(1);
+
+            if (checkError) {
+                console.error('❌ Error checking existing attendance:', checkError);
+            } else {
+                const hasExisting = existingAttendance && existingAttendance.length > 0;
+                setHasExistingAttendance(hasExisting);
+
+                if (hasExisting) {
+                    console.log('⚠️ Attendance already submitted for this schedule');
+                    toast.warning('⚠️ Attendance has already been submitted for this class', { duration: 4000 });
+                }
+            }
+
             // Initialize attendance state (empty by default)
             const initialAttendance = {};
             studentsData.forEach(student => {
@@ -167,6 +188,36 @@ const TeacherDashboard = ({ user }) => {
         try {
             setSubmitting(true);
             console.log('📤 Starting attendance submission...');
+
+            // PRE-CHECK: Check if attendance already exists for this schedule
+            const { data: existingAttendance, error: checkError } = await supabase
+                .from('attendance')
+                .select('student_id, student_name, status')
+                .eq('schedule_id', selectedSchedule.id);
+
+            if (checkError) {
+                console.error('❌ Error checking existing attendance:', checkError);
+                throw checkError;
+            }
+
+            // If attendance already exists, show warning
+            if (existingAttendance && existingAttendance.length > 0) {
+                console.log('⚠️ Found existing attendance records:', existingAttendance.length);
+
+                // Ask for confirmation
+                const confirmed = window.confirm(
+                    `⚠️ WARNING: Attendance for this class has already been submitted!\n\n` +
+                    `Found ${existingAttendance.length} existing record(s).\n\n` +
+                    `Submitting again will SKIP duplicate entries.\n\n` +
+                    `Do you want to continue?`
+                );
+
+                if (!confirmed) {
+                    console.log('❌ User cancelled duplicate submission');
+                    setSubmitting(false);
+                    return;
+                }
+            }
 
             // Prepare attendance data for Supabase (only for students with marked attendance)
             const attendanceRecords = students
@@ -394,6 +445,21 @@ const TeacherDashboard = ({ user }) => {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Warning Banner if attendance already submitted */}
+                            {hasExistingAttendance && (
+                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-3 sm:p-4 mx-3 sm:mx-6 mt-4 rounded-lg">
+                                    <div className="flex items-start gap-2 sm:gap-3">
+                                        <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
+                                        <div>
+                                            <h3 className="font-bold text-amber-900 text-sm sm:text-base">⚠️ Attendance Already Submitted</h3>
+                                            <p className="text-amber-800 text-xs sm:text-sm mt-1">
+                                                Attendance for this class has already been recorded. Submitting again will only add NEW entries (duplicates will be skipped automatically).
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="p-6">
                                 {students.length === 0 ? (
