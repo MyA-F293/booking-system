@@ -414,22 +414,22 @@ const TeacherDashboard = ({ user }) => {
                             <div className="min-w-0 flex-1">
                                 {/* Row 1: Language + Badge */}
                                 <div className="flex items-center gap-0.5 sm:gap-3">
-                                    <h1 className="text-[7px] sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
+                                    <h1 className="text-[4px] sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
                                         Language
                                     </h1>
                                     {/* Teacher Badge */}
-                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[4px] sm:text-[10px] font-bold px-0.5 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-sm uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[2px] sm:text-[10px] font-bold px-0.5 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-sm uppercase tracking-wider whitespace-nowrap flex-shrink-0">
                                         Teacher
                                     </span>
                                 </div>
 
                                 {/* Row 2: Center */}
-                                <h2 className="text-[7px] sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
+                                <h2 className="text-[4px] sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] leading-none">
                                     Center
                                 </h2>
 
                                 {/* Row 3: Batch | Week | Name */}
-                                <div className="flex items-center gap-0.5 sm:gap-2 text-[5px] sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
+                                <div className="flex items-center gap-0.5 sm:gap-2 text-[3px] sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
                                     <span className="whitespace-nowrap">Batch {user.batch || 1}</span>
                                     <span>|</span>
                                     <span className="whitespace-nowrap">Week {currentWeek}</span>
