@@ -400,44 +400,42 @@ const TeacherDashboard = ({ user }) => {
             {/* Modern Header - Mobile Optimized */}
             <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                         {/* Left: Logo & Title */}
-                        <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="flex items-center gap-1.5 sm:gap-4 min-w-0 flex-1">
                             <img
                                 src="/eysa-logo.svg"
                                 alt="EYSA Logo"
-                                className="h-8 sm:h-12 md:h-16 w-auto"
+                                className="h-7 sm:h-12 md:h-16 w-auto flex-shrink-0"
                             />
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h1 className="text-sm sm:text-2xl md:text-3xl font-bold text-[#2C5F8D]">
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                                    <h1 className="text-xs sm:text-2xl md:text-3xl font-bold text-[#2C5F8D] whitespace-nowrap">
                                         Language Center
                                     </h1>
                                     {/* Teacher Badge - Ribbon Style */}
-                                    <div className="relative">
-                                        <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[6px] sm:text-[10px] font-bold px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-md inline-block uppercase tracking-wider">
-                                            Teacher
-                                        </span>
-                                    </div>
+                                    <span className="bg-gradient-to-r from-[#F39C32] to-[#e88b1f] text-white text-[7px] sm:text-[10px] font-bold px-1 sm:px-3 py-0.5 sm:py-1 rounded-sm transform -rotate-12 shadow-md uppercase tracking-wider whitespace-nowrap">
+                                        Teacher
+                                    </span>
                                 </div>
-                                <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-sm text-gray-600 mt-0.5">
-                                    <span>Batch {user.batch || 1}</span>
-                                    <span>|</span>
-                                    <span>Week {currentWeek}</span>
-                                    <span>|</span>
-                                    <span className="font-semibold text-[#F39C32] truncate max-w-[80px] sm:max-w-none">{user.name}</span>
+                                <div className="flex items-center gap-1 sm:gap-2 text-[8px] sm:text-sm text-gray-600 mt-0.5">
+                                    <span className="whitespace-nowrap">Batch {user.batch || 1}</span>
+                                    <span className="hidden sm:inline">|</span>
+                                    <span className="whitespace-nowrap">Week {currentWeek}</span>
+                                    <span className="hidden sm:inline">|</span>
+                                    <span className="font-semibold text-[#F39C32] truncate max-w-[60px] sm:max-w-none">{user.name}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right: Actions */}
-                        <div className="flex items-center gap-1 sm:gap-3">
+                        <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
                             <button
                                 onClick={() => setShowPasswordModal(true)}
                                 className="p-1.5 sm:p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all shadow-md hover:shadow-lg"
                                 title="Change Password"
                             >
-                                <Key size={16} className="sm:w-5 sm:h-5" />
+                                <Key size={14} className="sm:w-5 sm:h-5" />
                             </button>
                             <button
                                 onClick={handleLogout}
