@@ -223,34 +223,34 @@ const FullBackupButton = () => {
             <button
                 onClick={handleFullBackup}
                 disabled={isBackingUp}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     {isBackingUp ? (
-                        <Loader2 size={20} className="text-blue-600 animate-spin" />
+                        <Loader2 size={16} className="text-blue-600 animate-spin" />
                     ) : (
-                        <Download size={20} className="text-blue-600" />
+                        <Download size={16} className="text-blue-600" />
                     )}
                 </div>
-                <div className="flex-1 text-left">
-                    <div className="font-semibold text-gray-800">
-                        {isBackingUp ? 'Backing up...' : 'Full Database Backup'}
+                <div className="flex-1 text-left min-w-0">
+                    <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">
+                        {isBackingUp ? 'Backing up...' : 'Full Backup'}
                     </div>
-                    <div className="text-sm text-gray-500">Download all tables (SQL + JSON)</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 truncate">All tables (SQL+JSON)</div>
                 </div>
             </button>
 
             {/* Restore Button */}
             <button
                 onClick={() => setShowRestoreModal(true)}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-purple-50 transition-colors"
             >
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                    <Upload size={20} className="text-purple-600" />
+                <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Upload size={16} className="text-purple-600" />
                 </div>
-                <div className="flex-1 text-left">
-                    <div className="font-semibold text-gray-800">Restore Database</div>
-                    <div className="text-sm text-gray-500">Upload and restore from backup</div>
+                <div className="flex-1 text-left min-w-0">
+                    <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">Restore DB</div>
+                    <div className="text-[10px] sm:text-xs text-gray-500 truncate">Upload backup</div>
                 </div>
             </button>
 

@@ -613,48 +613,48 @@ const AdminBookingDashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-white rounded-2xl p-4 border-2 border-orange-100 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-br from-orange-100 to-amber-100 rounded-xl">
-                            <Calendar size={20} className="text-[#F39C32]" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                <div className="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 border-orange-100 shadow-sm">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2.5 bg-gradient-to-br from-orange-100 to-amber-100 rounded-lg sm:rounded-xl flex-shrink-0">
+                            <Calendar size={16} className="sm:w-5 sm:h-5 text-[#F39C32]" />
                         </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{schedules.length}</p>
-                            <p className="text-xs text-gray-500">{t('stats.totalClasses')}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white rounded-2xl p-4 border-2 border-emerald-100 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl">
-                            <Users size={20} className="text-emerald-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{schedules.reduce((acc, s) => acc + s.current_students, 0)}</p>
-                            <p className="text-xs text-gray-500">{t('stats.totalStudents')}</p>
+                        <div className="min-w-0">
+                            <p className="text-lg sm:text-2xl font-bold text-gray-800 truncate">{schedules.length}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('stats.totalClasses')}</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl p-4 border-2 border-blue-100 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
-                            <GraduationCap size={20} className="text-[#1F4E8C]" />
+                <div className="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 border-emerald-100 shadow-sm">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2.5 bg-gradient-to-br from-emerald-100 to-green-100 rounded-lg sm:rounded-xl flex-shrink-0">
+                            <Users size={16} className="sm:w-5 sm:h-5 text-emerald-600" />
                         </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{allTeachers.length}</p>
-                            <p className="text-xs text-gray-500">{t('stats.totalTeachers')}</p>
+                        <div className="min-w-0">
+                            <p className="text-lg sm:text-2xl font-bold text-gray-800 truncate">{schedules.reduce((acc, s) => acc + s.current_students, 0)}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('stats.totalStudents')}</p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl p-4 border-2 border-red-100 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-gradient-to-br from-red-100 to-rose-100 rounded-xl">
-                            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">!</div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 border-blue-100 shadow-sm">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2.5 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg sm:rounded-xl flex-shrink-0">
+                            <GraduationCap size={16} className="sm:w-5 sm:h-5 text-[#1F4E8C]" />
                         </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{schedules.filter(s => s.current_students >= 10).length}</p>
-                            <p className="text-xs text-gray-500">{t('stats.fullClasses')}</p>
+                        <div className="min-w-0">
+                            <p className="text-lg sm:text-2xl font-bold text-gray-800 truncate">{allTeachers.length}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('stats.totalTeachers')}</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 border-red-100 shadow-sm">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2.5 bg-gradient-to-br from-red-100 to-rose-100 rounded-lg sm:rounded-xl flex-shrink-0">
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">!</div>
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-lg sm:text-2xl font-bold text-gray-800 truncate">{schedules.filter(s => s.current_students >= 10).length}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('stats.fullClasses')}</p>
                         </div>
                     </div>
                 </div>
@@ -662,42 +662,44 @@ const AdminBookingDashboard = () => {
 
             {/* NEW: Filters and View Mode */}
             {!loading && schedules.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-lg p-4 border border-gray-200">
-                    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 border border-gray-200">
+                    <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 items-start lg:items-center justify-between">
                         {/* View Mode Toggle */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-700">View:</span>
-                            <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                        <div className="flex items-center gap-2 w-full lg:w-auto">
+                            <span className="text-xs sm:text-sm font-medium text-gray-700">View:</span>
+                            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 sm:p-1 flex-1 lg:flex-initial">
                                 <button
                                     onClick={() => setViewMode('grouped')}
-                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${viewMode === 'grouped'
+                                    className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-[11px] sm:text-sm transition-all flex-1 lg:flex-initial ${viewMode === 'grouped'
                                         ? 'bg-[#F39C32] text-white shadow'
                                         : 'text-gray-600 hover:text-gray-800'
                                         }`}
                                 >
-                                    📚 Grouped by Class
+                                    <span className="hidden sm:inline">📚 Grouped by Class</span>
+                                    <span className="sm:hidden">📚 Grouped</span>
                                 </button>
                                 <button
                                     onClick={() => setViewMode('list')}
-                                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${viewMode === 'list'
+                                    className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-[11px] sm:text-sm transition-all flex-1 lg:flex-initial ${viewMode === 'list'
                                         ? 'bg-[#F39C32] text-white shadow'
                                         : 'text-gray-600 hover:text-gray-800'
                                         }`}
                                 >
-                                    📋 List by Phase
+                                    <span className="hidden sm:inline">📋 List by Phase</span>
+                                    <span className="sm:hidden">📋 List</span>
                                 </button>
                             </div>
                         </div>
 
                         {/* Day Filter */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-medium text-gray-700">Filter by Day:</span>
-                            <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
+                            <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">Filter by Day:</span>
+                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                                 {['all', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
                                     <button
                                         key={day}
                                         onClick={() => setFilterDay(day)}
-                                        className={`px-3 py-1.5 rounded-lg font-medium text-xs transition-all ${filterDay === day
+                                        className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-medium text-[10px] sm:text-xs transition-all ${filterDay === day
                                             ? 'bg-[#1F4E8C] text-white shadow'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                             }`}
@@ -745,7 +747,7 @@ const AdminBookingDashboard = () => {
 
             {/* NEW: Grouped by Class View */}
             {!loading && schedules.length > 0 && viewMode === 'grouped' && (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     {Object.entries(groupedByClass).map(([className, classSchedules]) => {
                         const badge = getClassBadge(className);
                         const isExpanded = expandedClasses.has(className);
@@ -753,28 +755,28 @@ const AdminBookingDashboard = () => {
                         const maxCapacity = classSchedules.length * 10;
 
                         return (
-                            <div key={className} className="bg-white rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                            <div key={className} className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
                                 {/* Class Header - Clickable to expand/collapse */}
                                 <button
                                     onClick={() => toggleClassExpansion(className)}
-                                    className="w-full bg-gradient-to-r from-gray-50 to-slate-50 hover:from-orange-50 hover:to-amber-50 px-6 py-4 transition-all"
+                                    className="w-full bg-gradient-to-r from-gray-50 to-slate-50 hover:from-orange-50 hover:to-amber-50 px-3 sm:px-6 py-3 sm:py-4 transition-all"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
                                             {/* Class Badge */}
-                                            <div className={`${badge.color} w-14 h-14 rounded-xl flex items-center justify-center text-2xl shadow-md`}>
+                                            <div className={`${badge.color} w-10 h-10 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl flex items-center justify-center text-xl sm:text-2xl shadow-md flex-shrink-0`}>
                                                 {badge.emoji}
                                             </div>
 
                                             {/* Class Info */}
-                                            <div className="text-left">
-                                                <h3 className="text-xl font-bold text-gray-800">{className}</h3>
-                                                <div className="flex items-center gap-3 mt-1">
-                                                    <span className="text-sm text-gray-600">
+                                            <div className="text-left min-w-0">
+                                                <h3 className="text-sm sm:text-xl font-bold text-gray-800 truncate">{className}</h3>
+                                                <div className="flex items-center gap-2 sm:gap-3 mt-0.5 sm:mt-1">
+                                                    <span className="text-[10px] sm:text-sm text-gray-600 truncate">
                                                         📅 {classSchedules.length} schedule{classSchedules.length !== 1 ? 's' : ''}
                                                     </span>
-                                                    <span className="text-sm text-gray-400">•</span>
-                                                    <span className="text-sm text-gray-600">
+                                                    <span className="text-[10px] sm:text-sm text-gray-400 hidden sm:inline">•</span>
+                                                    <span className="text-[10px] sm:text-sm text-gray-600 truncate hidden sm:inline">
                                                         👥 {totalStudents}/{maxCapacity} students
                                                     </span>
                                                 </div>
@@ -782,16 +784,16 @@ const AdminBookingDashboard = () => {
                                         </div>
 
                                         {/* Expand/Collapse Icon */}
-                                        <div className="flex items-center gap-3">
-                                            <div className={`px-4 py-2 rounded-lg font-semibold text-sm ${totalStudents >= maxCapacity * 0.8
-                                                    ? 'bg-red-100 text-red-700'
-                                                    : totalStudents >= maxCapacity * 0.5
-                                                        ? 'bg-emerald-100 text-emerald-700'
-                                                        : 'bg-amber-100 text-amber-700'
+                                        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                                            <div className={`px-2 sm:px-4 py-1 sm:py-2 rounded-lg font-semibold text-[10px] sm:text-sm ${totalStudents >= maxCapacity * 0.8
+                                                ? 'bg-red-100 text-red-700'
+                                                : totalStudents >= maxCapacity * 0.5
+                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    : 'bg-amber-100 text-amber-700'
                                                 }`}>
-                                                {Math.round((totalStudents / maxCapacity) * 100)}% Full
+                                                {Math.round((totalStudents / maxCapacity) * 100)}%
                                             </div>
-                                            <div className={`w-8 h-8 rounded-lg bg-[#F39C32] text-white flex items-center justify-center transition-transform ${isExpanded ? 'rotate-180' : ''
+                                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#F39C32] text-white flex items-center justify-center transition-transform text-xs sm:text-base ${isExpanded ? 'rotate-180' : ''
                                                 }`}>
                                                 ▼
                                             </div>
@@ -802,48 +804,48 @@ const AdminBookingDashboard = () => {
                                 {/* Expanded Schedule Details */}
                                 {isExpanded && (
                                     <div className="border-t border-gray-200 bg-white">
-                                        <div className="p-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="p-3 sm:p-6">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                                                 {classSchedules.map((schedule) => {
                                                     const status = getStatusColor(schedule.current_students);
                                                     return (
-                                                        <div key={schedule.id} className={`bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border-2 ${status.border} p-4 hover:shadow-md transition-all`}>
+                                                        <div key={schedule.id} className={`bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg sm:rounded-xl border-2 ${status.border} p-3 sm:p-4 hover:shadow-md transition-all`}>
                                                             {/* Schedule Header */}
-                                                            <div className="flex items-center justify-between mb-3">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className={`${status.bg} ${status.text} px-3 py-1 rounded-full text-xs font-bold`}>
+                                                            <div className="flex items-center justify-between mb-2 sm:mb-3 flex-wrap gap-1.5">
+                                                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                                                    <div className={`${status.bg} ${status.text} px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold`}>
                                                                         {schedule.current_students}/10
                                                                     </div>
-                                                                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
+                                                                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] sm:text-xs font-semibold truncate">
                                                                         {schedule.program}
                                                                     </span>
-                                                                    <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-semibold">
+                                                                    <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-purple-100 text-purple-700 rounded-lg text-[10px] sm:text-xs font-semibold truncate">
                                                                         {schedule.level}
                                                                     </span>
                                                                 </div>
                                                             </div>
 
                                                             {/* Schedule Details */}
-                                                            <div className="space-y-2 text-sm mb-4">
-                                                                <div className="flex items-center gap-2 text-gray-700">
-                                                                    <Calendar size={16} className="text-[#F39C32]" />
-                                                                    <span className="font-semibold">{getDayLabel(schedule.day, schedule.phase)}</span>
+                                                            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm mb-3 sm:mb-4">
+                                                                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-700">
+                                                                    <Calendar size={14} className="sm:w-4 sm:h-4 text-[#F39C32] flex-shrink-0" />
+                                                                    <span className="font-semibold truncate">{getDayLabel(schedule.day, schedule.phase)}</span>
                                                                     {schedule.day && (
-                                                                        <span className="text-gray-400">
+                                                                        <span className="text-gray-400 text-[10px] sm:text-xs truncate">
                                                                             ({formatDateShort(getDateForDay(schedule.day, displayWeek, currentYear))})
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                <div className="flex items-center gap-2 text-gray-700">
-                                                                    <Clock size={16} className="text-[#F39C32]" />
-                                                                    <span>{getTimeLabel(schedule.time_slot)} • {getTimeHours(schedule.time_slot)}</span>
+                                                                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-700">
+                                                                    <Clock size={14} className="sm:w-4 sm:h-4 text-[#F39C32] flex-shrink-0" />
+                                                                    <span className="truncate">{getTimeLabel(schedule.time_slot)} • {getTimeHours(schedule.time_slot)}</span>
                                                                 </div>
-                                                                <div className="flex items-center gap-2 text-gray-700">
-                                                                    <GraduationCap size={16} className="text-[#F39C32]" />
-                                                                    <span>{schedule.teacher?.name || t('adminBooking.noTeacherYet')}</span>
+                                                                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-700">
+                                                                    <GraduationCap size={14} className="sm:w-4 sm:h-4 text-[#F39C32] flex-shrink-0" />
+                                                                    <span className="truncate">{schedule.teacher?.name || t('adminBooking.noTeacherYet')}</span>
                                                                 </div>
-                                                                <div className="flex items-center gap-2 text-gray-600 text-xs">
-                                                                    <span className="px-2 py-0.5 bg-gray-200 rounded">
+                                                                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600 text-[10px] sm:text-xs">
+                                                                    <span className="px-1.5 sm:px-2 py-0.5 bg-gray-200 rounded truncate">
                                                                         {getPhaseLabel(schedule.phase)}
                                                                     </span>
                                                                 </div>

@@ -571,21 +571,21 @@ const AdminDashboard = ({ user }) => {
                                 {showActionsMenu && (
                                     <>
                                         <div className="fixed inset-0 z-40" onClick={() => setShowActionsMenu(false)}></div>
-                                        <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                            <div className="py-2">
+                                        <div className="absolute right-0 mt-2 w-48 sm:w-52 bg-white rounded-lg sm:rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <div className="py-1.5">
                                                 <button
                                                     onClick={() => {
                                                         setShowAdminGuide(true);
                                                         setShowActionsMenu(false);
                                                     }}
-                                                    className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 group"
+                                                    className="w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors flex items-center gap-2.5 group"
                                                 >
-                                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                                        <BookOpen size={18} className="text-blue-600" />
+                                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+                                                        <BookOpen size={16} className="text-blue-600" />
                                                     </div>
-                                                    <div>
-                                                        <div className="font-semibold text-gray-800 text-sm">Admin Guide</div>
-                                                        <div className="text-xs text-gray-500">View documentation</div>
+                                                    <div className="min-w-0">
+                                                        <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">Admin Guide</div>
+                                                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">View docs</div>
                                                     </div>
                                                 </button>
 
@@ -595,14 +595,14 @@ const AdminDashboard = ({ user }) => {
                                                         // Trigger backup
                                                         document.querySelector('[title="Backup Database to Google Drive"]')?.click();
                                                     }}
-                                                    className="w-full px-4 py-3 text-left hover:bg-blue-50 transition-colors flex items-center gap-3 group"
+                                                    className="w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors flex items-center gap-2.5 group"
                                                 >
-                                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                                                        <Cloud size={18} className="text-blue-600" />
+                                                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors flex-shrink-0">
+                                                        <Cloud size={16} className="text-blue-600" />
                                                     </div>
-                                                    <div>
-                                                        <div className="font-semibold text-gray-800 text-sm">Quick Backup</div>
-                                                        <div className="text-xs text-gray-500">Attendance to Google Drive</div>
+                                                    <div className="min-w-0">
+                                                        <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">Quick Backup</div>
+                                                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">To Google Drive</div>
                                                     </div>
                                                 </button>
 
@@ -614,14 +614,14 @@ const AdminDashboard = ({ user }) => {
                                                         setShowBulkOperations(true);
                                                         setShowActionsMenu(false);
                                                     }}
-                                                    className="w-full px-4 py-3 text-left hover:bg-purple-50 transition-colors flex items-center gap-3 group"
+                                                    className="w-full px-3 py-2 text-left hover:bg-purple-50 transition-colors flex items-center gap-2.5 group"
                                                 >
-                                                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                                                        <Upload size={18} className="text-purple-600" />
+                                                    <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors flex-shrink-0">
+                                                        <Upload size={16} className="text-purple-600" />
                                                     </div>
-                                                    <div>
-                                                        <div className="font-semibold text-gray-800 text-sm">Bulk Operations</div>
-                                                        <div className="text-xs text-gray-500">Import & manage data</div>
+                                                    <div className="min-w-0">
+                                                        <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">Bulk Operations</div>
+                                                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">Import & manage</div>
                                                     </div>
                                                 </button>
                                             </div>
