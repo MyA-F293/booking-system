@@ -129,30 +129,44 @@ const TeacherDashboard = ({ user }) => {
             const studentsData = await getScheduleStudents(schedule.id);
             setStudents(studentsData);
 
-            // Check if attendance already exists for this schedule
+            // Check if attendance already exists for this schedule AND load existing data
             const { data: existingAttendance, error: checkError } = await supabase
                 .from('attendance')
-                .select('id')
-                .eq('schedule_id', schedule.id)
-                .limit(1);
+                .select('student_id, status')
+                .eq('schedule_id', schedule.id);
 
             if (checkError) {
                 console.error('❌ Error checking existing attendance:', checkError);
-            } else {
-                const hasExisting = existingAttendance && existingAttendance.length > 0;
-                setHasExistingAttendance(hasExisting);
-
-                if (hasExisting) {
-                    console.log('⚠️ Attendance already submitted for this schedule');
-                    toast.warning('⚠️ Attendance has already been submitted for this class', { duration: 4000 });
-                }
             }
 
-            // Initialize attendance state (empty by default)
+            const hasExisting = existingAttendance && existingAttendance.length > 0;
+            setHasExistingAttendance(hasExisting);
+
+            // Initialize attendance state
             const initialAttendance = {};
-            studentsData.forEach(student => {
-                initialAttendance[student.user_id] = null; // Default to empty
-            });
+
+            if (hasExisting) {
+                console.log('📋 Loading existing attendance for editing:', existingAttendance.length, 'records');
+                toast.info('📝 Loading existing attendance for editing...', { duration: 3000 });
+
+                // Create map of existing attendance by student_id
+                const existingMap = {};
+                existingAttendance.forEach(record => {
+                    existingMap[record.student_id] = record.status;
+                });
+
+                // Set attendance based on existing data or null for new students
+                studentsData.forEach(student => {
+                    const studentId = student.user?.student_id;
+                    initialAttendance[student.user_id] = existingMap[studentId] || null;
+                });
+            } else {
+                // No existing attendance, initialize as empty
+                studentsData.forEach(student => {
+                    initialAttendance[student.user_id] = null;
+                });
+            }
+
             setAttendance(initialAttendance);
         } catch (err) {
             console.error('Error loading students:', err);
@@ -187,12 +201,12 @@ const TeacherDashboard = ({ user }) => {
 
         try {
             setSubmitting(true);
-            console.log('📤 Starting attendance submission...');
+            console.log('📤 Starting attendance submission/update...');
 
-            // PRE-CHECK: Check if attendance already exists for this schedule
+            // Check existing attendance to determine INSERT vs UPDATE
             const { data: existingAttendance, error: checkError } = await supabase
                 .from('attendance')
-                .select('student_id, student_name, status')
+                .select('id, student_id, status')
                 .eq('schedule_id', selectedSchedule.id);
 
             if (checkError) {
@@ -200,71 +214,115 @@ const TeacherDashboard = ({ user }) => {
                 throw checkError;
             }
 
-            // If attendance already exists, show warning
-            if (existingAttendance && existingAttendance.length > 0) {
-                console.log('⚠️ Found existing attendance records:', existingAttendance.length);
-
-                // Ask for confirmation
-                const confirmed = window.confirm(
-                    `⚠️ WARNING: Attendance for this class has already been submitted!\n\n` +
-                    `Found ${existingAttendance.length} existing record(s).\n\n` +
-                    `Submitting again will SKIP duplicate entries.\n\n` +
-                    `Do you want to continue?`
-                );
-
-                if (!confirmed) {
-                    console.log('❌ User cancelled duplicate submission');
-                    setSubmitting(false);
-                    return;
-                }
+            // Create map of existing records by student_id
+            const existingMap = {};
+            if (existingAttendance) {
+                existingAttendance.forEach(record => {
+                    existingMap[record.student_id] = record;
+                });
             }
 
-            // Prepare attendance data for Supabase (only for students with marked attendance)
-            const attendanceRecords = students
+            // Separate records into INSERT (new) and UPDATE (existing with changed status)
+            const recordsToInsert = [];
+            const recordsToUpdate = [];
+
+            students
                 .filter(student => attendance[student.user_id] !== null)
-                .map(student => ({
-                    teacher_id: user.id,
-                    teacher_name: user.name,
-                    schedule_id: selectedSchedule.id,
-                    class_name: selectedSchedule.class?.name || '-',
-                    program: selectedSchedule.program,
-                    level: selectedSchedule.level,
-                    phase: selectedSchedule.phase,
-                    day: selectedSchedule.day,
-                    time_slot: selectedSchedule.time_slot,
-                    week_number: currentWeek,
-                    year: currentYear,
-                    student_id: student.user?.student_id || '-',
-                    student_name: student.user?.full_name || '-',
-                    status: attendance[student.user_id]
-                }));
+                .forEach(student => {
+                    const studentId = student.user?.student_id || '-';
+                    const status = attendance[student.user_id];
 
-            console.log('📋 Submitting', attendanceRecords.length, 'attendance records');
+                    const existingRecord = existingMap[studentId];
 
-            // Submit to Supabase
-            const result = await submitBatchAttendance(attendanceRecords);
+                    if (existingRecord) {
+                        // Record exists - UPDATE if status changed
+                        if (existingRecord.status !== status) {
+                            recordsToUpdate.push({
+                                id: existingRecord.id,
+                                status: status
+                            });
+                        }
+                    } else {
+                        // Record doesn't exist - INSERT
+                        recordsToInsert.push({
+                            teacher_id: user.id,
+                            teacher_name: user.name,
+                            schedule_id: selectedSchedule.id,
+                            class_name: selectedSchedule.class?.name || '-',
+                            program: selectedSchedule.program,
+                            level: selectedSchedule.level,
+                            phase: selectedSchedule.phase,
+                            day: selectedSchedule.day,
+                            time_slot: selectedSchedule.time_slot,
+                            week_number: currentWeek,
+                            year: currentYear,
+                            student_id: studentId,
+                            student_name: student.user?.full_name || '-',
+                            status: status
+                        });
+                    }
+                });
 
-            console.log('✅ Attendance submitted successfully!', result);
+            console.log(`📊 Summary: ${recordsToInsert.length} to insert, ${recordsToUpdate.length} to update`);
 
-            // Show success message with details
-            if (result.skipped > 0) {
+            let insertedCount = 0;
+            let updatedCount = 0;
+
+            // INSERT new records
+            if (recordsToInsert.length > 0) {
+                const { data: insertData, error: insertError } = await supabase
+                    .from('attendance')
+                    .insert(recordsToInsert)
+                    .select();
+
+                if (insertError) {
+                    console.error('❌ Error inserting attendance:', insertError);
+                    throw insertError;
+                }
+                insertedCount = insertData?.length || 0;
+                console.log(`✅ Inserted ${insertedCount} new records`);
+            }
+
+            // UPDATE existing records
+            if (recordsToUpdate.length > 0) {
+                // Update one by one (Supabase doesn't support batch update easily)
+                for (const record of recordsToUpdate) {
+                    const { error: updateError } = await supabase
+                        .from('attendance')
+                        .update({ status: record.status })
+                        .eq('id', record.id);
+
+                    if (updateError) {
+                        console.error('❌ Error updating attendance:', updateError);
+                    } else {
+                        updatedCount++;
+                    }
+                }
+                console.log(`✅ Updated ${updatedCount} existing records`);
+            }
+
+            // Show success message
+            if (insertedCount > 0 && updatedCount > 0) {
                 toast.success(
-                    `✅ SUCCESS! ${result.inserted} new record(s) submitted. ${result.skipped} already existed (skipped duplicates)`,
-                    { duration: 6000 }
-                );
-            } else {
-                toast.success(
-                    `✅ SUCCESS! Attendance submitted for ${result.inserted} student(s)`,
+                    `✅ SUCCESS! ${insertedCount} new, ${updatedCount} updated`,
                     { duration: 5000 }
                 );
+            } else if (insertedCount > 0) {
+                toast.success(
+                    `✅ SUCCESS! ${insertedCount} new record(s) added`,
+                    { duration: 5000 }
+                );
+            } else if (updatedCount > 0) {
+                toast.success(
+                    `✅ SUCCESS! ${updatedCount} record(s) updated`,
+                    { duration: 5000 }
+                );
+            } else {
+                toast.info('No changes to save', { duration: 3000 });
             }
 
-            // Reset attendance after successful submission
-            const resetAttendance = {};
-            students.forEach(student => {
-                resetAttendance[student.user_id] = null;
-            });
-            setAttendance(resetAttendance);
+            // Reload attendance to show updated data
+            await handleSelectSchedule(selectedSchedule);
 
         } catch (err) {
             console.error('❌ Error submitting attendance:', err);
@@ -446,15 +504,15 @@ const TeacherDashboard = ({ user }) => {
                                 </div>
                             </div>
 
-                            {/* Warning Banner if attendance already submitted */}
+                            {/* Info Banner if attendance already submitted */}
                             {hasExistingAttendance && (
-                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-3 sm:p-4 mx-3 sm:mx-6 mt-4 rounded-lg">
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 sm:p-4 mx-3 sm:mx-6 mt-4 rounded-lg">
                                     <div className="flex items-start gap-2 sm:gap-3">
-                                        <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5" size={20} />
+                                        <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
                                         <div>
-                                            <h3 className="font-bold text-amber-900 text-sm sm:text-base">⚠️ Attendance Already Submitted</h3>
-                                            <p className="text-amber-800 text-xs sm:text-sm mt-1">
-                                                Attendance for this class has already been recorded. Submitting again will only add NEW entries (duplicates will be skipped automatically).
+                                            <h3 className="font-bold text-blue-900 text-sm sm:text-base">📝 Edit Mode: Attendance Already Submitted</h3>
+                                            <p className="text-blue-800 text-xs sm:text-sm mt-1">
+                                                You can edit existing attendance below. Change any status (e.g., Present → Late) and click Submit to update. New students will be added automatically.
                                             </p>
                                         </div>
                                     </div>
