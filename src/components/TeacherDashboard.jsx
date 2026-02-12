@@ -450,10 +450,11 @@ const TeacherDashboard = ({ user }) => {
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="p-1 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg flex items-center gap-2 transition-all font-semibold text-sm shadow-md hover:shadow-lg"
+                                className="p-1 sm:px-4 sm:py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg flex items-center gap-1 sm:gap-2 transition-all font-semibold shadow-md hover:shadow-lg"
+                                title="Logout"
                             >
                                 <LogOut size={10} className="sm:w-[18px] sm:h-[18px]" />
-                                <span className="hidden sm:inline">Logout</span>
+                                <span className="hidden sm:inline text-sm">Logout</span>
                             </button>
                         </div>
                     </div>
