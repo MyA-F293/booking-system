@@ -400,9 +400,9 @@ const TeacherDashboard = ({ user }) => {
             {/* Modern Header - Mobile Optimized */}
             <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-1.5 sm:py-4">
-                    <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+                    <div className="flex items-center justify-between gap-1.5 sm:gap-2">
                         {/* Left: Logo, Title & Info */}
-                        <div className="flex items-start gap-1.5 sm:gap-4 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 sm:gap-4 min-w-0 flex-1">
                             {/* Logo */}
                             <img
                                 src="/eysa-logo.svg"
