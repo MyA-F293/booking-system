@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
 import AdminStatsDashboard from './components/AdminStatsDashboard';
 import AttendanceReport from './components/AttendanceReport';
+import AttendanceReportExcel from './components/AttendanceReportExcel';
 import AdminAttendanceManager from './components/AdminAttendanceManager';
 import AdminGuide from './components/AdminGuide';
 import BulkOperations from './components/BulkOperations';
@@ -13,6 +14,7 @@ import FullBackupButton from './components/FullBackupButton';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useToast } from './components/Toast';
+import jsPDF from 'jspdf';
 
 const AdminDashboard = ({ user }) => {
     const { t } = useLanguage();
@@ -494,6 +496,209 @@ const AdminDashboard = ({ user }) => {
         window.location.reload();
     };
 
+    // Export Students to PDF
+    const exportStudentsPDF = async () => {
+        try {
+            const doc = new jsPDF();
+            const filteredStudents = getFilteredStudents();
+
+            // Set font to Helvetica
+            doc.setFont('helvetica');
+
+            // Load and add PNG logo (rectangular - wider)
+            try {
+                const logoImg = new Image();
+                logoImg.src = '/eysa-logo.png';
+                await new Promise((resolve, reject) => {
+                    logoImg.onload = resolve;
+                    logoImg.onerror = reject;
+                    setTimeout(reject, 2000);
+                });
+                doc.addImage(logoImg, 'PNG', 14, 10, 40, 15);
+            } catch (error) {
+                console.log('Logo not loaded, continuing without it');
+                // Fallback: Draw EYSA logo box (rectangular - wider)
+                doc.setFillColor(243, 156, 50);
+                doc.roundedRect(14, 10, 19, 7, 1, 1, 'F');
+                doc.setFillColor(31, 78, 140);
+                doc.roundedRect(33, 10, 19, 7, 1, 1, 'F');
+                doc.setFontSize(6);
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.text('EY', 21, 15);
+                doc.text('SA', 40, 15);
+            }
+
+            // Add title next to logo (aligned with top of logo, with reduced letter spacing)
+            doc.setFontSize(20);
+            doc.setTextColor(31, 78, 140);
+            doc.setFont('helvetica', 'bold');
+            // Add letter spacing by drawing each character separately
+            const title = 'Language Center';
+            const letterSpacing = 0.2;
+            let xOffset = 57;
+            for (let i = 0; i < title.length; i++) {
+                doc.text(title[i], xOffset, 17);
+                xOffset += doc.getTextWidth(title[i]) + letterSpacing;
+            }
+
+            doc.setFontSize(11);
+            doc.setTextColor(243, 156, 50);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Student List Report', 57, 24);
+
+            // Add modern decorative line (navy blue only, stops before QR code)
+            doc.setDrawColor(31, 78, 140);
+            doc.setLineWidth(0.8);
+            doc.line(14, 30, 165, 30); // Stops at x:165 to avoid QR code at x:169
+
+            // Add QR Code on the right side with border (bigger size)
+            try {
+                const qrImg = new Image();
+                qrImg.crossOrigin = 'anonymous';
+
+                await new Promise((resolve, reject) => {
+                    qrImg.onload = () => resolve();
+                    qrImg.onerror = (e) => reject(e);
+                    qrImg.src = '/portal-qr.png';
+                    setTimeout(() => reject(new Error('Timeout')), 3000);
+                });
+
+                // Resize image using canvas to reduce size
+                const canvas = document.createElement('canvas');
+                const maxSize = 250; // Increased from 200
+                const scale = Math.min(maxSize / qrImg.width, maxSize / qrImg.height);
+                canvas.width = qrImg.width * scale;
+                canvas.height = qrImg.height * scale;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(qrImg, 0, 0, canvas.width, canvas.height);
+
+                // Convert to base64 with lower quality
+                const resizedImage = canvas.toDataURL('image/jpeg', 0.7);
+
+                // Draw border around QR code
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.5);
+                doc.roundedRect(169, 8, 28, 28, 2, 2, 'S');
+
+                // Add QR code (bigger: 26x26)
+                doc.addImage(resizedImage, 'JPEG', 170, 9, 26, 26);
+
+                // Add small text below QR code with margin
+                doc.setFontSize(6.5);
+                doc.setTextColor(100, 100, 100);
+                doc.setFont('helvetica', 'italic');
+                doc.text('Scan for Portal', 183, 40, { align: 'center' }); // Changed from 38 to 40 for more margin
+
+                console.log('QR code added successfully');
+            } catch (error) {
+                console.log('QR code not loaded:', error.message);
+            }
+
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Generated: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, 14, 36);
+            doc.text(`Total Students: ${filteredStudents.length}`, 14, 41);
+
+            // Table settings (smaller fonts)
+            const startY = 50;
+            const rowHeight = 7;
+            const colWidths = [10, 35, 52, 15, 40, 33];
+            const headers = ['No', 'Student ID', 'Full Name', 'Batch', 'Program', 'Level'];
+
+            // Draw header
+            doc.setFillColor(31, 78, 140);
+            doc.rect(14, startY, 185, rowHeight, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+
+            let xPos = 14;
+            headers.forEach((header, i) => {
+                doc.text(header, xPos + 2, startY + 4.5);
+                xPos += colWidths[i];
+            });
+
+            // Draw rows
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(7);
+            let yPos = startY + rowHeight;
+
+            filteredStudents.forEach((student, index) => {
+                // Alternate row colors
+                if (index % 2 === 1) {
+                    doc.setFillColor(249, 250, 251);
+                    doc.rect(14, yPos, 185, rowHeight, 'F');
+                }
+
+                doc.setTextColor(0, 0, 0);
+                xPos = 14;
+
+                const rowData = [
+                    (index + 1).toString(),
+                    student.student_id || '-',
+                    student.full_name || '-',
+                    student.batch || '-',
+                    student.program || '-',
+                    student.level || '-'
+                ];
+
+                rowData.forEach((data, i) => {
+                    // Truncate long text
+                    let text = data;
+                    if (i === 2 && text.length > 30) { // Full Name
+                        text = text.substring(0, 27) + '...';
+                    }
+                    doc.text(text, xPos + 2, yPos + 4.5);
+                    xPos += colWidths[i];
+                });
+
+                yPos += rowHeight;
+
+                // Add new page if needed
+                if (yPos > 275) {
+                    doc.addPage();
+                    yPos = 20;
+
+                    // Redraw header on new page
+                    doc.setFillColor(31, 78, 140);
+                    doc.rect(14, yPos, 185, rowHeight, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'bold');
+                    xPos = 14;
+                    headers.forEach((header, i) => {
+                        doc.text(header, xPos + 2, yPos + 4.5);
+                        xPos += colWidths[i];
+                    });
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(7);
+                    doc.setTextColor(0, 0, 0);
+                    yPos += rowHeight;
+                }
+            });
+
+            // Add footer
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(7);
+                doc.setTextColor(150);
+                doc.text(`Page ${i} of ${pageCount}`, 14, 287);
+                doc.text('EYSA Language Center © 2026', 150, 287);
+            }
+
+            // Save PDF
+            doc.save(`EYSA_Students_${new Date().toISOString().split('T')[0]}.pdf`);
+            toast.success('PDF exported successfully!');
+        } catch (error) {
+            console.error('Error exporting PDF:', error);
+            toast.error('Failed to export PDF: ' + error.message);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 relative overflow-hidden">
             {/* Background Decorations - Admin Theme */}
@@ -730,6 +935,16 @@ const AdminDashboard = ({ user }) => {
                                                 {studentsRemainingTime}
                                             </span>
                                         )}
+                                    </button>
+                                    <button
+                                        onClick={exportStudentsPDF}
+                                        disabled={loading || students.length === 0}
+                                        className="bg-red-600 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-1.5 sm:gap-2 font-semibold disabled:opacity-50 text-xs sm:text-base"
+                                        title="Export to PDF"
+                                    >
+                                        <FileText size={14} className="sm:w-[18px] sm:h-[18px]" />
+                                        <span className="hidden sm:inline">Export PDF</span>
+                                        <span className="sm:hidden">PDF</span>
                                     </button>
                                     <button
                                         onClick={() => setShowCreateForm(!showCreateForm)}
@@ -1471,7 +1686,7 @@ const AdminDashboard = ({ user }) => {
 
                 {/* ========== ATTENDANCE TAB ========== */}
                 {activeTab === 'attendance' && (
-                    <AttendanceReport />
+                    <AttendanceReportExcel />
                 )}
 
                 {/* Info Box - Modern Design */}

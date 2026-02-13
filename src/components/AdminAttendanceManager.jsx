@@ -18,15 +18,15 @@ const getClassBadge = (className) => {
     return classBadges[className] || { emoji: '📖', color: 'bg-gray-100 text-gray-700' };
 };
 
-// Day emojis and colors - Softer Orange/Amber theme for admin
+// Day emojis and colors - Darker Orange/Amber theme for admin
 const dayConfig = {
-    monday: { emoji: '🌙', color: 'from-orange-400 to-amber-400', bg: 'from-orange-50 to-amber-50', border: 'border-orange-200' },
-    tuesday: { emoji: '🔥', color: 'from-red-400 to-orange-400', bg: 'from-red-50 to-orange-50', border: 'border-red-200' },
-    wednesday: { emoji: '🌿', color: 'from-amber-400 to-yellow-400', bg: 'from-amber-50 to-yellow-50', border: 'border-amber-200' },
-    thursday: { emoji: '⚡', color: 'from-orange-400 to-amber-500', bg: 'from-orange-50 to-amber-50', border: 'border-orange-200' },
-    friday: { emoji: '🎉', color: 'from-amber-400 to-orange-500', bg: 'from-amber-50 to-orange-50', border: 'border-amber-200' },
-    saturday: { emoji: '🌟', color: 'from-yellow-400 to-orange-400', bg: 'from-yellow-50 to-orange-50', border: 'border-yellow-200' },
-    sunday: { emoji: '☀️', color: 'from-orange-400 to-red-400', bg: 'from-orange-50 to-red-50', border: 'border-orange-200' },
+    monday: { emoji: '🌙', color: 'from-orange-500 to-amber-500', bg: 'from-orange-50 to-amber-50', border: 'border-orange-200' },
+    tuesday: { emoji: '🔥', color: 'from-red-500 to-orange-500', bg: 'from-red-50 to-orange-50', border: 'border-red-200' },
+    wednesday: { emoji: '🌿', color: 'from-amber-500 to-yellow-500', bg: 'from-amber-50 to-yellow-50', border: 'border-amber-200' },
+    thursday: { emoji: '⚡', color: 'from-orange-500 to-amber-600', bg: 'from-orange-50 to-amber-50', border: 'border-orange-200' },
+    friday: { emoji: '🎉', color: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-orange-50', border: 'border-amber-200' },
+    saturday: { emoji: '🌟', color: 'from-yellow-500 to-orange-500', bg: 'from-yellow-50 to-orange-50', border: 'border-yellow-200' },
+    sunday: { emoji: '☀️', color: 'from-orange-500 to-red-500', bg: 'from-orange-50 to-red-50', border: 'border-orange-200' },
 };
 
 const AdminAttendanceManager = () => {
@@ -335,8 +335,8 @@ const AdminAttendanceManager = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header - Softer Orange/Amber Admin Theme */}
-            <div className="relative bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header - Darker Orange/Amber Admin Theme */}
+            <div className="relative bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 rounded-3xl shadow-2xl overflow-hidden">
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-0 left-0 w-full h-full" style={{
                         backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
@@ -382,7 +382,7 @@ const AdminAttendanceManager = () => {
                             <p className="text-xs sm:text-sm font-medium text-orange-600 mb-1">📚 Total Sessions</p>
                             <p className="text-2xl sm:text-3xl font-bold text-orange-900">{schedules.length}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-400 to-amber-400 rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
                             <Calendar size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
@@ -475,119 +475,127 @@ const AdminAttendanceManager = () => {
                             </button>
                         </div>
                     ) : (
-                        Object.entries(groupedByDay).map(([day, daySchedules]) => {
-                            if (daySchedules.length === 0) return null;
+                        // Card Grid Layout - Like Booking Tab
+                        <div className="space-y-6">
+                            {Object.entries(groupedByDay).map(([day, daySchedules]) => {
+                                if (daySchedules.length === 0) return null;
 
-                            const config = dayConfig[day];
-                            const isExpanded = expandedDays.has(day);
-                            const pendingInDay = daySchedules.filter(s => !s.hasAttendance).length;
-                            const completedInDay = daySchedules.filter(s => s.hasAttendance).length;
+                                const config = dayConfig[day];
 
-                            return (
-                                <div key={day} className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-gray-200">
-                                    {/* Day Header - Responsive */}
-                                    <button
-                                        onClick={() => toggleDayExpansion(day)}
-                                        className={`w-full bg-gradient-to-r ${config.color} p-4 sm:p-5 flex items-center justify-between hover:opacity-90 transition-all`}
-                                    >
-                                        <div className="flex items-center gap-3 sm:gap-4">
-                                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center text-2xl sm:text-3xl">
-                                                {config.emoji}
+                                return (
+                                    <div key={day} className="space-y-4">
+                                        {/* Day Header - Compact */}
+                                        <div className={`bg-gradient-to-r ${config.color} rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-md`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-xl sm:text-2xl">
+                                                    {config.emoji}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-base sm:text-lg font-bold text-white capitalize">{day}</h3>
+                                                    <p className="text-white/90 text-xs">
+                                                        {daySchedules.length} session{daySchedules.length !== 1 ? 's' : ''}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="text-left">
-                                                <h3 className="text-lg sm:text-xl font-bold text-white capitalize">{day}</h3>
-                                                <p className="text-white/90 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                                                    {daySchedules.length} session{daySchedules.length !== 1 ? 's' : ''}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 sm:gap-4">
-                                            <div className="flex items-center gap-2 sm:gap-3">
-                                                {pendingInDay > 0 && (
-                                                    <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                                                        <span className="text-white font-bold text-xs sm:text-sm">⏱️ {pendingInDay}</span>
+                                            <div className="flex items-center gap-2">
+                                                {daySchedules.filter(s => !s.hasAttendance).length > 0 && (
+                                                    <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-lg">
+                                                        <span className="text-white font-bold text-xs">⏱️ {daySchedules.filter(s => !s.hasAttendance).length}</span>
                                                     </div>
                                                 )}
-                                                {completedInDay > 0 && (
-                                                    <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg">
-                                                        <span className="text-white font-bold text-xs sm:text-sm">✅ {completedInDay}</span>
+                                                {daySchedules.filter(s => s.hasAttendance).length > 0 && (
+                                                    <div className="bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 rounded-lg">
+                                                        <span className="text-white font-bold text-xs">✅ {daySchedules.filter(s => s.hasAttendance).length}</span>
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                                                {isExpanded ? (
-                                                    <ChevronUp size={18} className="sm:w-5 sm:h-5 text-white" />
-                                                ) : (
-                                                    <ChevronDown size={18} className="sm:w-5 sm:h-5 text-white" />
-                                                )}
-                                            </div>
                                         </div>
-                                    </button>
 
-                                    {/* Day Sessions */}
-                                    {isExpanded && (
-                                        <div className={`p-4 bg-gradient-to-br ${config.bg} space-y-3`}>
+                                        {/* Card Grid - 3 columns on desktop, 1 on mobile */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {daySchedules.map((schedule) => {
                                                 const badge = getClassBadge(schedule.class?.name);
                                                 return (
-                                                    <button
+                                                    <div
                                                         key={schedule.id}
+                                                        className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 ${schedule.hasAttendance ? 'border-green-200' : 'border-red-200'
+                                                            } hover:scale-[1.02] cursor-pointer`}
                                                         onClick={() => handleSelectSchedule(schedule)}
-                                                        className={`w-full bg-white rounded-xl p-4 border-l-4 ${schedule.hasAttendance ? 'border-green-500' : 'border-red-500'
-                                                            } shadow-sm hover:shadow-md transition-all text-left hover:scale-[1.01]`}
                                                     >
-                                                        <div className="flex items-start gap-3">
-                                                            <div className={`w-12 h-12 ${badge.color} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>
-                                                                {badge.emoji}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="font-bold text-gray-900 text-base truncate">{schedule.class?.name}</div>
-                                                                <div className="text-xs text-gray-600 mt-1 space-y-0.5">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="font-semibold">{schedule.time_slot === 'afternoon' ? '🌤️ Afternoon' : '🌙 Evening'}</span>
-                                                                        <span>•</span>
-                                                                        <span>🕐 {getTimeRange(schedule.time_slot)}</span>
+                                                        {/* Card Header */}
+                                                        <div className="p-4 border-b border-gray-100">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                                    <div className={`w-12 h-12 ${badge.color} rounded-xl flex items-center justify-center text-2xl flex-shrink-0`}>
+                                                                        {badge.emoji}
                                                                     </div>
-                                                                    <div>📅 {getScheduleDate(schedule)}</div>
-                                                                    <div>👨‍🏫 {schedule.teacher?.name || 'No teacher'}</div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <h4 className="font-bold text-gray-900 text-sm truncate">{schedule.class?.name}</h4>
+                                                                        <p className="text-xs text-gray-500 truncate">{schedule.program} • {schedule.level}</p>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                                                    <span className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-700 font-medium">
-                                                                        {schedule.program}
-                                                                    </span>
-                                                                    <span className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-700 font-medium">
-                                                                        {schedule.level}
-                                                                    </span>
-                                                                    {schedule.hasAttendance && (
-                                                                        <span className="px-2 py-0.5 bg-green-100 rounded text-xs text-green-700 font-bold">
-                                                                            ✅ {schedule.attendanceCount} marked
-                                                                        </span>
-                                                                    )}
+                                                                <div className={`px-2 py-1 rounded-lg text-xs font-bold flex-shrink-0 ${schedule.hasAttendance ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                                    }`}>
+                                                                    {schedule.hasAttendance ? `${schedule.attendanceCount}/10` : 'Not Yet'}
                                                                 </div>
-                                                            </div>
-                                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${schedule.hasAttendance ? 'bg-green-100' : 'bg-red-100'
-                                                                }`}>
-                                                                {schedule.hasAttendance ? (
-                                                                    <CheckCircle size={24} className="text-green-600" />
-                                                                ) : (
-                                                                    <AlertCircle size={24} className="text-red-600" />
-                                                                )}
                                                             </div>
                                                         </div>
-                                                    </button>
+
+                                                        {/* Card Body */}
+                                                        <div className="p-4 space-y-2">
+                                                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                                <Calendar size={14} className="text-orange-500 flex-shrink-0" />
+                                                                <span className="truncate">{getScheduleDate(schedule)}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                                <Clock size={14} className="text-orange-500 flex-shrink-0" />
+                                                                <span className="truncate">{schedule.time_slot === 'afternoon' ? 'Afternoon' : 'Evening'} • {getTimeRange(schedule.time_slot)}</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                                <Users size={14} className="text-orange-500 flex-shrink-0" />
+                                                                <span className="truncate">{schedule.teacher?.name || 'No teacher'}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Card Footer */}
+                                                        <div className={`p-3 ${schedule.hasAttendance ? 'bg-green-50' : 'bg-orange-50'}`}>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleSelectSchedule(schedule);
+                                                                }}
+                                                                className={`w-full py-2 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 ${schedule.hasAttendance
+                                                                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                                                                    : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                                                    }`}
+                                                            >
+                                                                {schedule.hasAttendance ? (
+                                                                    <>
+                                                                        <CheckCircle size={16} />
+                                                                        <span>View Attendance</span>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <AlertCircle size={16} />
+                                                                        <span>Mark Attendance</span>
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 );
                                             })}
                                         </div>
-                                    )}
-                                </div>
-                            );
-                        })
+                                    </div>
+                                );
+                            })}
+                        </div>
                     )}
                 </div>
             ) : (
-                /* Attendance Form - Softer Orange/Amber Theme */
+                /* Attendance Form - Darker Orange/Amber Theme */
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 text-white p-4 sm:p-6">
+                    <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <div>
                                 <h2 className="text-lg sm:text-xl font-bold">✏️ Mark Attendance</h2>
@@ -623,7 +631,7 @@ const AdminAttendanceManager = () => {
                                     {students.map((student, index) => (
                                         <div key={student.user_id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100 gap-3 sm:gap-0">
                                             <div className="flex items-center gap-3 sm:gap-4">
-                                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center font-bold text-white text-sm">
+                                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center font-bold text-white text-sm">
                                                     {index + 1}
                                                 </div>
                                                 <div>
@@ -667,7 +675,7 @@ const AdminAttendanceManager = () => {
                                 <button
                                     onClick={handleSubmitAttendance}
                                     disabled={submitting}
-                                    className="w-full bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 hover:from-orange-500 hover:via-amber-500 hover:to-orange-600 text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+                                    className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:via-amber-600 hover:to-orange-700 text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
                                 >
                                     {submitting ? (
                                         <>
