@@ -246,24 +246,11 @@ const AdminAttendanceManager = () => {
 
             // Show success notification with clear feedback
             const successMessage = result.skipped > 0
-                ? `✅ SUCCESS!\n\n${result.inserted} new record(s) submitted.\n${result.skipped} already existed (skipped duplicates).`
-                : `✅ SUCCESS!\n\nAttendance submitted for ${result.inserted} student(s).`;
+                ? `✅ SUCCESS! ${result.inserted} new, ${result.skipped} skipped (duplicates)`
+                : `✅ SUCCESS! ${result.inserted} student(s) marked`;
 
             // Show toast notification
-            if (result.skipped > 0) {
-                toast.success(
-                    `✅ SUCCESS! ${result.inserted} new, ${result.skipped} skipped (duplicates)`,
-                    { duration: 6000 }
-                );
-            } else {
-                toast.success(
-                    `✅ SUCCESS! ${result.inserted} student(s) marked`,
-                    { duration: 5000 }
-                );
-            }
-
-            // Show success toast
-            toast.success(successMessage);
+            toast.success(successMessage, { duration: 5000 });
 
             // Reload schedules to update status
             await loadAllSchedules();
