@@ -2,7 +2,8 @@
     "name": "EYSA Language Center",
     "short_name": "EYSA",
     "description": "Book classes and track attendance at EYSA Language Center",
-    "start_url": "/",
+    "start_url": "https://portal.eysalanguagecenter.com/",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#1F4E8C",
@@ -50,7 +51,7 @@
             "name": "Book Class",
             "short_name": "Book",
             "description": "Book a new class",
-            "url": "/?action=book",
+            "url": "https://portal.eysalanguagecenter.com/?action=book",
             "icons": [
                 {
                     "src": "/icon-192.png",
@@ -62,7 +63,7 @@
             "name": "View Attendance",
             "short_name": "Attendance",
             "description": "Check your attendance",
-            "url": "/?action=attendance",
+            "url": "https://portal.eysalanguagecenter.com/?action=attendance",
             "icons": [
                 {
                     "src": "/icon-192.png",
