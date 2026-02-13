@@ -262,8 +262,8 @@ const AdminAttendanceManager = () => {
                 );
             }
 
-            // Show browser alert for extra confirmation
-            alert(successMessage);
+            // Show success toast
+            toast.success(successMessage);
 
             // Reload schedules to update status
             await loadAllSchedules();

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, BookOpen, Calendar, CheckCircle, BarChart3, Sparkles } from 'lucide-react';
 import { showInstallPrompt } from '../utils/pwaHelpers';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 const UserGuide = ({ onClose, userRole = 'student', userId }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [isVisible, setIsVisible] = useState(true);
+    const { isOpen, modalConfig, hideModal, showInfo } = useModal();
 
     // Detect iOS
     const isIOS = () => {
@@ -15,7 +18,10 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
     const handleInstallApp = async () => {
         // Check if iOS
         if (isIOS()) {
-            alert('📱 To install on iOS:\n\n1. Tap the Share button (⬆️) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm\n\nThe app icon will appear on your home screen!');
+            showInfo(
+                '1. Tap the Share button (⬆️) at the bottom\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" to confirm\n\nThe app icon will appear on your home screen!',
+                '📱 Install on iOS'
+            );
             return;
         }
 
@@ -26,11 +32,17 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
                 console.log('✅ App installed successfully');
             } else {
                 // If prompt not available, show manual instructions
-                alert('📱 To install this app:\n\n• Chrome/Edge: Look for the install icon (⊕) in the address bar\n• Or check browser menu for "Install app" option');
+                showInfo(
+                    '• Chrome/Edge: Look for the install icon (⊕) in the address bar\n• Or check browser menu for "Install app" option',
+                    '📱 Install App'
+                );
             }
         } catch (error) {
             console.error('❌ Install failed:', error);
-            alert('📱 To install this app:\n\n• Chrome/Edge: Look for the install icon (⊕) in the address bar\n• Or check browser menu for "Install app" option');
+            showInfo(
+                '• Chrome/Edge: Look for the install icon (⊕) in the address bar\n• Or check browser menu for "Install app" option',
+                '📱 Install App'
+            );
         }
     };
 
@@ -297,6 +309,16 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Modal for install instructions */}
+            <Modal
+                isOpen={isOpen}
+                onClose={hideModal}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                actions={modalConfig.actions}
+            />
         </div>
     );
 };

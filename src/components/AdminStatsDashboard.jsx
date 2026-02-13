@@ -4,12 +4,14 @@ import { Users, BookOpen, GraduationCap, Calendar, TrendingUp, Clock, RefreshCw,
 import { supabase } from '../supabaseClient';
 import { getCurrentWeek, getCurrentYear } from '../utils/dbHelpers';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useToast } from './Toast';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 const AdminStatsDashboard = () => {
     const { t, language } = useLanguage();
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
     const [selectedWeek, setSelectedWeek] = useState('current'); // 'current' or 'next'
@@ -279,7 +281,7 @@ const AdminStatsDashboard = () => {
             pdf.save(`EYSA_Report_Week${currentWeek}_${currentYear}.pdf`);
         } catch (err) {
             console.error('Error exporting PDF:', err);
-            alert('Failed to export PDF: ' + err.message);
+            toast.error('Failed to export PDF: ' + err.message);
         } finally {
             setExporting(false);
         }
