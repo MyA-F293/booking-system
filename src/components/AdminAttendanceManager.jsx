@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Calendar, Users, Clock, CheckCircle, XCircle, AlertCircle, Loader2, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from './Toast';
 import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, submitBatchAttendance, getAttendanceRecords, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
+import Modal from './Modal';
+import { useModal } from '../hooks/useModal';
 
 // Class badges
 const classBadges = {
@@ -29,6 +31,7 @@ const dayConfig = {
 
 const AdminAttendanceManager = () => {
     const toast = useToast();
+    const { isOpen, modalConfig, hideModal, showSuccess } = useModal();
     const [schedules, setSchedules] = useState([]);
     const [filteredSchedules, setFilteredSchedules] = useState([]);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
@@ -180,13 +183,47 @@ const AdminAttendanceManager = () => {
             setLoading(true);
             setSelectedSchedule(schedule);
 
+            // Load students
             const studentsData = await getScheduleStudents(schedule.id);
             setStudents(studentsData);
 
-            const initialAttendance = {};
-            studentsData.forEach(student => {
-                initialAttendance[student.user_id] = null;
+            // Load existing attendance if available
+            const existingAttendance = await getAttendanceRecords({
+                schedule_id: schedule.id,
+                week_number: selectedWeek,
+                year: currentYear
             });
+
+            console.log('📊 Existing attendance records:', existingAttendance);
+
+            // Build attendance map
+            const initialAttendance = {};
+
+            if (existingAttendance && existingAttendance.length > 0) {
+                // If attendance exists, populate from database
+                const attendanceMap = {};
+                existingAttendance.forEach(record => {
+                    // Find the user_id from student data
+                    const student = studentsData.find(s => s.user?.student_id === record.student_id);
+                    if (student) {
+                        attendanceMap[student.user_id] = record.status;
+                    }
+                });
+
+                // Set attendance with existing data
+                studentsData.forEach(student => {
+                    initialAttendance[student.user_id] = attendanceMap[student.user_id] || null;
+                });
+
+                console.log('✅ Loaded existing attendance:', initialAttendance);
+            } else {
+                // No existing attendance, set all to null
+                studentsData.forEach(student => {
+                    initialAttendance[student.user_id] = null;
+                });
+                console.log('📝 No existing attendance, starting fresh');
+            }
+
             setAttendance(initialAttendance);
         } catch (err) {
             console.error('❌ Error loading students:', err);
@@ -197,10 +234,15 @@ const AdminAttendanceManager = () => {
     };
 
     const handleAttendanceChange = (userId, status) => {
-        setAttendance(prev => ({
-            ...prev,
-            [userId]: status
-        }));
+        console.log('👆 Attendance clicked:', userId, status);
+        setAttendance(prev => {
+            const updated = {
+                ...prev,
+                [userId]: status
+            };
+            console.log('📝 Updated attendance state:', updated);
+            return updated;
+        });
     };
 
     const handleSubmitAttendance = async () => {
@@ -246,11 +288,14 @@ const AdminAttendanceManager = () => {
 
             // Show success notification with clear feedback
             const successMessage = result.skipped > 0
-                ? `✅ SUCCESS! ${result.inserted} new, ${result.skipped} skipped (duplicates)`
-                : `✅ SUCCESS! ${result.inserted} student(s) marked`;
+                ? `Attendance submitted for ${result.inserted} student(s).\n\n${result.skipped} record(s) were skipped (already existed).`
+                : `Attendance submitted for ${result.inserted} student(s).`;
 
-            // Show toast notification
-            toast.success(successMessage, { duration: 5000 });
+            // Show modal popup
+            showSuccess(successMessage, '✅ SUCCESS!');
+
+            // Also show toast notification
+            toast.success(`✅ ${result.inserted} student(s) marked`, { duration: 3000 });
 
             // Reload schedules to update status
             await loadAllSchedules();
@@ -641,6 +686,16 @@ const AdminAttendanceManager = () => {
                     </div>
                 </div>
             )}
+
+            {/* Success Modal */}
+            <Modal
+                isOpen={isOpen}
+                onClose={hideModal}
+                title={modalConfig.title}
+                message={modalConfig.message}
+                type={modalConfig.type}
+                actions={modalConfig.actions}
+            />
         </div>
     );
 };
