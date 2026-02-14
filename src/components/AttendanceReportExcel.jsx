@@ -330,29 +330,63 @@ const AttendanceReportExcel = () => {
                 </div>
             </div>
 
-            {/* Stats Summary */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white rounded-xl p-4 shadow-sm border-2 border-gray-100 transform transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fadeIn">
-                    <div className="text-sm text-gray-600 mb-1">Total Students</div>
-                    <div className="text-3xl font-bold text-gray-800">{matrixData.length}</div>
-                    <div className="text-xs text-gray-500 mt-1">Active students loaded</div>
+            {/* Stats Summary - Modern 5 Column Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 shadow-md border border-gray-200 transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fadeIn">
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Students</div>
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <span className="text-lg">👥</span>
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-800">{matrixData.length}</div>
+                    <div className="text-xs text-gray-500 mt-1">Active loaded</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-2 border-blue-100 transform transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fadeIn" style={{ animationDelay: '0.1s' }}>
-                    <div className="text-sm text-gray-600 mb-1">Total Records</div>
-                    <div className="text-3xl font-bold text-blue-600">{attendanceData.length}</div>
-                    <div className="text-xs text-gray-500 mt-1">Attendance entries</div>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 shadow-md border border-blue-200 transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fadeIn" style={{ animationDelay: '0.05s' }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Records</div>
+                        <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center">
+                            <span className="text-lg">📋</span>
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold text-blue-600">{attendanceData.length}</div>
+                    <div className="text-xs text-blue-500 mt-1">Total entries</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-2 border-green-100 transform transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-                    <div className="text-sm text-gray-600 mb-1">Total Present</div>
-                    <div className="text-3xl font-bold text-green-600">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 shadow-md border border-green-200 transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fadeIn" style={{ animationDelay: '0.1s' }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-semibold text-green-600 uppercase tracking-wide">Present</div>
+                        <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center">
+                            <span className="text-lg">✓</span>
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold text-green-600">
                         {matrixData.reduce((sum, s) => sum + calculateTotals(s.weeks).present, 0)}
                     </div>
+                    <div className="text-xs text-green-500 mt-1">On time</div>
                 </div>
-                <div className="bg-white rounded-xl p-4 shadow-sm border-2 border-yellow-100 transform transition-all duration-300 hover:scale-105 hover:shadow-lg animate-fadeIn" style={{ animationDelay: '0.3s' }}>
-                    <div className="text-sm text-gray-600 mb-1">Total Late</div>
-                    <div className="text-3xl font-bold text-yellow-600">
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 shadow-md border border-yellow-200 transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fadeIn" style={{ animationDelay: '0.15s' }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-semibold text-yellow-600 uppercase tracking-wide">Late</div>
+                        <div className="w-8 h-8 bg-yellow-200 rounded-lg flex items-center justify-center">
+                            <span className="text-lg">⏱</span>
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold text-yellow-600">
                         {matrixData.reduce((sum, s) => sum + calculateTotals(s.weeks).late, 0)}
                     </div>
+                    <div className="text-xs text-yellow-500 mt-1">Delayed</div>
+                </div>
+                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 shadow-md border border-red-200 transform transition-all duration-300 hover:scale-105 hover:shadow-xl animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+                    <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-semibold text-red-600 uppercase tracking-wide">Absent</div>
+                        <div className="w-8 h-8 bg-red-200 rounded-lg flex items-center justify-center">
+                            <span className="text-lg">✗</span>
+                        </div>
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-bold text-red-600">
+                        {matrixData.reduce((sum, s) => sum + calculateTotals(s.weeks).absent, 0)}
+                    </div>
+                    <div className="text-xs text-red-500 mt-1">Not present</div>
                 </div>
             </div>
 

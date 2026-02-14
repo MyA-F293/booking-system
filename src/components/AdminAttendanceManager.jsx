@@ -18,15 +18,15 @@ const getClassBadge = (className) => {
     return classBadges[className] || { emoji: '📖', color: 'bg-gray-100 text-gray-700' };
 };
 
-// Day emojis and colors - Darker Orange/Amber theme for admin
+// Day emojis and colors - Orange-White theme only
 const dayConfig = {
-    monday: { emoji: '🌙', color: 'from-orange-500 to-amber-500', bg: 'from-orange-50 to-amber-50', border: 'border-orange-200' },
-    tuesday: { emoji: '🔥', color: 'from-red-500 to-orange-500', bg: 'from-red-50 to-orange-50', border: 'border-red-200' },
-    wednesday: { emoji: '🌿', color: 'from-amber-500 to-yellow-500', bg: 'from-amber-50 to-yellow-50', border: 'border-amber-200' },
-    thursday: { emoji: '⚡', color: 'from-orange-500 to-amber-600', bg: 'from-orange-50 to-amber-50', border: 'border-orange-200' },
-    friday: { emoji: '🎉', color: 'from-amber-500 to-orange-600', bg: 'from-amber-50 to-orange-50', border: 'border-amber-200' },
-    saturday: { emoji: '🌟', color: 'from-yellow-500 to-orange-500', bg: 'from-yellow-50 to-orange-50', border: 'border-yellow-200' },
-    sunday: { emoji: '☀️', color: 'from-orange-500 to-red-500', bg: 'from-orange-50 to-red-50', border: 'border-orange-200' },
+    monday: { emoji: '🌙', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    tuesday: { emoji: '🔥', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    wednesday: { emoji: '🌿', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    thursday: { emoji: '⚡', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    friday: { emoji: '🎉', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    saturday: { emoji: '🌟', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    sunday: { emoji: '☀️', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
 };
 
 const AdminAttendanceManager = () => {
@@ -335,38 +335,36 @@ const AdminAttendanceManager = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header - Darker Orange/Amber Admin Theme */}
-            <div className="relative bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 rounded-3xl shadow-2xl overflow-hidden">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute top-0 left-0 w-full h-full" style={{
-                        backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-                        backgroundSize: '20px 20px'
-                    }}></div>
-                </div>
-                <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
+            {/* Header - Orange-White Theme like Admin Booking Tab */}
+            <div className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] rounded-2xl shadow-xl relative overflow-hidden">
+                {/* Subtle Decorative Elements */}
+                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
+                <div className="absolute bottom-0 left-1/3 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
 
-                <div className="relative z-10 p-4 sm:p-6 md:p-8">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center transform rotate-12">
-                                <Calendar size={24} className="sm:w-8 sm:h-8 text-white -rotate-12" />
+                <div className="relative z-10 p-4 sm:p-5">
+                    {/* Single Row Layout */}
+                    <div className="flex items-center justify-between gap-4">
+                        {/* Left - Icon & Title */}
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-white/15 rounded-xl">
+                                <Calendar size={20} className="text-white" />
                             </div>
                             <div>
-                                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Weekly Attendance</h1>
-                                <p className="text-orange-100 text-xs sm:text-sm md:text-base mt-1">📅 Organized by day</p>
+                                <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">Weekly Attendance</h2>
+                                <p className="text-orange-100 text-xs">📅 Organized by day</p>
                             </div>
                         </div>
 
-                        <div className="w-full sm:w-auto bg-white/20 backdrop-blur-sm rounded-xl p-3 border border-white/30">
-                            <label className="text-xs text-orange-100 block mb-1">Select Week</label>
+                        {/* Right - Week Selector */}
+                        <div className="flex items-center bg-white/20 rounded-lg px-3 py-2 border border-white/30 backdrop-blur-sm">
                             <select
                                 value={selectedWeek}
                                 onChange={(e) => setSelectedWeek(Number(e.target.value))}
-                                className="w-full sm:w-auto bg-white text-gray-800 border-0 rounded-lg px-3 sm:px-4 py-2 font-semibold focus:ring-2 focus:ring-white/50 cursor-pointer text-sm"
+                                className="bg-white text-gray-800 border-0 rounded-md px-2 py-1 font-semibold focus:ring-2 focus:ring-white/50 cursor-pointer text-sm"
                             >
                                 {[...Array(10)].map((_, i) => {
                                     const week = getCurrentWeek() - 2 + i;
-                                    return <option key={week} value={week}>Week {week}</option>;
+                                    return <option key={week} value={week} className="bg-white text-gray-800">Week {week}</option>;
                                 })}
                             </select>
                         </div>
@@ -374,39 +372,39 @@ const AdminAttendanceManager = () => {
                 </div>
             </div>
 
-            {/* Stats Cards - Softer Colors */}
+            {/* Stats Cards - Orange-White Theme */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs sm:text-sm font-medium text-orange-600 mb-1">📚 Total Sessions</p>
-                            <p className="text-2xl sm:text-3xl font-bold text-orange-900">{schedules.length}</p>
+                            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">📚 Total Sessions</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-[#F39C32]">{schedules.length}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#F39C32] to-[#e08a1f] rounded-xl flex items-center justify-center shadow-lg">
                             <Calendar size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-4 sm:p-5 border-2 border-red-200 shadow-sm hover:shadow-md transition-all">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs sm:text-sm font-medium text-red-600 mb-1">⏱️ Pending</p>
-                            <p className="text-2xl sm:text-3xl font-bold text-red-900">{pendingCount}</p>
+                            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">⏱️ Pending</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-[#F39C32]">{pendingCount}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-red-400 to-orange-400 rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#F39C32] to-[#e08a1f] rounded-xl flex items-center justify-center shadow-lg">
                             <AlertCircle size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 sm:p-5 border-2 border-green-200 shadow-sm hover:shadow-md transition-all">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-xs sm:text-sm font-medium text-green-600 mb-1">✅ Completed</p>
-                            <p className="text-2xl sm:text-3xl font-bold text-green-900">{completedCount}</p>
+                            <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">✅ Completed</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-[#F39C32]">{completedCount}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-400 to-emerald-400 rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#F39C32] to-[#e08a1f] rounded-xl flex items-center justify-center shadow-lg">
                             <CheckCircle size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
@@ -443,13 +441,13 @@ const AdminAttendanceManager = () => {
                 <div className="space-y-4">
                     {loading ? (
                         <div className="bg-white rounded-2xl shadow-lg p-20 text-center">
-                            <Loader2 className="animate-spin text-indigo-500 mb-4 mx-auto" size={48} />
+                            <Loader2 className="animate-spin text-[#F39C32] mb-4 mx-auto" size={48} />
                             <p className="text-gray-600 font-medium">Loading schedules...</p>
                         </div>
                     ) : schedules.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-lg p-20 text-center">
-                            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Calendar size={40} className="text-gray-400" />
+                            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Calendar size={40} className="text-[#F39C32]" />
                             </div>
                             <p className="text-xl font-bold text-gray-700 mb-2">No Schedules Found</p>
                             <p className="text-gray-500 mb-6">
@@ -457,19 +455,19 @@ const AdminAttendanceManager = () => {
                             </p>
                             <button
                                 onClick={() => setSelectedWeek(getCurrentWeek())}
-                                className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg"
+                                className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a15] text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg"
                             >
                                 Go to Current Week ({getCurrentWeek()})
                             </button>
                         </div>
                     ) : filteredSchedules.length === 0 ? (
                         <div className="bg-white rounded-2xl shadow-lg p-20 text-center">
-                            <Search size={48} className="mx-auto mb-4 text-gray-400" />
+                            <Search size={48} className="mx-auto mb-4 text-[#F39C32]" />
                             <p className="text-xl font-bold text-gray-700 mb-2">No Results Found</p>
                             <p className="text-gray-500 mb-6">Try adjusting your search</p>
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold transition-all"
+                                className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a15] text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg"
                             >
                                 Clear Search
                             </button>
@@ -544,15 +542,15 @@ const AdminAttendanceManager = () => {
                                                         {/* Card Body */}
                                                         <div className="p-4 space-y-2">
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                                <Calendar size={14} className="text-orange-500 flex-shrink-0" />
+                                                                <Calendar size={14} className="text-[#F39C32] flex-shrink-0" />
                                                                 <span className="truncate">{getScheduleDate(schedule)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                                <Clock size={14} className="text-orange-500 flex-shrink-0" />
+                                                                <Clock size={14} className="text-[#F39C32] flex-shrink-0" />
                                                                 <span className="truncate">{schedule.time_slot === 'afternoon' ? 'Afternoon' : 'Evening'} • {getTimeRange(schedule.time_slot)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                                <Users size={14} className="text-orange-500 flex-shrink-0" />
+                                                                <Users size={14} className="text-[#F39C32] flex-shrink-0" />
                                                                 <span className="truncate">{schedule.teacher?.name || 'No teacher'}</span>
                                                             </div>
                                                         </div>
@@ -566,7 +564,7 @@ const AdminAttendanceManager = () => {
                                                                 }}
                                                                 className={`w-full py-2 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 ${schedule.hasAttendance
                                                                     ? 'bg-green-500 hover:bg-green-600 text-white'
-                                                                    : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                                                    : 'bg-[#F39C32] hover:bg-[#e08a1f] text-white'
                                                                     }`}
                                                             >
                                                                 {schedule.hasAttendance ? (
@@ -593,9 +591,9 @@ const AdminAttendanceManager = () => {
                     )}
                 </div>
             ) : (
-                /* Attendance Form - Darker Orange/Amber Theme */
+                /* Attendance Form - Orange-White Theme */
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white p-4 sm:p-6">
+                    <div className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] text-white p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <div>
                                 <h2 className="text-lg sm:text-xl font-bold">✏️ Mark Attendance</h2>
@@ -629,9 +627,9 @@ const AdminAttendanceManager = () => {
                             <>
                                 <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                                     {students.map((student, index) => (
-                                        <div key={student.user_id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-100 gap-3 sm:gap-0">
+                                        <div key={student.user_id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-orange-50/50 rounded-xl border border-orange-200 gap-3 sm:gap-0">
                                             <div className="flex items-center gap-3 sm:gap-4">
-                                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center font-bold text-white text-sm">
+                                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[#F39C32] to-[#e08a1f] flex items-center justify-center font-bold text-white text-sm">
                                                     {index + 1}
                                                 </div>
                                                 <div>
@@ -675,7 +673,7 @@ const AdminAttendanceManager = () => {
                                 <button
                                     onClick={handleSubmitAttendance}
                                     disabled={submitting}
-                                    className="w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 hover:from-orange-600 hover:via-amber-600 hover:to-orange-700 text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+                                    className="w-full bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a15] text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
                                 >
                                     {submitting ? (
                                         <>

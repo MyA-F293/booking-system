@@ -646,11 +646,12 @@ export const getDateForDayInWeek = (dayName, weekNumber, year) => {
 }
 
 /**
- * Format date to display string (e.g., "Jan 15")
+ * Format date to display string (e.g., "Feb 15")
  * @param {Date} date - Date object
  * @returns {string} - Formatted date string
  */
 export const formatDateShort = (date) => {
+    if (!date) return '';
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${months[date.getMonth()]} ${date.getDate()}`;
 }

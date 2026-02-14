@@ -328,9 +328,9 @@ const BookingSystemDB = ({ user }) => {
         // return isBookingDay && isBeforeCutoff;
     };
 
-    // Booking for current week (Week 6)
+    // Booking for NEXT week (not current week)
     const getBookingWeek = () => {
-        return currentWeek; // Book for current week (Week 6)
+        return currentWeek + 1; // Book for NEXT week
     };
 
     const handleProgramSelect = (program) => {

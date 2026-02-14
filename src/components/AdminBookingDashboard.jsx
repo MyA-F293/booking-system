@@ -83,6 +83,7 @@ const AdminBookingDashboard = () => {
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [scheduleStudents, setScheduleStudents] = useState([]);
     const [selectedWeekTab, setSelectedWeekTab] = useState('next'); // 'current' or 'next'
+    const [hideEmpty, setHideEmpty] = useState(true); // Hide empty schedules by default
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [showMoveModal, setShowMoveModal] = useState(false);
@@ -106,6 +107,30 @@ const AdminBookingDashboard = () => {
     const [viewMode, setViewMode] = useState('grouped'); // 'grouped' or 'list'
     const [filterDay, setFilterDay] = useState('all'); // 'all', 'monday', 'tuesday', etc.
     const [expandedClasses, setExpandedClasses] = useState(new Set()); // Track which classes are expanded
+
+    // Helper function to parse database errors into user-friendly messages
+    const parseDbError = (error) => {
+        const errorMessage = error?.message || '';
+
+        // Capacity error from trigger
+        if (errorMessage.includes('full capacity') || errorMessage.includes('capacity')) {
+            return 'Class is full! Maximum 10 students per class.';
+        }
+        // Duplicate booking error from constraint
+        if (errorMessage.includes('unique_booking_per_student') || errorMessage.includes('duplicate key')) {
+            return 'Student is already enrolled in this class!';
+        }
+        // Duplicate schedule error from constraint
+        if (errorMessage.includes('unique_schedule_combination')) {
+            return 'Schedule with this combination already exists!';
+        }
+        // Invalid data error from validation trigger
+        if (errorMessage.includes('Invalid day') || errorMessage.includes('Invalid phase') || errorMessage.includes('Invalid time_slot')) {
+            return 'Invalid data! Please check your input.';
+        }
+        // Generic error
+        return errorMessage;
+    };
 
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
@@ -152,16 +177,21 @@ const AdminBookingDashboard = () => {
     };
 
     // Filter schedules by day
+    // Apply hide empty filter
+    const visibleSchedules = hideEmpty
+        ? schedules.filter(s => s.current_students > 0)
+        : schedules;
+
     const filteredSchedules = filterDay === 'all'
-        ? schedules
-        : schedules.filter(s => s.day?.toLowerCase() === filterDay);
+        ? visibleSchedules
+        : visibleSchedules.filter(s => s.day?.toLowerCase() === filterDay);
 
     // Group filtered schedules by class
     const groupedByClass = groupSchedulesByClass(filteredSchedules);
 
     // OLD: Group by phase (for backward compatibility)
     const groupedSchedules = phases.reduce((acc, phase) => {
-        acc[phase] = schedules
+        acc[phase] = visibleSchedules
             .filter(s => s.phase === phase)
             .sort((a, b) => {
                 const dayA = dayOrder[a.day?.toLowerCase()] || 99;
@@ -278,6 +308,8 @@ const AdminBookingDashboard = () => {
         if (!selectedSchedule) return;
         try {
             setLoading(true);
+
+            // Frontend validation (fast feedback)
             const alreadyBooked = scheduleStudents.some(b => b.user.id === studentId);
             if (alreadyBooked) {
                 toast.warning(t('adminBooking.studentAlreadyInClass'));
@@ -287,6 +319,8 @@ const AdminBookingDashboard = () => {
                 toast.error(t('adminBooking.classFull'));
                 return;
             }
+
+            // Try to create booking
             await createBooking({ schedule_id: selectedSchedule.id, user_id: studentId, status: 'confirmed' });
             toast.success(t('adminBooking.studentAdded'));
             await loadAllSchedules();
@@ -294,7 +328,7 @@ const AdminBookingDashboard = () => {
             setShowAddModal(false);
         } catch (err) {
             console.error('Error adding student:', err);
-            toast.error(t('adminBooking.addStudentFailed') + err.message);
+            toast.error(parseDbError(err));
         } finally {
             setLoading(false);
         }
@@ -334,8 +368,10 @@ const AdminBookingDashboard = () => {
                 toast.error(t('adminBooking.targetClassNotFound'));
                 return;
             }
+
+            // Frontend validation
             if (newSchedule.current_students >= 10) {
-                toast.error(t('adminBooking.targetClassFull'));
+                toast.error('Target class is full! Maximum 10 students per class.');
                 return;
             }
 
@@ -355,6 +391,7 @@ const AdminBookingDashboard = () => {
 
             const { error: deleteError } = await supabase.from('bookings').delete().eq('id', selectedStudent.id);
             if (deleteError) throw deleteError;
+
             await createBooking({ schedule_id: targetSchedule, user_id: selectedStudent.user.id, status: 'confirmed' });
             toast.success(t('adminBooking.studentMoved'));
             await loadAllSchedules();
@@ -368,10 +405,54 @@ const AdminBookingDashboard = () => {
             showNotificationModal(message);
         } catch (err) {
             console.error('Error moving student:', err);
-            toast.error(t('adminBooking.moveStudentFailed') + err.message);
+
+            // Parse database errors for user-friendly messages
+            const errorMessage = err.message || '';
+
+            // Capacity error from trigger
+            if (errorMessage.includes('full capacity') || errorMessage.includes('capacity')) {
+                toast.error('❌ Kelas tujuan sudah penuh! Maksimal 10 siswa per kelas.');
+            }
+            // Duplicate booking error from constraint
+            else if (errorMessage.includes('unique_booking_per_student') || errorMessage.includes('duplicate')) {
+                toast.error('⚠️ Siswa sudah terdaftar di kelas tujuan!');
+            }
+            // Generic error
+            else {
+                toast.error('❌ Gagal memindahkan siswa: ' + errorMessage);
+            }
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleCleanEmptySchedules = async () => {
+        toast.confirm(
+            'Delete all empty schedules (0 students)? This cannot be undone.',
+            async () => {
+                try {
+                    setLoading(true);
+
+                    // Delete schedules with 0 students
+                    const { data, error } = await supabase
+                        .from('schedules')
+                        .delete()
+                        .eq('current_students', 0)
+                        .select();
+
+                    if (error) throw error;
+
+                    const deletedCount = data?.length || 0;
+                    toast.success(`✅ Deleted ${deletedCount} empty schedules!`);
+                    await loadAllSchedules();
+                } catch (err) {
+                    console.error('Error cleaning empty schedules:', err);
+                    toast.error('❌ Failed to clean schedules: ' + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        );
     };
 
     const handleDeleteStudent = async (bookingId, studentName, studentId) => {
@@ -589,9 +670,34 @@ const AdminBookingDashboard = () => {
 
                             {/* Stats Badge */}
                             <div className="hidden sm:flex items-center gap-1.5 bg-white/10 rounded-lg px-2.5 py-1.5 border border-white/20">
-                                <span className="text-lg font-bold text-white">{schedules.length}</span>
-                                <span className="text-orange-100 text-[10px]">{t('header.classCount')}</span>
+                                <span className="text-lg font-bold text-white">{visibleSchedules.length}</span>
+                                <span className="text-orange-100 text-[10px]">{hideEmpty ? 'Active' : 'Total'}</span>
                             </div>
+
+                            {/* Hide Empty Toggle */}
+                            <button
+                                onClick={() => setHideEmpty(!hideEmpty)}
+                                className={`px-2.5 py-1.5 rounded-lg font-medium text-[10px] sm:text-xs transition-all border ${hideEmpty
+                                    ? 'bg-white/20 border-white/30 text-white'
+                                    : 'bg-white/10 border-white/20 text-white/70 hover:text-white'
+                                    }`}
+                                title={hideEmpty ? 'Show all schedules' : 'Hide empty schedules'}
+                            >
+                                {hideEmpty ? '👁️ Active' : '👁️‍🗨️ All'}
+                            </button>
+
+                            {/* Clean Empty Button - Only show when not hiding empty */}
+                            {!hideEmpty && (
+                                <button
+                                    onClick={handleCleanEmptySchedules}
+                                    disabled={loading}
+                                    className="px-2.5 sm:px-3 py-1.5 bg-red-500/90 hover:bg-red-600 text-white rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 disabled:opacity-50"
+                                    title="Delete all empty schedules"
+                                >
+                                    <Trash2 size={12} />
+                                    <span className="hidden sm:inline">Clean</span>
+                                </button>
+                            )}
 
                             {/* Refresh */}
                             <button

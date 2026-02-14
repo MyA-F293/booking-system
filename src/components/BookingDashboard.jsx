@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Users, User, Clock, RefreshCw, Loader2, BookOpen, X, GraduationCap, ChevronRight } from 'lucide-react';
+import { Calendar, Users, User, Clock, RefreshCw, Loader2, BookOpen, X, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, getUserBookings } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, getUserBookings, autoCopyBookingsToNextWeek, createBooking, hasUserBookedPhase, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
 import { useRefreshCooldown } from '../utils/useDebounce';
+import { supabase } from '../supabaseClient';
+import { useToast } from './Toast';
 
 const dayLabels = {
     monday: 'Monday',
@@ -12,62 +14,6 @@ const dayLabels = {
     friday: 'Friday',
     saturday: 'Saturday',
     sunday: 'Sunday'
-};
-
-// Helper function to get date for a specific day in a given week/year
-const getDateForDay = (day, weekNumber, year) => {
-    if (!day) return null;
-
-    const dayIndex = {
-        monday: 1,
-        tuesday: 2,
-        wednesday: 3,
-        thursday: 4,
-        friday: 5,
-        saturday: 6,
-        sunday: 0
-    };
-
-    // Get January 4th of the year (always in week 1 per ISO)
-    const jan4 = new Date(year, 0, 4);
-    // Get the Monday of week 1
-    const dayOfWeek = jan4.getDay() || 7;
-    const week1Monday = new Date(jan4);
-    week1Monday.setDate(jan4.getDate() - dayOfWeek + 1);
-
-    // Calculate the Monday of the target week
-    const targetMonday = new Date(week1Monday);
-    targetMonday.setDate(week1Monday.getDate() + (weekNumber - 1) * 7);
-
-    // Calculate the target day
-    const targetDay = new Date(targetMonday);
-    const targetDayIndex = dayIndex[day.toLowerCase()];
-    if (targetDayIndex === 0) {
-        // Sunday is 6 days after Monday
-        targetDay.setDate(targetMonday.getDate() + 6);
-    } else {
-        targetDay.setDate(targetMonday.getDate() + targetDayIndex - 1);
-    }
-
-    return targetDay;
-};
-
-// Format date to display (e.g., "13 Jan")
-const formatDateShort = (date) => {
-    if (!date) return '';
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${date.getDate()} ${months[date.getMonth()]}`;
-};
-
-// Day order for sorting within each phase
-const dayOrder = {
-    monday: 1,
-    tuesday: 2,
-    wednesday: 3,
-    thursday: 4,
-    friday: 5,
-    saturday: 6,
-    sunday: 7
 };
 
 // Class badges - subtle icons/emojis for each class
@@ -85,12 +31,14 @@ const getClassBadge = (className) => {
 
 const BookingDashboard = ({ user }) => {
     const { t } = useLanguage();
+    const toast = useToast();
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [scheduleStudents, setScheduleStudents] = useState([]);
-    const [selectedWeekTab, setSelectedWeekTab] = useState('current'); // Default to 'current' week
+    const [selectedWeekTab, setSelectedWeekTab] = useState('next'); // Default to 'next' week for booking
     const [userBookings, setUserBookings] = useState([]); // Store user's bookings
+    const [isBooking, setIsBooking] = useState(false); // Prevent double-click
 
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
@@ -106,6 +54,14 @@ const BookingDashboard = ({ user }) => {
 
     useEffect(() => {
         loadUserBookings();
+        // Auto-copy bookings from previous week (runs on Sunday night or Monday)
+        autoCopyBookingsToNextWeek().then(result => {
+            if (result.copied && result.count > 0) {
+                console.log('✅ Auto-copied', result.count, 'bookings');
+            }
+        }).catch(err => {
+            console.error('❌ Auto-copy failed:', err);
+        });
     }, [selectedWeekTab, userBatch, userId]);
 
     async function loadUserBookings() {
@@ -152,6 +108,93 @@ const BookingDashboard = ({ user }) => {
         } catch (err) {
             console.error('Error loading students:', err);
         }
+    };
+
+    const handleBookClass = async (schedule) => {
+        if (isBooking) return; // Prevent double-click
+
+        try {
+            setIsBooking(true);
+
+            // Validation 1: Check if already booked this phase
+            const alreadyBookedPhase = await hasUserBookedPhase(
+                userId,
+                schedule.phase,
+                displayWeek,
+                currentYear,
+                userBatch
+            );
+
+            if (alreadyBookedPhase) {
+                toast.warning(`You already booked ${getPhaseLabel(schedule.phase)} for this week!`);
+                return;
+            }
+
+            // Validation 2: Check if class is full
+            if (schedule.current_students >= 10) {
+                toast.error('Class is full! Maximum 10 students per class.');
+                return;
+            }
+
+            // Create booking
+            await createBooking({
+                schedule_id: schedule.id,
+                user_id: userId,
+                status: 'confirmed'
+            });
+
+            toast.success(`Successfully booked ${schedule.class?.name}!`);
+            await loadUserBookings(); // Refresh data
+        } catch (err) {
+            console.error('Error booking class:', err);
+            const errorMessage = err.message || '';
+
+            if (errorMessage.includes('full capacity')) {
+                toast.error('Class is full! Maximum 10 students per class.');
+            } else if (errorMessage.includes('unique_booking_per_student') || errorMessage.includes('duplicate')) {
+                toast.error('You are already enrolled in this class!');
+            } else {
+                toast.error('Booking failed: ' + errorMessage);
+            }
+        } finally {
+            setIsBooking(false);
+        }
+    };
+
+    const handleCancelBooking = async (schedule) => {
+        if (isBooking) return; // Prevent double-click
+
+        // Find user's booking for this schedule
+        const userBooking = userBookings.find(b => b.schedule_id === schedule.id);
+        if (!userBooking) {
+            toast.error('Booking not found!');
+            return;
+        }
+
+        toast.confirm(
+            `Cancel booking for ${schedule.class?.name} - ${getDayLabel(schedule.day, schedule.phase)}?`,
+            async () => {
+                try {
+                    setIsBooking(true);
+
+                    // Delete booking
+                    const { error } = await supabase
+                        .from('bookings')
+                        .delete()
+                        .eq('id', userBooking.id);
+
+                    if (error) throw error;
+
+                    toast.success('Booking cancelled successfully!');
+                    await loadUserBookings(); // Refresh data
+                } catch (err) {
+                    console.error('Error cancelling booking:', err);
+                    toast.error('Failed to cancel booking: ' + err.message);
+                } finally {
+                    setIsBooking(false);
+                }
+            }
+        );
     };
 
     const getPhaseLabel = (phase) => t(`phase.${phase}`);
@@ -368,7 +411,7 @@ const BookingDashboard = ({ user }) => {
                                                                         <span>{getDayLabel(schedule.day, schedule.phase)}</span>
                                                                         {schedule.day && (
                                                                             <span className="text-gray-400 ml-1">
-                                                                                ({formatDateShort(getDateForDay(schedule.day, displayWeek, currentYear))})
+                                                                                ({formatDateShort(getDateForDayInWeek(schedule.day, displayWeek, currentYear))})
                                                                             </span>
                                                                         )}
                                                                     </div>
@@ -383,14 +426,44 @@ const BookingDashboard = ({ user }) => {
                                                                 </div>
                                                             </div>
 
-                                                            {/* Action Button */}
-                                                            <button
-                                                                onClick={() => handleViewDetails(schedule)}
-                                                                className="w-full mt-3 bg-[#1F4E8C] hover:bg-[#183d6e] text-white py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1"
-                                                            >
-                                                                {t('dashboard.viewDetails')}
-                                                                <ChevronRight size={14} />
-                                                            </button>
+                                                            {/* Action Buttons */}
+                                                            <div className="mt-3 flex gap-2">
+                                                                {userHasBooked ? (
+                                                                    <>
+                                                                        <button
+                                                                            onClick={() => handleViewDetails(schedule)}
+                                                                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1"
+                                                                        >
+                                                                            {t('dashboard.viewDetails')}
+                                                                            <ChevronRight size={14} />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleCancelBooking(schedule)}
+                                                                            disabled={isBooking}
+                                                                            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-medium text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        >
+                                                                            {isBooking ? 'Cancelling...' : 'Cancel'}
+                                                                        </button>
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <button
+                                                                            onClick={() => handleViewDetails(schedule)}
+                                                                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1"
+                                                                        >
+                                                                            {t('dashboard.viewDetails')}
+                                                                            <ChevronRight size={14} />
+                                                                        </button>
+                                                                        <button
+                                                                            onClick={() => handleBookClass(schedule)}
+                                                                            disabled={isBooking || schedule.current_students >= 10}
+                                                                            className="flex-1 bg-[#F39C32] hover:bg-[#e08a1f] text-white py-2 rounded-lg font-medium text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                        >
+                                                                            {isBooking ? 'Booking...' : schedule.current_students >= 10 ? 'Full' : 'Book Now'}
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 );
@@ -443,7 +516,7 @@ const BookingDashboard = ({ user }) => {
                                             {getDayLabel(selectedSchedule.day, selectedSchedule.phase)}
                                             {selectedSchedule.day && (
                                                 <span className="text-gray-400 font-normal ml-1">
-                                                    • {formatDateShort(getDateForDay(selectedSchedule.day, displayWeek, currentYear))}
+                                                    • {formatDateShort(getDateForDayInWeek(selectedSchedule.day, displayWeek, currentYear))}
                                                 </span>
                                             )}
                                         </p>
@@ -518,3 +591,4 @@ const BookingDashboard = ({ user }) => {
 };
 
 export default BookingDashboard;
+

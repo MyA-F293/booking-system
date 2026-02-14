@@ -1,7 +1,11 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import Lottie from 'lottie-react';
 import Login from './Login';
 import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
+import academicHutAnimation from '../public/Academic Hut banner.json';
+import studentLoadingAnimation from '../public/Loading 40 _ Paperplane.json';
+import adminLoadingAnimation from '../public/admin_Loading 40 _ Paperplane .json';
 
 // Lazy load heavy components
 const BookingSystemDB = lazy(() => import('./BookingSystemDB'));
@@ -9,23 +13,71 @@ const AdminDashboard = lazy(() => import('./AdminDashboard'));
 const TeacherDashboard = lazy(() => import('./components/TeacherDashboard'));
 const InstallPWA = lazy(() => import('./components/InstallPWA'));
 
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
-    <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[#1F4E8C] mb-4"></div>
-      <p className="text-gray-600 font-semibold">Loading...</p>
+// Loading fallback component - Different animation based on user role
+const LoadingFallback = ({ userRole = 'student' }) => {
+  const animation = userRole === 'admin' || userRole === 'teacher'
+    ? adminLoadingAnimation
+    : studentLoadingAnimation;
+
+  return (
+    <div className="min-h-screen bg-white flex items-center justify-center transition-opacity duration-300 ease-in-out">
+      <div className="w-40 h-40 sm:w-48 sm:h-48">
+        <Lottie
+          animationData={animation}
+          loop={true}
+          autoplay={true}
+          rendererSettings={{
+            preserveAspectRatio: 'xMidYMid slice',
+            progressiveLoad: true
+          }}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
     const initApp = async () => {
       console.log('🚀 App: Initializing...');
+
+      // Load current user first
+      const currentUser = getCurrentUser();
+      console.log('🔍 App: Checking current user:', currentUser);
+
+      // Check if teacher is remembered
+      let userToSet = currentUser;
+      if (!currentUser && isTeacherRemembered()) {
+        console.log('👨‍🏫 App: Teacher remembered, checking localStorage');
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser.role === 'teacher') {
+            userToSet = parsedUser;
+          }
+        }
+      }
+
+      // If user is already logged in, skip the long loading animation
+      if (userToSet) {
+        console.log('✅ User already logged in, skipping Academic Hut animation');
+        setUser(userToSet);
+        setLoading(false);
+
+        // Still run auto-copy in background (non-blocking)
+        autoCopyBookingsToNextWeek().catch(err =>
+          console.error('❌ Background auto-copy error:', err)
+        );
+
+        return;
+      }
+
+      // Only show long loading animation for first-time visitors (not logged in)
+      console.log('🎬 First time visitor, showing Academic Hut animation');
 
       try {
         // Check and auto-copy bookings with timeout (max 5 seconds)
@@ -41,23 +93,15 @@ function App() {
         // Continue even if auto-copy fails
       }
 
-      // Load current user
-      const currentUser = getCurrentUser();
-      console.log('🔍 App: Checking current user:', currentUser);
+      // Add minimum 1.5 second delay to show Academic Hut banner properly
+      // This serves as "loading system" alibi while actually loading data
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // If teacher is remembered, auto-login
-      if (!currentUser && isTeacherRemembered()) {
-        console.log('👨‍🏫 App: Teacher remembered, checking localStorage');
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser.role === 'teacher') {
-            setUser(parsedUser);
-          }
-        }
-      } else {
-        setUser(currentUser);
-      }
+      // Trigger fade out animation
+      setFadeOut(true);
+
+      // Wait for fade out to complete before hiding
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       setLoading(false);
     };
@@ -70,12 +114,20 @@ function App() {
     setUser(userData);
   };
 
+  // Initial loading with Academic Hut banner - Only for first-time visitors
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-bounce">⏳</div>
-          <div className="text-xl font-semibold text-gray-700">Loading...</div>
+      <div className={`min-h-screen bg-white flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
+        <div className="w-full max-w-sm sm:max-w-md md:max-w-lg">
+          <Lottie
+            animationData={academicHutAnimation}
+            loop={true}
+            autoplay={true}
+            rendererSettings={{
+              preserveAspectRatio: 'xMidYMid slice',
+              progressiveLoad: true
+            }}
+          />
         </div>
       </div>
     );
@@ -85,12 +137,12 @@ function App() {
   if (!user) {
     console.log('🔒 App: No user, showing login');
     return (
-      <>
+      <div className="animate-fadeIn">
         <Login onLoginSuccess={handleLoginSuccess} />
-        <Suspense fallback={<LoadingFallback />}>
+        <Suspense fallback={<LoadingFallback userRole="student" />}>
           <InstallPWA />
         </Suspense>
-      </>
+      </div>
     );
   }
 
@@ -98,10 +150,12 @@ function App() {
   if (user.role === 'teacher') {
     console.log('👨‍🏫 App: User is teacher, showing teacher dashboard');
     return (
-      <Suspense fallback={<LoadingFallback />}>
-        <TeacherDashboard user={user} />
-        <InstallPWA />
-      </Suspense>
+      <div className="animate-fadeIn">
+        <Suspense fallback={<LoadingFallback userRole="teacher" />}>
+          <TeacherDashboard user={user} />
+          <InstallPWA />
+        </Suspense>
+      </div>
     );
   }
 
@@ -109,20 +163,24 @@ function App() {
   if (user.role === 'admin') {
     console.log('👑 App: User is admin, showing dashboard');
     return (
-      <Suspense fallback={<LoadingFallback />}>
-        <AdminDashboard user={user} />
-        <InstallPWA />
-      </Suspense>
+      <div className="animate-fadeIn">
+        <Suspense fallback={<LoadingFallback userRole="admin" />}>
+          <AdminDashboard user={user} />
+          <InstallPWA />
+        </Suspense>
+      </div>
     );
   }
 
   // Student
   console.log('👨‍🎓 App: User is student, showing booking system');
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <BookingSystemDB user={user} />
-      <InstallPWA />
-    </Suspense>
+    <div className="animate-fadeIn">
+      <Suspense fallback={<LoadingFallback userRole="student" />}>
+        <BookingSystemDB user={user} />
+        <InstallPWA />
+      </Suspense>
+    </div>
   );
 }
 
