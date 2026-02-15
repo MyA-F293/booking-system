@@ -156,16 +156,14 @@ const AdminGuide = ({ onClose, userId }) => {
         handleClose();
     };
 
-    // Scroll to top when modal opens or step changes
+    // Scroll modal content to top when step changes
     useEffect(() => {
         if (isVisible) {
-            // Scroll modal content to top
+            // Only scroll modal content to top, not the page
             const modalContent = document.querySelector('.admin-guide-content');
             if (modalContent) {
                 modalContent.scrollTop = 0;
             }
-            // Scroll page to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [currentStep, isVisible]);
 
