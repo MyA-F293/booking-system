@@ -1296,22 +1296,24 @@ const AdminDashboard = ({ user }) => {
 
                         {/* Edit Student Modal */}
                         {showEditStudentModal && editingStudent && (
-                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                                <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
-                                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-5">
+                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+                                <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[95vh] flex flex-col">
+                                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-3 sm:p-5 flex-shrink-0">
                                         <div className="flex justify-between items-center">
-                                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                                <Edit2 size={20} />
-                                                Edit Student
-                                            </h3>
-                                            <button onClick={() => { setShowEditStudentModal(false); setEditingStudent(null); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                                                <X size={18} />
+                                            <div className="min-w-0 flex-1 mr-2">
+                                                <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
+                                                    <Edit2 size={16} className="sm:w-5 sm:h-5" />
+                                                    Edit Student
+                                                </h3>
+                                                <p className="text-blue-200 text-xs sm:text-sm mt-1 truncate">{editingStudent.student_id}</p>
+                                            </div>
+                                            <button onClick={() => { setShowEditStudentModal(false); setEditingStudent(null); }} className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0">
+                                                <X size={16} className="sm:w-[18px] sm:h-[18px]" />
                                             </button>
                                         </div>
-                                        <p className="text-blue-200 text-sm mt-1">{editingStudent.student_id}</p>
                                     </div>
 
-                                    <form onSubmit={handleUpdateStudent} className="p-5 space-y-4">
+                                    <form onSubmit={handleUpdateStudent} className="p-3 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
                                         <div>
                                             <label className="block text-gray-700 font-semibold mb-2 text-sm">
                                                 {t('admin.fullName')} *
@@ -1392,14 +1394,19 @@ const AdminDashboard = ({ user }) => {
 
                 {/* Password View/Reset Modal */}
                 {showPasswordModal && selectedStudentForPassword && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
-                            <div className="bg-gradient-to-r from-amber-500 to-amber-400 text-white p-5">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+                        <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[95vh] flex flex-col">
+                            <div className="bg-gradient-to-r from-amber-500 to-amber-400 text-white p-3 sm:p-5 flex-shrink-0">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold flex items-center gap-2">
-                                        <Key size={20} />
-                                        {t('password.viewReset') || 'Lihat/Reset Password'}
-                                    </h3>
+                                    <div className="min-w-0 flex-1 mr-2">
+                                        <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
+                                            <Key size={16} className="sm:w-5 sm:h-5 flex-shrink-0" />
+                                            <span className="truncate">{t('password.viewReset') || 'Lihat/Reset Password'}</span>
+                                        </h3>
+                                        <p className="text-amber-100 text-xs sm:text-sm mt-1 truncate">
+                                            {selectedStudentForPassword.full_name} ({selectedStudentForPassword.student_id})
+                                        </p>
+                                    </div>
                                     <button
                                         onClick={() => {
                                             setShowPasswordModal(false);
@@ -1407,17 +1414,14 @@ const AdminDashboard = ({ user }) => {
                                             setStudentPassword('');
                                             setNewPasswordForReset('');
                                         }}
-                                        className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                                        className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
                                     >
-                                        <X size={18} />
+                                        <X size={16} className="sm:w-[18px] sm:h-[18px]" />
                                     </button>
                                 </div>
-                                <p className="text-amber-100 text-sm mt-1">
-                                    {selectedStudentForPassword.full_name} ({selectedStudentForPassword.student_id})
-                                </p>
                             </div>
 
-                            <div className="p-5 space-y-4">
+                            <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
                                 {/* Current Password */}
                                 <div>
                                     <label className="block text-gray-700 font-semibold mb-2 text-sm">
@@ -1737,70 +1741,70 @@ const AdminDashboard = ({ user }) => {
                 )}
 
                 {/* Quick Stats & Alerts - Modern Design with Contained Hover */}
-                <div className="mt-6 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm animate-fade-in">
+                <div className="mt-4 sm:mt-6 bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm animate-fade-in">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] px-5 py-3 flex items-center gap-3">
-                        <div className="p-2 bg-white/10 rounded-lg animate-pulse-slow">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
+                    <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] px-3 sm:px-5 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
+                        <div className="p-1.5 sm:p-2 bg-white/10 rounded-lg animate-pulse-slow">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-[18px] sm:h-[18px] text-white"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
                         </div>
-                        <h4 className="font-bold text-white text-sm">Quick Insights</h4>
+                        <h4 className="font-bold text-white text-xs sm:text-sm">Quick Insights</h4>
                     </div>
 
                     {/* Content */}
-                    <div className="p-5 space-y-4">
+                    <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
                             {/* Current Week Bookings */}
-                            <div className="group relative bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-4 border-2 border-blue-200/50 hover:border-blue-300 hover:shadow-lg transition-all duration-300 animate-slide-in-left overflow-hidden">
+                            <div className="group relative bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg sm:rounded-xl p-2.5 sm:p-4 border-2 border-blue-200/50 hover:border-blue-300 hover:shadow-lg transition-all duration-300 animate-slide-in-left overflow-hidden">
                                 {/* Decorative circle */}
-                                <div className="absolute -top-8 -right-8 w-24 h-24 bg-blue-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                <div className="absolute -top-8 -right-8 w-16 sm:w-24 h-16 sm:h-24 bg-blue-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="p-1.5 bg-blue-500/10 rounded-lg">
-                                            <Calendar size={14} className="text-blue-600" />
+                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                                        <div className="p-1 sm:p-1.5 bg-blue-500/10 rounded-lg">
+                                            <Calendar size={12} className="sm:w-[14px] sm:h-[14px] text-blue-600" />
                                         </div>
-                                        <p className="text-xs text-blue-700 font-semibold">This Week</p>
+                                        <p className="text-[10px] sm:text-xs text-blue-700 font-semibold">This Week</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-blue-900 mb-1 animate-count-up">
+                                    <p className="text-xl sm:text-3xl font-bold text-blue-900 mb-0.5 sm:mb-1 animate-count-up">
                                         {schedules.filter(s => s.week_number === getCurrentWeek()).reduce((sum, s) => sum + s.current_students, 0)}
                                     </p>
-                                    <p className="text-xs text-blue-600 font-medium">W{getCurrentWeek()} bookings</p>
+                                    <p className="text-[10px] sm:text-xs text-blue-600 font-medium">W{getCurrentWeek()} bookings</p>
                                 </div>
                             </div>
 
                             {/* Next Week Bookings */}
-                            <div className="group relative bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-4 border-2 border-orange-200/50 hover:border-orange-300 hover:shadow-lg transition-all duration-300 animate-slide-in-right overflow-hidden">
+                            <div className="group relative bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-lg sm:rounded-xl p-2.5 sm:p-4 border-2 border-orange-200/50 hover:border-orange-300 hover:shadow-lg transition-all duration-300 animate-slide-in-right overflow-hidden">
                                 {/* Decorative circle */}
-                                <div className="absolute -top-8 -right-8 w-24 h-24 bg-orange-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                <div className="absolute -top-8 -right-8 w-16 sm:w-24 h-16 sm:h-24 bg-orange-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="p-1.5 bg-orange-500/10 rounded-lg">
-                                            <Calendar size={14} className="text-orange-600" />
+                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                                        <div className="p-1 sm:p-1.5 bg-orange-500/10 rounded-lg">
+                                            <Calendar size={12} className="sm:w-[14px] sm:h-[14px] text-orange-600" />
                                         </div>
-                                        <p className="text-xs text-orange-700 font-semibold">Next Week</p>
+                                        <p className="text-[10px] sm:text-xs text-orange-700 font-semibold">Next Week</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-orange-900 mb-1 animate-count-up">
+                                    <p className="text-xl sm:text-3xl font-bold text-orange-900 mb-0.5 sm:mb-1 animate-count-up">
                                         {schedules.filter(s => s.week_number === getCurrentWeek() + 1).reduce((sum, s) => sum + s.current_students, 0)}
                                     </p>
-                                    <p className="text-xs text-orange-600 font-medium">W{getCurrentWeek() + 1} bookings</p>
+                                    <p className="text-[10px] sm:text-xs text-orange-600 font-medium">W{getCurrentWeek() + 1} bookings</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Most Popular Class */}
-                        <div className="group relative bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 animate-slide-in-up overflow-hidden">
+                        <div className="group relative bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg sm:rounded-xl p-2.5 sm:p-4 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 animate-slide-in-up overflow-hidden">
                             {/* Decorative circles */}
-                            <div className="absolute -top-8 -right-8 w-24 h-24 bg-emerald-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-                            <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-teal-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                            <div className="absolute -top-8 -right-8 w-16 sm:w-24 h-16 sm:h-24 bg-emerald-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                            <div className="absolute -bottom-8 -left-8 w-16 sm:w-24 h-16 sm:h-24 bg-teal-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
                             <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="p-1.5 bg-emerald-500/10 rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+                                        <div className="p-1 sm:p-1.5 bg-emerald-500/10 rounded-lg">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-[14px] sm:h-[14px] text-emerald-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
                                         </div>
-                                        <p className="text-xs text-emerald-700 font-semibold">Most Popular</p>
+                                        <p className="text-[10px] sm:text-xs text-emerald-700 font-semibold">Most Popular</p>
                                     </div>
-                                    <p className="text-lg font-bold text-emerald-900 truncate">
+                                    <p className="text-sm sm:text-lg font-bold text-emerald-900 truncate">
                                         {(() => {
                                             const classCounts = {};
                                             schedules.forEach(s => {
@@ -1812,8 +1816,8 @@ const AdminDashboard = ({ user }) => {
                                         })()}
                                     </p>
                                 </div>
-                                <div className="text-right ml-4">
-                                    <p className="text-3xl font-bold text-emerald-900 animate-count-up">
+                                <div className="text-right ml-2 sm:ml-4 flex-shrink-0">
+                                    <p className="text-xl sm:text-3xl font-bold text-emerald-900 animate-count-up">
                                         {(() => {
                                             const classCounts = {};
                                             schedules.forEach(s => {
@@ -1824,22 +1828,22 @@ const AdminDashboard = ({ user }) => {
                                             return mostPopular ? mostPopular[1] : 0;
                                         })()}
                                     </p>
-                                    <p className="text-xs text-emerald-600 font-medium">students</p>
+                                    <p className="text-[10px] sm:text-xs text-emerald-600 font-medium">students</p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Alerts Section */}
-                        <div className="space-y-2">
+                        <div className="space-y-1.5 sm:space-y-2">
                             {/* Near Capacity Alert */}
                             {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length > 0 && (
-                                <div className="group flex items-start gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border-2 border-amber-200/50 hover:border-amber-300 hover:shadow-md transition-all duration-300 animate-slide-in-left">
-                                    <div className="p-1.5 bg-amber-500/10 rounded-lg flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+                                <div className="group flex items-start gap-2 sm:gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border-2 border-amber-200/50 hover:border-amber-300 hover:shadow-md transition-all duration-300 animate-slide-in-left">
+                                    <div className="p-1 sm:p-1.5 bg-amber-500/10 rounded-lg flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 text-amber-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-bold text-amber-900">Near Capacity</p>
-                                        <p className="text-xs text-amber-700">
+                                        <p className="text-[10px] sm:text-xs font-bold text-amber-900">Near Capacity</p>
+                                        <p className="text-[10px] sm:text-xs text-amber-700">
                                             {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length} class(es) almost full (8-9/10)
                                         </p>
                                     </div>
@@ -1848,19 +1852,19 @@ const AdminDashboard = ({ user }) => {
 
                             {/* Empty Schedules Alert */}
                             {schedules.filter(s => s.current_students === 0).length > 0 && (
-                                <div className="group flex items-start gap-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl p-3 border-2 border-gray-200/50 hover:border-gray-300 hover:shadow-md transition-all duration-300 animate-slide-in-right">
-                                    <div className="p-1.5 bg-gray-500/10 rounded-lg flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                                <div className="group flex items-start gap-2 sm:gap-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border-2 border-gray-200/50 hover:border-gray-300 hover:shadow-md transition-all duration-300 animate-slide-in-right">
+                                    <div className="p-1 sm:p-1.5 bg-gray-500/10 rounded-lg flex-shrink-0">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 text-gray-600"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-xs font-bold text-gray-900">Empty Schedules</p>
-                                        <p className="text-xs text-gray-600">
+                                        <p className="text-[10px] sm:text-xs font-bold text-gray-900">Empty Schedules</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-600">
                                             {schedules.filter(s => s.current_students === 0).length} schedule(s) with no students
                                         </p>
                                     </div>
                                     <button
                                         onClick={handleCleanEmptySchedules}
-                                        className="text-xs bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:shadow-md flex-shrink-0"
+                                        className="text-[10px] sm:text-xs bg-red-500 hover:bg-red-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all hover:shadow-md flex-shrink-0"
                                     >
                                         Clean
                                     </button>
@@ -1870,11 +1874,11 @@ const AdminDashboard = ({ user }) => {
                             {/* All Good */}
                             {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length === 0 &&
                                 schedules.filter(s => s.current_students === 0).length === 0 && (
-                                    <div className="group flex items-center gap-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-3 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-md transition-all duration-300 animate-slide-in-up">
-                                        <div className="p-1.5 bg-emerald-500/10 rounded-lg flex-shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                    <div className="group flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-md transition-all duration-300 animate-slide-in-up">
+                                        <div className="p-1 sm:p-1.5 bg-emerald-500/10 rounded-lg flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 text-emerald-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                                         </div>
-                                        <p className="text-xs text-emerald-800 font-bold">All systems normal</p>
+                                        <p className="text-[10px] sm:text-xs text-emerald-800 font-bold">All systems normal</p>
                                     </div>
                                 )}
                         </div>
@@ -1884,23 +1888,23 @@ const AdminDashboard = ({ user }) => {
 
             {/* Settings Edit Modal */}
             {showSettingsModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
-                        <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-5">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto max-h-[95vh] flex flex-col">
+                        <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-3 sm:p-5 flex-shrink-0">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-bold flex items-center gap-2">
-                                    <Pencil size={20} />
+                                <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
+                                    <Pencil size={16} className="sm:w-5 sm:h-5" />
                                     Edit Info Header
                                 </h3>
                                 <button
                                     onClick={() => setShowSettingsModal(false)}
-                                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
                                 >
-                                    <X size={18} />
+                                    <X size={16} className="sm:w-[18px] sm:h-[18px]" />
                                 </button>
                             </div>
                         </div>
-                        <div className="p-5 space-y-4">
+                        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
                             <div>
                                 <label className="block text-gray-700 font-semibold mb-2 text-sm">
                                     Batch Number
@@ -1939,8 +1943,8 @@ const AdminDashboard = ({ user }) => {
 
             {/* Teacher ID Modal */}
             {showTeacherIdModal && selectedTeacherForId && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 animate-fadeIn my-auto max-h-[95vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-orange-100 rounded-xl">
