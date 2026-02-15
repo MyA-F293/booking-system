@@ -18,15 +18,15 @@ const getClassBadge = (className) => {
     return classBadges[className] || { emoji: '📖', color: 'bg-gray-100 text-gray-700' };
 };
 
-// Day emojis and colors - Orange-White theme only
+// Day emojis and colors - Darker Orange theme
 const dayConfig = {
-    monday: { emoji: '🌙', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
-    tuesday: { emoji: '🔥', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
-    wednesday: { emoji: '🌿', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
-    thursday: { emoji: '⚡', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
-    friday: { emoji: '🎉', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
-    saturday: { emoji: '🌟', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
-    sunday: { emoji: '☀️', color: 'from-[#F39C32] to-[#e08a1f]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-200' },
+    monday: { emoji: '🌙', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
+    tuesday: { emoji: '🔥', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
+    wednesday: { emoji: '🌿', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
+    thursday: { emoji: '⚡', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
+    friday: { emoji: '🎉', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
+    saturday: { emoji: '🌟', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
+    sunday: { emoji: '☀️', color: 'from-[#E67E22] to-[#D35400]', bg: 'from-orange-50/80 to-orange-100/80', border: 'border-orange-300' },
 };
 
 const AdminAttendanceManager = () => {
@@ -335,8 +335,8 @@ const AdminAttendanceManager = () => {
 
     return (
         <div className="space-y-6">
-            {/* Header - Orange-White Theme like Admin Booking Tab */}
-            <div className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] rounded-2xl shadow-xl relative overflow-hidden">
+            {/* Header - Darker Orange Theme like Booking Tab */}
+            <div className="bg-gradient-to-r from-[#E67E22] to-[#D35400] rounded-2xl shadow-xl relative overflow-hidden">
                 {/* Subtle Decorative Elements */}
                 <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/4"></div>
                 <div className="absolute bottom-0 left-1/3 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
@@ -372,39 +372,39 @@ const AdminAttendanceManager = () => {
                 </div>
             </div>
 
-            {/* Stats Cards - Orange-White Theme */}
+            {/* Stats Cards - Darker Orange Theme */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-300 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">📚 Total Sessions</p>
-                            <p className="text-2xl sm:text-3xl font-bold text-[#F39C32]">{schedules.length}</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-[#E67E22]">{schedules.length}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#F39C32] to-[#e08a1f] rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#E67E22] to-[#D35400] rounded-xl flex items-center justify-center shadow-lg">
                             <Calendar size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-300 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">⏱️ Pending</p>
-                            <p className="text-2xl sm:text-3xl font-bold text-[#F39C32]">{pendingCount}</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-[#E67E22]">{pendingCount}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#F39C32] to-[#e08a1f] rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#E67E22] to-[#D35400] rounded-xl flex items-center justify-center shadow-lg">
                             <AlertCircle size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border-2 border-orange-300 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">✅ Completed</p>
-                            <p className="text-2xl sm:text-3xl font-bold text-[#F39C32]">{completedCount}</p>
+                            <p className="text-2xl sm:text-3xl font-bold text-[#E67E22]">{completedCount}</p>
                         </div>
-                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#F39C32] to-[#e08a1f] rounded-xl flex items-center justify-center shadow-lg">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-[#E67E22] to-[#D35400] rounded-xl flex items-center justify-center shadow-lg">
                             <CheckCircle size={24} className="sm:w-7 sm:h-7 text-white" />
                         </div>
                     </div>
@@ -509,15 +509,15 @@ const AdminAttendanceManager = () => {
                                             </div>
                                         </div>
 
-                                        {/* Card Grid - 3 columns on desktop, 1 on mobile */}
+                                        {/* Card Grid - 3 columns on desktop, 1 on mobile - Like Booking Tab */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {daySchedules.map((schedule) => {
                                                 const badge = getClassBadge(schedule.class?.name);
                                                 return (
                                                     <div
                                                         key={schedule.id}
-                                                        className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 ${schedule.hasAttendance ? 'border-green-200' : 'border-red-200'
-                                                            } hover:scale-[1.02] cursor-pointer`}
+                                                        className={`bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 ${schedule.hasAttendance ? 'border-green-300' : 'border-orange-300'
+                                                            } hover:scale-[1.02] cursor-pointer border-l-4`}
                                                         onClick={() => handleSelectSchedule(schedule)}
                                                     >
                                                         {/* Card Header */}
@@ -542,15 +542,15 @@ const AdminAttendanceManager = () => {
                                                         {/* Card Body */}
                                                         <div className="p-4 space-y-2">
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                                <Calendar size={14} className="text-[#F39C32] flex-shrink-0" />
+                                                                <Calendar size={14} className="text-[#E67E22] flex-shrink-0" />
                                                                 <span className="truncate">{getScheduleDate(schedule)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                                <Clock size={14} className="text-[#F39C32] flex-shrink-0" />
+                                                                <Clock size={14} className="text-[#E67E22] flex-shrink-0" />
                                                                 <span className="truncate">{schedule.time_slot === 'afternoon' ? 'Afternoon' : 'Evening'} • {getTimeRange(schedule.time_slot)}</span>
                                                             </div>
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
-                                                                <Users size={14} className="text-[#F39C32] flex-shrink-0" />
+                                                                <Users size={14} className="text-[#E67E22] flex-shrink-0" />
                                                                 <span className="truncate">{schedule.teacher?.name || 'No teacher'}</span>
                                                             </div>
                                                         </div>
@@ -564,7 +564,7 @@ const AdminAttendanceManager = () => {
                                                                 }}
                                                                 className={`w-full py-2 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 ${schedule.hasAttendance
                                                                     ? 'bg-green-500 hover:bg-green-600 text-white'
-                                                                    : 'bg-[#F39C32] hover:bg-[#e08a1f] text-white'
+                                                                    : 'bg-[#E67E22] hover:bg-[#D35400] text-white'
                                                                     }`}
                                                             >
                                                                 {schedule.hasAttendance ? (
@@ -591,9 +591,9 @@ const AdminAttendanceManager = () => {
                     )}
                 </div>
             ) : (
-                /* Attendance Form - Orange-White Theme */
+                /* Attendance Form - Darker Orange Theme */
                 <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] text-white p-4 sm:p-6">
+                    <div className="bg-gradient-to-r from-[#E67E22] to-[#D35400] text-white p-4 sm:p-6">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <div>
                                 <h2 className="text-lg sm:text-xl font-bold">✏️ Mark Attendance</h2>
@@ -673,7 +673,7 @@ const AdminAttendanceManager = () => {
                                 <button
                                     onClick={handleSubmitAttendance}
                                     disabled={submitting}
-                                    className="w-full bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a15] text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+                                    className="w-full bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
                                 >
                                     {submitting ? (
                                         <>
