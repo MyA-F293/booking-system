@@ -3,6 +3,7 @@ import Lottie from 'lottie-react';
 import Login from './Login';
 import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
+import { initVersionCheck, stopVersionCheck } from './utils/versionCheck';
 import academicHutAnimation from '../public/Academic Hut banner.json';
 import studentLoadingAnimation from '../public/Loading 40 _ Paperplane.json';
 import adminLoadingAnimation from '../public/admin_Loading 40 _ Paperplane .json';
@@ -44,6 +45,9 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       console.log('🚀 App: Initializing...');
+
+      // Initialize version check for auto-update
+      initVersionCheck();
 
       // Load current user first
       const currentUser = getCurrentUser();
@@ -107,6 +111,11 @@ function App() {
     };
 
     initApp();
+
+    // Cleanup on unmount
+    return () => {
+      stopVersionCheck();
+    };
   }, []);
 
   const handleLoginSuccess = (userData) => {
