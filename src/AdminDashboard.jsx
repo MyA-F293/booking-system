@@ -1297,7 +1297,7 @@ const AdminDashboard = ({ user }) => {
                         {/* Edit Student Modal */}
                         {showEditStudentModal && editingStudent && (
                             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
-                                <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[95vh] flex flex-col">
+                                <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
                                     <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-3 sm:p-5 flex-shrink-0">
                                         <div className="flex justify-between items-center">
                                             <div className="min-w-0 flex-1 mr-2">
@@ -1395,7 +1395,7 @@ const AdminDashboard = ({ user }) => {
                 {/* Password View/Reset Modal */}
                 {showPasswordModal && selectedStudentForPassword && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
-                        <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[95vh] flex flex-col">
+                        <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
                             <div className="bg-gradient-to-r from-amber-500 to-amber-400 text-white p-3 sm:p-5 flex-shrink-0">
                                 <div className="flex justify-between items-center">
                                     <div className="min-w-0 flex-1 mr-2">
@@ -1889,7 +1889,7 @@ const AdminDashboard = ({ user }) => {
             {/* Settings Edit Modal */}
             {showSettingsModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
-                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto max-h-[95vh] flex flex-col">
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
                         <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-3 sm:p-5 flex-shrink-0">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
@@ -1944,7 +1944,7 @@ const AdminDashboard = ({ user }) => {
             {/* Teacher ID Modal */}
             {showTeacherIdModal && selectedTeacherForId && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
-                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 animate-fadeIn my-auto max-h-[95vh] overflow-y-auto">
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 animate-fadeIn my-auto max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-orange-100 rounded-xl">

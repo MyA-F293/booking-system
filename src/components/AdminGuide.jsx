@@ -180,7 +180,7 @@ const AdminGuide = ({ onClose, userId }) => {
     const progress = ((currentStep + 1) / steps.length) * 100;
 
     return (
-        <div className={`fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 pt-4 sm:pt-4 overflow-y-auto transition-all duration-300 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto transition-all duration-300 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleSkip}></div>
 
             {/* Modal with Admin Theme (Orange/Amber) */}
