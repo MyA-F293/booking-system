@@ -16,6 +16,17 @@ const dayLabels = {
     sunday: 'Sunday'
 };
 
+// Day order for sorting
+const dayOrder = {
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+    sunday: 7
+};
+
 // Class badges - subtle icons/emojis for each class
 const classBadges = {
     'Fahd Class': { emoji: '🏛️', color: 'bg-amber-100 text-amber-700' },
