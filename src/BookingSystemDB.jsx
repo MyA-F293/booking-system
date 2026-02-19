@@ -191,34 +191,14 @@ const BookingSystemDB = ({ user }) => {
         }
     }, [userId]);
 
-    // Lock body scroll when any modal is open
+    // Scroll to top when any modal opens (no body lock - modal has overflow-y-auto)
     useEffect(() => {
         const isAnyModalOpen = showBookingModal || showPasswordModal || showSettingsModal || showBookingSuccessModal || showUserGuide;
 
         if (isAnyModalOpen) {
-            // Scroll to top
-            window.scrollTo(0, 0);
-
-            // Lock body scroll
-            document.body.style.overflow = 'hidden';
-            document.body.style.position = 'fixed';
-            document.body.style.width = '100%';
-            document.body.style.top = '0';
-        } else {
-            // Unlock body scroll
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            document.body.style.top = '';
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        return () => {
-            // Cleanup on unmount
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            document.body.style.top = '';
-        };
     }, [showBookingModal, showPasswordModal, showSettingsModal, showBookingSuccessModal, showUserGuide]);
 
     // Load initial data
@@ -1110,8 +1090,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Booking Modal */}
             {showBookingModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-2 sm:p-4">
-                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 max-h-[85vh] flex flex-col">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[60] p-2 sm:p-4 overflow-y-auto">
+                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 max-h-[85vh] flex flex-col mt-12 mb-4">
 
                         {/* Header - Fixed at top */}
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-3 sm:p-6 flex justify-between items-center flex-shrink-0">
@@ -1462,8 +1442,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Settings Edit Modal - Admin Only */}
             {showSettingsModal && currentUser?.role === 'admin' && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-[60] overflow-y-auto">
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden mt-12 mb-4">
                         <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-5">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1517,8 +1497,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Password Change Modal */}
             {showPasswordModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-[60] overflow-y-auto">
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden mt-12 mb-4">
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1627,8 +1607,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Booking Success Modal */}
             {showBookingSuccessModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-[60] overflow-y-auto">
+                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-slide-up mt-12 mb-4">
                         {/* Success Header with Animation */}
                         <div className="bg-gradient-to-br from-[#1F4E8C] via-[#2a5fa3] to-[#1F4E8C] p-5 sm:p-8 text-center relative overflow-hidden">
                             {/* Decorative Elements */}

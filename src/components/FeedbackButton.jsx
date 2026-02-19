@@ -121,8 +121,8 @@ const FeedbackButton = ({ user }) => {
             </div>
 
             {isOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white w-full max-w-xs sm:max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white w-full max-w-xs sm:max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto mt-12 mb-4">
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-4 sm:p-5">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -274,8 +274,8 @@ const FeedbackButton = ({ user }) => {
             )}
 
             {showSuccessModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden mt-12 mb-4">
                         <div className="bg-gradient-to-br from-[#1F4E8C] via-[#2a5fa3] to-[#1F4E8C] p-5 sm:p-8 text-center relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-full h-full">
                                 <div className="absolute top-4 left-4 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>

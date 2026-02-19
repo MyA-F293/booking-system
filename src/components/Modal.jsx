@@ -47,49 +47,49 @@ export default function Modal({ isOpen, onClose, title, message, type = 'success
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn"
+            className="fixed inset-0 z-50 flex items-start justify-center p-2 sm:p-3 bg-black/60 backdrop-blur-md animate-fadeIn overflow-y-auto"
             onClick={onClose}
         >
             <div
-                className="bg-white rounded-3xl shadow-2xl max-w-md w-full transform animate-slideUp overflow-hidden"
+                className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-[280px] sm:max-w-sm w-full transform animate-slideUp overflow-hidden mt-12 mb-4"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Decorative gradient top bar */}
-                <div className={`h-1.5 ${style.gradientBar}`}></div>
+                <div className={`h-1 sm:h-1.5 ${style.gradientBar}`}></div>
 
                 {/* Header with large icon */}
-                <div className="flex flex-col items-center pt-8 pb-4 px-6">
-                    <div className={`w-20 h-20 rounded-full ${style.iconBg} ${style.iconGlow} flex items-center justify-center mb-4 animate-bounce-gentle relative`}>
+                <div className="flex flex-col items-center pt-4 sm:pt-6 pb-3 sm:pb-4 px-4 sm:px-6">
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full ${style.iconBg} ${style.iconGlow} flex items-center justify-center mb-3 sm:mb-4 animate-bounce-gentle relative`}>
                         {/* Glow effect behind icon */}
                         <div className={`absolute inset-0 rounded-full ${style.iconBg} blur-xl opacity-50`}></div>
-                        <IconComponent className={`w-10 h-10 ${style.iconColor} relative z-10`} strokeWidth={2.5} />
+                        <IconComponent className={`w-7 h-7 sm:w-8 sm:h-8 ${style.iconColor} relative z-10`} strokeWidth={2.5} />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 text-center">{title}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-gray-900 text-center">{title}</h3>
                 </div>
 
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-all p-2 hover:bg-gray-100 rounded-full hover:scale-110"
+                    className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-600 transition-all p-1.5 sm:p-2 hover:bg-gray-100 rounded-full hover:scale-110"
                 >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
 
                 {/* Content */}
-                <div className="px-8 pb-6">
-                    <p className="text-gray-600 text-center leading-relaxed text-base">{message}</p>
+                <div className="px-4 sm:px-6 pb-4 sm:pb-5">
+                    <p className="text-gray-600 text-center leading-relaxed text-xs sm:text-sm">{message}</p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 px-6 pb-6">
+                <div className="flex gap-2 sm:gap-3 px-3 sm:px-4 pb-3 sm:pb-4">
                     {actions ? (
                         actions.map((action, index) => (
                             <button
                                 key={index}
                                 onClick={action.onClick}
-                                className={`flex-1 px-5 py-3.5 rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 ${action.primary
-                                        ? `${style.buttonBg} text-white ${style.buttonShadow}`
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-md hover:shadow-lg'
+                                className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 text-xs sm:text-sm ${action.primary
+                                    ? `${style.buttonBg} text-white ${style.buttonShadow}`
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 shadow-md hover:shadow-lg'
                                     }`}
                             >
                                 {action.label}
@@ -98,7 +98,7 @@ export default function Modal({ isOpen, onClose, title, message, type = 'success
                     ) : (
                         <button
                             onClick={onClose}
-                            className={`w-full px-5 py-3.5 ${style.buttonBg} text-white rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 ${style.buttonShadow}`}
+                            className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 ${style.buttonBg} text-white rounded-lg sm:rounded-xl font-semibold transition-all transform hover:scale-105 active:scale-95 ${style.buttonShadow} text-xs sm:text-sm`}
                         >
                             OK
                         </button>

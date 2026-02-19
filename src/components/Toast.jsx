@@ -143,43 +143,43 @@ const ConfirmModal = ({ message, onConfirm, onCancel }) => {
 
     return (
         <div className={`
-            fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4
+            fixed inset-0 z-[70] flex items-start justify-center p-2 sm:p-3 overflow-y-auto
             transition-all duration-300
             ${isVisible ? 'bg-black/50 backdrop-blur-sm' : 'bg-transparent'}
         `}>
             <div className={`
-                bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-[280px] sm:max-w-md w-full overflow-hidden
+                bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-[260px] sm:max-w-sm w-full overflow-hidden mt-12 mb-4
                 transform transition-all duration-300
                 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}
             `}>
                 {/* Header */}
-                <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] p-3 sm:p-5">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2 bg-white/20 rounded-lg sm:rounded-xl">
-                            <AlertTriangle className="text-white w-4 h-4 sm:w-6 sm:h-6" />
+                <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] p-2.5 sm:p-4">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1 sm:p-1.5 bg-white/20 rounded-md sm:rounded-lg">
+                            <AlertTriangle className="text-white w-3.5 h-3.5 sm:w-5 sm:h-5" />
                         </div>
-                        <h3 className="text-base sm:text-xl font-bold text-white">Confirm</h3>
+                        <h3 className="text-sm sm:text-lg font-bold text-white">Confirm</h3>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-4 sm:p-6">
-                    <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
+                <div className="p-3 sm:p-4">
+                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">
                         {message}
                     </p>
                 </div>
 
                 {/* Actions */}
-                <div className="px-4 pb-4 sm:px-6 sm:pb-6 flex gap-2 sm:gap-3 justify-end">
+                <div className="px-3 pb-3 sm:px-4 sm:pb-4 flex gap-2 justify-end">
                     <button
                         onClick={onCancel}
-                        className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border-2 border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition-all text-xs sm:text-sm"
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg border-2 border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition-all text-[11px] sm:text-sm"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white font-semibold hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all shadow-md hover:shadow-lg text-xs sm:text-sm"
+                        className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white font-semibold hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all shadow-md hover:shadow-lg text-[11px] sm:text-sm"
                     >
                         Yes, Continue
                     </button>

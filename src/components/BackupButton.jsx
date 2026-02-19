@@ -130,8 +130,8 @@ const BackupButton = () => {
             </button>
 
             {showModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full my-8 overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
+                <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all max-h-[90vh] flex flex-col mt-12 mb-4">
                         {loading ? (
                             <div className="p-8">
                                 <div className="text-center">

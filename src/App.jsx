@@ -4,15 +4,16 @@ import Login from './Login';
 import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
 import { initVersionCheck, stopVersionCheck } from './utils/versionCheck';
+import lazyWithRetry from './utils/lazyWithRetry';
 import academicHutAnimation from '../public/Academic Hut banner.json';
 import studentLoadingAnimation from '../public/Loading 40 _ Paperplane.json';
 import adminLoadingAnimation from '../public/admin_Loading 40 _ Paperplane .json';
 
-// Lazy load heavy components
-const BookingSystemDB = lazy(() => import('./BookingSystemDB'));
-const AdminDashboard = lazy(() => import('./AdminDashboard'));
-const TeacherDashboard = lazy(() => import('./components/TeacherDashboard'));
-const InstallPWA = lazy(() => import('./components/InstallPWA'));
+// Lazy load heavy components with retry mechanism
+const BookingSystemDB = lazy(() => lazyWithRetry(() => import('./BookingSystemDB')));
+const AdminDashboard = lazy(() => lazyWithRetry(() => import('./AdminDashboard')));
+const TeacherDashboard = lazy(() => lazyWithRetry(() => import('./components/TeacherDashboard')));
+const InstallPWA = lazy(() => lazyWithRetry(() => import('./components/InstallPWA')));
 
 // Loading fallback component - Different animation based on user role
 const LoadingFallback = ({ userRole = 'student' }) => {

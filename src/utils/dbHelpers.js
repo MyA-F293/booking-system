@@ -564,9 +564,18 @@ export const getScheduleStudents = async (scheduleId) => {
     const { data, error } = await supabase
         .from('bookings')
         .select(`
-      *,
-      user:users(student_id, full_name)
-    `)
+            id,
+            user_id,
+            schedule_id,
+            status,
+            created_at,
+            users!inner (
+                id,
+                student_id,
+                full_name,
+                email
+            )
+        `)
         .eq('schedule_id', scheduleId)
         .eq('status', 'confirmed')
 
@@ -575,8 +584,14 @@ export const getScheduleStudents = async (scheduleId) => {
         throw error;
     }
 
-    console.log('✅ dbHelpers: getScheduleStudents success:', data);
-    return data || []
+    // Transform data to have user object at root level
+    const transformedData = (data || []).map(booking => ({
+        ...booking,
+        user: booking.users // Map users to user for consistency
+    }));
+
+    console.log('✅ dbHelpers: getScheduleStudents success:', transformedData);
+    return transformedData;
 }
 
 // ========================================

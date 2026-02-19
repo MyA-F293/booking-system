@@ -1,26 +1,42 @@
 // Auto-reload system for cache busting
 // Detects new version and prompts user to reload
 
-const APP_VERSION = '2026.02.19.1158'; // Update this when deploying new version
+const APP_VERSION = '2026.02.19.1223'; // Update this when deploying new version
 const VERSION_CHECK_INTERVAL = 1 * 60 * 1000; // Check every 1 minute
 
 let versionCheckTimer = null;
+let updateNotificationShown = false; // Flag to prevent repeated notifications
 
 // Store version in localStorage
 const STORAGE_KEY = 'app_version';
+const UPDATE_SHOWN_KEY = 'update_notification_shown';
 
 export const initVersionCheck = () => {
     const storedVersion = localStorage.getItem(STORAGE_KEY);
+    const updateShown = sessionStorage.getItem(UPDATE_SHOWN_KEY);
 
-    // First time or version mismatch
+    // First time - just store version
     if (!storedVersion) {
         localStorage.setItem(STORAGE_KEY, APP_VERSION);
-    } else if (storedVersion !== APP_VERSION) {
-        console.log('🔄 New version detected:', APP_VERSION);
+        console.log('✅ Version initialized:', APP_VERSION);
+    } else if (storedVersion !== APP_VERSION && !updateShown) {
+        // Version mismatch and notification not shown yet
+        console.log('🔄 Version mismatch detected:', { stored: storedVersion, current: APP_VERSION });
+
+        // Update stored version immediately to prevent repeated checks
+        localStorage.setItem(STORAGE_KEY, APP_VERSION);
+
+        // Mark notification as shown in this session
+        sessionStorage.setItem(UPDATE_SHOWN_KEY, 'true');
+        updateNotificationShown = true;
+
+        // Show notification
         handleVersionUpdate();
+    } else if (storedVersion === APP_VERSION) {
+        console.log('✅ Version up to date:', APP_VERSION);
     }
 
-    // Start periodic check
+    // Start periodic check (only for server updates)
     startVersionCheck();
 };
 
@@ -35,6 +51,11 @@ const startVersionCheck = () => {
 };
 
 const checkForUpdates = async () => {
+    // Don't check if notification already shown in this session
+    if (updateNotificationShown) {
+        return;
+    }
+
     try {
         // Fetch version.json from server with cache-busting
         const response = await fetch(`/version.json?t=${Date.now()}`, {
@@ -48,10 +69,19 @@ const checkForUpdates = async () => {
         if (response.ok) {
             const data = await response.json();
             const serverVersion = data.version;
-            const storedVersion = localStorage.getItem(STORAGE_KEY);
+            const currentVersion = APP_VERSION;
 
-            if (serverVersion !== storedVersion) {
-                console.log('🆕 New version available:', serverVersion);
+            // Only show notification if server version is different from current
+            if (serverVersion !== currentVersion && !updateNotificationShown) {
+                console.log('🆕 New version available on server:', serverVersion);
+
+                // Update stored version
+                localStorage.setItem(STORAGE_KEY, serverVersion);
+
+                // Mark notification as shown
+                sessionStorage.setItem(UPDATE_SHOWN_KEY, 'true');
+                updateNotificationShown = true;
+
                 handleVersionUpdate();
             }
         }
@@ -61,12 +91,26 @@ const checkForUpdates = async () => {
 };
 
 const handleVersionUpdate = () => {
-    // Clear all caches
+    // Don't show notification if already shown
+    if (updateNotificationShown) {
+        return;
+    }
+
+    // Clear all caches aggressively
     if ('caches' in window) {
         caches.keys().then(names => {
-            names.forEach(name => caches.delete(name));
+            names.forEach(name => {
+                console.log('🗑️ Deleting cache:', name);
+                caches.delete(name);
+            });
         });
     }
+
+    // Clear session storage (for lazy loading retry)
+    window.sessionStorage.clear();
+
+    // Re-mark as shown after clearing session storage
+    sessionStorage.setItem(UPDATE_SHOWN_KEY, 'true');
 
     // Show update notification
     showUpdateNotification();

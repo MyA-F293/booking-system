@@ -683,30 +683,30 @@ const TeacherDashboard = ({ user }) => {
             {/* Change Password Modal */}
             {
                 showPasswordModal && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn">
-                            <div className="flex items-center justify-between mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-blue-100 rounded-xl">
-                                        <Key className="text-blue-600" size={24} />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-2 sm:p-3 overflow-y-auto">
+                        <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-3 sm:p-4 animate-fadeIn mt-12 mb-4">
+                            <div className="flex items-center justify-between mb-4 sm:mb-5">
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <div className="p-2 sm:p-2.5 bg-blue-100 rounded-lg sm:rounded-xl">
+                                        <Key className="text-blue-600" size={18} />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-800">Change Password</h3>
-                                        <p className="text-sm text-gray-500">Update your password</p>
+                                        <h3 className="text-base sm:text-lg font-bold text-gray-800">Change Password</h3>
+                                        <p className="text-xs sm:text-sm text-gray-500">Update your password</p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={closePasswordModal}
-                                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                    className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
                                 >
-                                    <XCircle size={20} />
+                                    <XCircle size={18} className="sm:w-5 sm:h-5" />
                                 </button>
                             </div>
 
-                            <form onSubmit={handlePasswordChange} className="space-y-4">
+                            <form onSubmit={handlePasswordChange} className="space-y-3 sm:space-y-4">
                                 {/* Current Password */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                                         Current Password
                                     </label>
                                     <div className="relative">
@@ -714,23 +714,23 @@ const TeacherDashboard = ({ user }) => {
                                             type={showCurrentPassword ? 'text' : 'password'}
                                             value={passwordData.currentPassword}
                                             onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 transition-all text-sm"
                                             placeholder="Enter current password"
                                             required
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                         >
-                                            {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            {showCurrentPassword ? <EyeOff size={16} className="sm:w-5 sm:h-5" /> : <Eye size={16} className="sm:w-5 sm:h-5" />}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* New Password */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                                         New Password
                                     </label>
                                     <div className="relative">
@@ -738,7 +738,7 @@ const TeacherDashboard = ({ user }) => {
                                             type={showNewPassword ? 'text' : 'password'}
                                             value={passwordData.newPassword}
                                             onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 transition-all text-sm"
                                             placeholder="Enter new password"
                                             required
                                             minLength={6}
@@ -746,17 +746,17 @@ const TeacherDashboard = ({ user }) => {
                                         <button
                                             type="button"
                                             onClick={() => setShowNewPassword(!showNewPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                         >
-                                            {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            {showNewPassword ? <EyeOff size={16} className="sm:w-5 sm:h-5" /> : <Eye size={16} className="sm:w-5 sm:h-5" />}
                                         </button>
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                                    <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Minimum 6 characters</p>
                                 </div>
 
                                 {/* Confirm Password */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-xs sm:text-sm font-semibold text-gray-700 mb-1.5 sm:mb-2">
                                         Confirm New Password
                                     </label>
                                     <div className="relative">
@@ -764,43 +764,45 @@ const TeacherDashboard = ({ user }) => {
                                             type={showConfirmPassword ? 'text' : 'password'}
                                             value={passwordData.confirmPassword}
                                             onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border-2 border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-blue-500 transition-all text-sm"
                                             placeholder="Confirm new password"
                                             required
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                            className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                                         >
-                                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                            {showConfirmPassword ? <EyeOff size={16} className="sm:w-5 sm:h-5" /> : <Eye size={16} className="sm:w-5 sm:h-5" />}
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex gap-3 pt-2">
+                                <div className="flex gap-2 sm:gap-3 pt-2">
                                     <button
                                         type="submit"
                                         disabled={passwordLoading}
-                                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+                                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg text-xs sm:text-sm"
                                     >
                                         {passwordLoading ? (
                                             <>
-                                                <Loader2 size={18} className="animate-spin" />
-                                                Updating...
+                                                <Loader2 size={14} className="sm:w-4 sm:h-4 animate-spin" />
+                                                <span className="hidden sm:inline">Updating...</span>
+                                                <span className="sm:hidden">Wait...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <CheckCircle size={18} />
-                                                Update Password
+                                                <CheckCircle size={14} className="sm:w-4 sm:h-4" />
+                                                <span className="hidden sm:inline">Update Password</span>
+                                                <span className="sm:hidden">Update</span>
                                             </>
                                         )}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={closePasswordModal}
-                                        className="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors"
+                                        className="px-3 sm:px-5 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-colors text-xs sm:text-sm"
                                     >
                                         Cancel
                                     </button>

@@ -75,32 +75,11 @@ const BookingDashboard = ({ user }) => {
         });
     }, [selectedWeekTab, userBatch, userId]);
 
-    // Lock body scroll when modal is open
+    // Scroll to top when modal opens (no body lock - modal container is scrollable)
     useEffect(() => {
         if (selectedSchedule) {
-            // Scroll to top
-            window.scrollTo(0, 0);
-
-            // Lock body scroll
-            document.body.style.overflow = 'hidden';
-            document.body.style.position = 'fixed';
-            document.body.style.width = '100%';
-            document.body.style.top = '0';
-        } else {
-            // Unlock body scroll
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            document.body.style.top = '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        return () => {
-            // Cleanup on unmount
-            document.body.style.overflow = '';
-            document.body.style.position = '';
-            document.body.style.width = '';
-            document.body.style.top = '';
-        };
     }, [selectedSchedule]);
 
     async function loadUserBookings() {
@@ -518,92 +497,96 @@ const BookingDashboard = ({ user }) => {
 
             {/* Detail Modal */}
             {selectedSchedule && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-2 sm:p-4 z-[60] overflow-y-auto">
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl mt-12 mb-4">
                         {/* Modal Header */}
-                        <div className="bg-[#1F4E8C] text-white p-5">
+                        <div className="bg-[#1F4E8C] text-white p-3 sm:p-4">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <p className="text-blue-200 text-xs font-medium uppercase tracking-wider mb-1">{t('dashboard.viewDetails')}</p>
-                                    <h3 className="text-xl font-bold">{selectedSchedule.class?.name}</h3>
-                                    <p className="text-blue-200 text-sm mt-1">{selectedSchedule.program} • {selectedSchedule.level}</p>
+                                    <p className="text-blue-200 text-[10px] sm:text-xs font-medium uppercase tracking-wider mb-0.5 sm:mb-1">{t('dashboard.viewDetails')}</p>
+                                    <h3 className="text-base sm:text-lg font-bold">{selectedSchedule.class?.name}</h3>
+                                    <p className="text-blue-200 text-xs sm:text-sm mt-0.5 sm:mt-1">{selectedSchedule.program} • {selectedSchedule.level}</p>
                                 </div>
                                 <button
                                     onClick={() => setSelectedSchedule(null)}
-                                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
                                 >
-                                    <X size={20} />
+                                    <X size={18} className="sm:w-5 sm:h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="p-5 max-h-[60vh] overflow-y-auto">
+                        <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
                             {/* Schedule Info */}
-                            <div className="bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200">
-                                <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <Calendar size={16} className="text-[#1F4E8C]" />
+                            <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 mb-3 sm:mb-4 border border-gray-200">
+                                <h4 className="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                                    <Calendar size={14} className="sm:w-4 sm:h-4 text-[#1F4E8C]" />
                                     {t('booking.scheduleInfo')}
                                 </h4>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="bg-white rounded-lg p-3 border border-gray-100">
-                                        <p className="text-xs text-gray-500 mb-1">{t('booking.phase')}</p>
-                                        <p className="font-semibold text-gray-800">{getPhaseLabel(selectedSchedule.phase)}</p>
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                    <div className="bg-white rounded-md sm:rounded-lg p-2 sm:p-3 border border-gray-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.phase')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{getPhaseLabel(selectedSchedule.phase)}</p>
                                     </div>
-                                    <div className="bg-white rounded-lg p-3 border border-gray-100">
-                                        <p className="text-xs text-gray-500 mb-1">{t('booking.dayLabel')}</p>
-                                        <p className="font-semibold text-gray-800">
+                                    <div className="bg-white rounded-md sm:rounded-lg p-2 sm:p-3 border border-gray-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.dayLabel')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">
                                             {getDayLabel(selectedSchedule.day, selectedSchedule.phase)}
                                             {selectedSchedule.day && (
-                                                <span className="text-gray-400 font-normal ml-1">
+                                                <span className="text-gray-400 font-normal ml-1 text-[10px] sm:text-xs">
                                                     • {formatDateShort(getDateForDayInWeek(selectedSchedule.day, displayWeek, currentYear))}
                                                 </span>
                                             )}
                                         </p>
                                     </div>
-                                    <div className="bg-white rounded-lg p-3 border border-gray-100">
-                                        <p className="text-xs text-gray-500 mb-1">{t('booking.time')}</p>
-                                        <p className="font-semibold text-gray-800">{getTimeLabel(selectedSchedule.time_slot)}</p>
+                                    <div className="bg-white rounded-md sm:rounded-lg p-2 sm:p-3 border border-gray-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.time')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{getTimeLabel(selectedSchedule.time_slot)}</p>
                                     </div>
-                                    <div className="bg-white rounded-lg p-3 border border-gray-100">
-                                        <p className="text-xs text-gray-500 mb-1">{t('booking.teacher')}</p>
-                                        <p className="font-semibold text-gray-800">{selectedSchedule.teacher?.name || 'TBA'}</p>
+                                    <div className="bg-white rounded-md sm:rounded-lg p-2 sm:p-3 border border-gray-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.teacher')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.teacher?.name || 'TBA'}</p>
                                     </div>
-                                    <div className="bg-white rounded-lg p-3 border border-gray-100 col-span-2">
-                                        <p className="text-xs text-gray-500 mb-1">{t('booking.studentsCount')}</p>
-                                        <p className="font-semibold text-[#1F4E8C]">{selectedSchedule.current_students}/10</p>
+                                    <div className="bg-white rounded-md sm:rounded-lg p-2 sm:p-3 border border-gray-100 col-span-2">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.studentsCount')}</p>
+                                        <p className="font-semibold text-[#1F4E8C] text-xs sm:text-sm">{selectedSchedule.current_students}/10</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Student List */}
                             <div>
-                                <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <Users size={16} className="text-[#F39C32]" />
+                                <h4 className="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                                    <Users size={14} className="sm:w-4 sm:h-4 text-[#F39C32]" />
                                     {t('booking.studentList')} ({scheduleStudents.length})
                                 </h4>
 
                                 {scheduleStudents.length === 0 ? (
-                                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-gray-200">
-                                        <Users size={32} className="mx-auto mb-2 text-gray-300" />
-                                        <p className="text-gray-500 text-sm">{t('dashboard.noBookingsDesc')}</p>
+                                    <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200">
+                                        <Users size={24} className="sm:w-8 sm:h-8 mx-auto mb-2 text-gray-300" />
+                                        <p className="text-gray-500 text-xs sm:text-sm">{t('dashboard.noBookingsDesc')}</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-2">
+                                    <div className="space-y-1.5 sm:space-y-2">
                                         {scheduleStudents.map((booking, index) => (
                                             <div
                                                 key={booking.id}
-                                                className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-lg p-3 transition-all border border-gray-100"
+                                                className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 transition-all border border-gray-100"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-[#1F4E8C] text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#1F4E8C] text-white rounded-md sm:rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm">
                                                         {index + 1}
                                                     </div>
                                                     <div>
-                                                        <p className="font-medium text-gray-800">{booking.user?.full_name || 'Unknown'}</p>
-                                                        <p className="text-xs text-gray-500 font-mono">{booking.user?.student_id || '-'}</p>
+                                                        <p className="font-medium text-gray-800 text-xs sm:text-sm">
+                                                            {booking.user?.full_name || booking.users?.full_name || `User ID: ${booking.user_id}`}
+                                                        </p>
+                                                        <p className="text-[10px] sm:text-xs text-gray-500 font-mono">
+                                                            {booking.user?.student_id || booking.users?.student_id || booking.user_id || '-'}
+                                                        </p>
                                                     </div>
                                                 </div>
-                                                <span className="text-xs bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-medium">
+                                                <span className="text-[10px] sm:text-xs bg-emerald-100 text-emerald-700 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-medium">
                                                     ✓ {t('booking.confirmed')}
                                                 </span>
                                             </div>
@@ -614,10 +597,10 @@ const BookingDashboard = ({ user }) => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="bg-gray-50 p-4 border-t border-gray-200">
+                        <div className="bg-gray-50 p-2.5 sm:p-3 border-t border-gray-200">
                             <button
                                 onClick={() => setSelectedSchedule(null)}
-                                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-lg font-medium transition-colors text-sm"
+                                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 sm:py-2.5 rounded-lg font-medium transition-colors text-xs sm:text-sm"
                             >
                                 {t('common.close')}
                             </button>
