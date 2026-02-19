@@ -75,6 +75,34 @@ const BookingDashboard = ({ user }) => {
         });
     }, [selectedWeekTab, userBatch, userId]);
 
+    // Lock body scroll when modal is open
+    useEffect(() => {
+        if (selectedSchedule) {
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            // Lock body scroll
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.top = '0';
+        } else {
+            // Unlock body scroll
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+        }
+
+        return () => {
+            // Cleanup on unmount
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+        };
+    }, [selectedSchedule]);
+
     async function loadUserBookings() {
         try {
             setLoading(true);
@@ -490,8 +518,8 @@ const BookingDashboard = ({ user }) => {
 
             {/* Detail Modal */}
             {selectedSchedule && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 pt-4 sm:pt-8 z-[60] overflow-y-auto">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl my-auto">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl">
                         {/* Modal Header */}
                         <div className="bg-[#1F4E8C] text-white p-5">
                             <div className="flex justify-between items-start">

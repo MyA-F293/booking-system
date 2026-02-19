@@ -158,15 +158,37 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
         };
     }, [isVisible, userId]);
 
+    // Lock body scroll and scroll to top when modal opens
+    useEffect(() => {
+        if (isVisible) {
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            // Lock body scroll
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            document.body.style.top = '0';
+        }
+
+        return () => {
+            // Unlock body scroll
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+        };
+    }, [isVisible]);
+
     const currentStepData = steps[currentStep];
     const progress = ((currentStep + 1) / steps.length) * 100;
 
     return (
-        <div className={`fixed inset-0 z-[60] flex items-start justify-center p-2 sm:p-4 pt-4 sm:pt-8 overflow-y-auto transition-all duration-300 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 transition-all duration-300 ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleSkip}></div>
 
             {/* Smaller Modal */}
-            <div className={`relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-sm sm:max-w-lg md:max-w-xl w-full max-h-[80vh] overflow-hidden transform transition-all duration-300 my-auto ${isVisible ? 'scale-100' : 'scale-95'}`}>
+            <div className={`relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-sm sm:max-w-lg md:max-w-xl w-full max-h-[85vh] overflow-hidden transform transition-all duration-300 ${isVisible ? 'scale-100' : 'scale-95'}`}>
                 {/* Progress Bar */}
                 <div className="absolute top-0 left-0 right-0 h-0.5 sm:h-1 bg-gray-200">
                     <div className="h-full bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] transition-all duration-500" style={{ width: `${progress}%` }}></div>
@@ -178,7 +200,7 @@ const UserGuide = ({ onClose, userRole = 'student', userId }) => {
                 </button>
 
                 {/* Content */}
-                <div className="p-4 sm:p-6 md:p-8 overflow-y-auto max-h-[calc(80vh-80px)]">
+                <div className="p-4 sm:p-6 md:p-8 overflow-y-auto max-h-[calc(85vh-100px)]">
                     {/* Header */}
                     <div className="text-center mb-4 sm:mb-6">
                         <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl mb-2 sm:mb-4 animate-bounce-slow">
