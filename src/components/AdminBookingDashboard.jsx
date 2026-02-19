@@ -1095,316 +1095,316 @@ const AdminBookingDashboard = () => {
             {selectedSchedule && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-2 sm:p-3 z-50 overflow-y-auto pt-8 sm:pt-12">
                     <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full shadow-xl border border-gray-100/50 my-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
-                        <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-3 sm:p-4 relative"
-                                <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
-                        <div className="flex justify-between items-start relative z-10">
-                            <div className="flex items-start gap-2 sm:gap-3">
-                                <span className={`${getClassBadge(selectedSchedule.class?.name).color} w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0 shadow-lg`}>
-                                    {getClassBadge(selectedSchedule.class?.name).emoji}
-                                </span>
-                                <div>
-                                    <p className="text-orange-100 text-[10px] sm:text-xs font-medium uppercase tracking-wider mb-0.5">Admin Panel</p>
-                                    <h3 className="text-sm sm:text-base font-bold">{selectedSchedule.class?.name}</h3>
-                                    <p className="text-orange-100 text-xs sm:text-sm mt-0.5">{selectedSchedule.program} • {selectedSchedule.level}</p>
+                        <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-3 sm:p-4 relative">
+                            <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                            <div className="flex justify-between items-start relative z-10">
+                                <div className="flex items-start gap-2 sm:gap-3">
+                                    <span className={`${getClassBadge(selectedSchedule.class?.name).color} w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0 shadow-lg`}>
+                                        {getClassBadge(selectedSchedule.class?.name).emoji}
+                                    </span>
+                                    <div>
+                                        <p className="text-orange-100 text-[10px] sm:text-xs font-medium uppercase tracking-wider mb-0.5">Admin Panel</p>
+                                        <h3 className="text-sm sm:text-base font-bold">{selectedSchedule.class?.name}</h3>
+                                        <p className="text-orange-100 text-xs sm:text-sm mt-0.5">{selectedSchedule.program} • {selectedSchedule.level}</p>
+                                    </div>
                                 </div>
+                                <button onClick={() => setSelectedSchedule(null)} className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg sm:rounded-xl transition-colors">
+                                    <X size={16} className="sm:w-5 sm:h-5" />
+                                </button>
                             </div>
-                            <button onClick={() => setSelectedSchedule(null)} className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg sm:rounded-xl transition-colors">
-                                <X size={16} className="sm:w-5 sm:h-5" />
-                            </button>
                         </div>
-                    </div>
 
-                    <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
-                        <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 border border-orange-100">
-                            <h4 className="font-bold text-[#F39C32] mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                                <Calendar size={14} className="sm:w-4 sm:h-4" />
-                                {t('adminBooking.scheduleInfo')}
-                            </h4>
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                                <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
-                                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.phase')}</p>
-                                    <p className="font-semibold text-gray-800 text-xs sm:text-sm">{getPhaseLabel(selectedSchedule.phase)}</p>
-                                </div>
-                                <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
-                                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.day')}</p>
-                                    <p className="font-semibold text-gray-800 text-xs sm:text-sm">
-                                        {getDayLabel(selectedSchedule.day, selectedSchedule.phase)}
-                                        {selectedSchedule.day && (
-                                            <span className="text-gray-400 font-normal ml-1 text-[10px] sm:text-xs">
-                                                • {formatDateShort(getDateForDay(selectedSchedule.day, displayWeek, currentYear))}
-                                            </span>
-                                        )}
-                                    </p>
-                                </div>
-                                <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
-                                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.time')}</p>
-                                    <p className="font-semibold text-gray-800 text-xs sm:text-sm">{getTimeLabel(selectedSchedule.time_slot)}</p>
-                                    <p className="text-[10px] sm:text-xs text-gray-500">{getTimeHours(selectedSchedule.time_slot)}</p>
-                                </div>
-                                <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
-                                    <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.capacity')}</p>
-                                    <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.current_students}/10 {t('booking.students')}</p>
-                                </div>
-                                <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100 col-span-2">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.instructor')}</p>
-                                            <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.teacher?.name || t('adminBooking.noTeacherYet')}</p>
+                        <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
+                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 border border-orange-100">
+                                <h4 className="font-bold text-[#F39C32] mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                                    <Calendar size={14} className="sm:w-4 sm:h-4" />
+                                    {t('adminBooking.scheduleInfo')}
+                                </h4>
+                                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                                    <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('booking.phase')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{getPhaseLabel(selectedSchedule.phase)}</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.day')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">
+                                            {getDayLabel(selectedSchedule.day, selectedSchedule.phase)}
+                                            {selectedSchedule.day && (
+                                                <span className="text-gray-400 font-normal ml-1 text-[10px] sm:text-xs">
+                                                    • {formatDateShort(getDateForDay(selectedSchedule.day, displayWeek, currentYear))}
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.time')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{getTimeLabel(selectedSchedule.time_slot)}</p>
+                                        <p className="text-[10px] sm:text-xs text-gray-500">{getTimeHours(selectedSchedule.time_slot)}</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
+                                        <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.capacity')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.current_students}/10 {t('booking.students')}</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100 col-span-2">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.instructor')}</p>
+                                                <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.teacher?.name || t('adminBooking.noTeacherYet')}</p>
+                                            </div>
+                                            <button onClick={() => { setSelectedTeacher(selectedSchedule.teacher?.id || ''); setShowTeacherModal(true); }} className="p-1.5 sm:p-2 bg-[#F39C32] hover:bg-[#e08a1f] text-white rounded-md sm:rounded-lg transition-colors" title={t('adminBooking.changeTeacher')}>
+                                                <Edit3 size={12} className="sm:w-3.5 sm:h-3.5" />
+                                            </button>
                                         </div>
-                                        <button onClick={() => { setSelectedTeacher(selectedSchedule.teacher?.id || ''); setShowTeacherModal(true); }} className="p-1.5 sm:p-2 bg-[#F39C32] hover:bg-[#e08a1f] text-white rounded-md sm:rounded-lg transition-colors" title={t('adminBooking.changeTeacher')}>
-                                            <Edit3 size={12} className="sm:w-3.5 sm:h-3.5" />
-                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                            <button onClick={() => setShowAddModal(true)} disabled={selectedSchedule.current_students >= 10} className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-emerald-600 hover:to-emerald-500 transition-all flex items-center justify-center gap-1 sm:gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
-                                <UserPlus size={12} className="sm:w-3.5 sm:h-3.5" />
-                                <span className="hidden sm:inline">{t('adminBooking.addStudent')}</span>
-                                <span className="sm:hidden">Add</span>
-                            </button>
-                            <button onClick={() => { setSelectedTeacher(selectedSchedule.teacher?.id || ''); setShowTeacherModal(true); }} className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-lg shadow-blue-500/20">
-                                <GraduationCap size={12} className="sm:w-3.5 sm:h-3.5" />
-                                <span className="hidden sm:inline">{t('adminBooking.assignTeacher')}</span>
-                                <span className="sm:hidden">Teacher</span>
-                            </button>
-                            <button onClick={() => handleDeleteSchedule(selectedSchedule)} className="bg-gradient-to-r from-red-500 to-red-400 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-red-600 hover:to-red-500 transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-lg shadow-red-500/20">
-                                <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
-                                <span className="hidden sm:inline">{t('adminBooking.deleteClass')}</span>
-                                <span className="sm:hidden">Delete</span>
-                            </button>
-                        </div>
+                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                                <button onClick={() => setShowAddModal(true)} disabled={selectedSchedule.current_students >= 10} className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-emerald-600 hover:to-emerald-500 transition-all flex items-center justify-center gap-1 sm:gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
+                                    <UserPlus size={12} className="sm:w-3.5 sm:h-3.5" />
+                                    <span className="hidden sm:inline">{t('adminBooking.addStudent')}</span>
+                                    <span className="sm:hidden">Add</span>
+                                </button>
+                                <button onClick={() => { setSelectedTeacher(selectedSchedule.teacher?.id || ''); setShowTeacherModal(true); }} className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-lg shadow-blue-500/20">
+                                    <GraduationCap size={12} className="sm:w-3.5 sm:h-3.5" />
+                                    <span className="hidden sm:inline">{t('adminBooking.assignTeacher')}</span>
+                                    <span className="sm:hidden">Teacher</span>
+                                </button>
+                                <button onClick={() => handleDeleteSchedule(selectedSchedule)} className="bg-gradient-to-r from-red-500 to-red-400 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-red-600 hover:to-red-500 transition-all flex items-center justify-center gap-1 sm:gap-1.5 shadow-lg shadow-red-500/20">
+                                    <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                                    <span className="hidden sm:inline">{t('adminBooking.deleteClass')}</span>
+                                    <span className="sm:hidden">Delete</span>
+                                </button>
+                            </div>
 
-                        <div>
-                            <h4 className="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
-                                <Users size={14} className="sm:w-4 sm:h-4 text-[#F39C32]" />
-                                {t('adminBooking.studentList')} ({scheduleStudents.length})
-                            </h4>
-                            {scheduleStudents.length === 0 ? (
-                                <div className="text-center py-6 sm:py-8 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg sm:rounded-xl border border-gray-100">
-                                    <Users size={28} className="sm:w-10 sm:h-10 mx-auto mb-2 sm:mb-3 text-gray-300" />
-                                    <p className="text-gray-500 text-xs sm:text-sm">{t('adminBooking.noStudentsYet')}</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-1.5 sm:space-y-2">
-                                    {scheduleStudents.map((booking, index) => (
-                                        <div key={booking.id} className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-slate-50 hover:from-orange-50 hover:to-amber-50 rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all group border border-gray-100 hover:border-orange-200">
-                                            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                                                <div className="w-7 h-7 sm:w-9 sm:h-9 bg-gradient-to-br from-[#F39C32] to-[#f5a847] text-white rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm shadow-md flex-shrink-0">{index + 1}</div>
-                                                <div className="min-w-0">
-                                                    <p className="font-semibold text-gray-800 truncate text-xs sm:text-sm">
-                                                        {booking.user?.full_name || booking.users?.full_name || `User ID: ${booking.user_id}`}
-                                                    </p>
-                                                    <p className="text-[10px] sm:text-xs text-gray-500 font-mono truncate">
-                                                        {booking.user?.student_id || booking.users?.student_id || booking.user_id || '-'}
-                                                    </p>
+                            <div>
+                                <h4 className="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                                    <Users size={14} className="sm:w-4 sm:h-4 text-[#F39C32]" />
+                                    {t('adminBooking.studentList')} ({scheduleStudents.length})
+                                </h4>
+                                {scheduleStudents.length === 0 ? (
+                                    <div className="text-center py-6 sm:py-8 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg sm:rounded-xl border border-gray-100">
+                                        <Users size={28} className="sm:w-10 sm:h-10 mx-auto mb-2 sm:mb-3 text-gray-300" />
+                                        <p className="text-gray-500 text-xs sm:text-sm">{t('adminBooking.noStudentsYet')}</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-1.5 sm:space-y-2">
+                                        {scheduleStudents.map((booking, index) => (
+                                            <div key={booking.id} className="flex items-center justify-between bg-gradient-to-r from-gray-50 to-slate-50 hover:from-orange-50 hover:to-amber-50 rounded-lg sm:rounded-xl p-2 sm:p-3 transition-all group border border-gray-100 hover:border-orange-200">
+                                                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                                                    <div className="w-7 h-7 sm:w-9 sm:h-9 bg-gradient-to-br from-[#F39C32] to-[#f5a847] text-white rounded-lg sm:rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm shadow-md flex-shrink-0">{index + 1}</div>
+                                                    <div className="min-w-0">
+                                                        <p className="font-semibold text-gray-800 truncate text-xs sm:text-sm">
+                                                            {booking.user?.full_name || booking.users?.full_name || `User ID: ${booking.user_id}`}
+                                                        </p>
+                                                        <p className="text-[10px] sm:text-xs text-gray-500 font-mono truncate">
+                                                            {booking.user?.student_id || booking.users?.student_id || booking.user_id || '-'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-1 sm:gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
+                                                    <button onClick={() => { setSelectedStudent(booking); setShowMoveModal(true); }} className="p-1.5 sm:p-2 bg-[#1F4E8C] hover:bg-[#183d6e] text-white rounded-md sm:rounded-lg transition-colors" title={t('adminBooking.moveToClass')}>
+                                                        <ArrowRight size={12} className="sm:w-3.5 sm:h-3.5" />
+                                                    </button>
+                                                    <button onClick={() => handleDeleteStudent(booking.id, booking.user?.full_name, booking.user?.student_id)} className="p-1.5 sm:p-2 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg transition-colors" title={t('common.delete')}>
+                                                        <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 sm:gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                <button onClick={() => { setSelectedStudent(booking); setShowMoveModal(true); }} className="p-1.5 sm:p-2 bg-[#1F4E8C] hover:bg-[#183d6e] text-white rounded-md sm:rounded-lg transition-colors" title={t('adminBooking.moveToClass')}>
-                                                    <ArrowRight size={12} className="sm:w-3.5 sm:h-3.5" />
-                                                </button>
-                                                <button onClick={() => handleDeleteStudent(booking.id, booking.user?.full_name, booking.user?.student_id)} className="p-1.5 sm:p-2 bg-red-500 hover:bg-red-600 text-white rounded-md sm:rounded-lg transition-colors" title={t('common.delete')}>
-                                                    <Trash2 size={12} className="sm:w-3.5 sm:h-3.5" />
-                                                </button>
-                                            </div>
-                                        </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="bg-gray-50 p-2.5 sm:p-3 border-t">
+                            <button onClick={() => setSelectedSchedule(null)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-colors text-xs sm:text-sm">{t('common.close')}</button>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
+
+            {/* Teacher Modal */}
+            {
+                showTeacherModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
+                            <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold flex items-center gap-2"><GraduationCap size={20} />{t('adminBooking.assignTeacher')}</h3>
+                                    <button onClick={() => { setShowTeacherModal(false); setSelectedTeacher(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
+                                </div>
+                                <p className="text-blue-200 text-sm mt-1">{selectedSchedule?.class?.name}</p>
+                            </div>
+                            <div className="p-5">
+                                <label className="block text-gray-700 font-semibold mb-3 text-sm">{t('adminBooking.selectTeacher')}:</label>
+                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                    {allTeachers.map((teacher) => (
+                                        <button key={teacher.id} onClick={() => setSelectedTeacher(teacher.id)} className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${selectedTeacher === teacher.id ? 'border-[#1F4E8C] bg-blue-50' : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}`}>
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedTeacher === teacher.id ? 'bg-[#1F4E8C] text-white' : 'bg-gray-100 text-gray-600'}`}><GraduationCap size={18} /></div>
+                                            <div className="flex-1"><p className="font-semibold text-gray-800">{teacher.name}</p></div>
+                                            {selectedTeacher === teacher.id && <div className="w-6 h-6 bg-[#1F4E8C] rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>}
+                                        </button>
                                     ))}
                                 </div>
-                            )}
+                            </div>
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
+                                <button onClick={handleAssignTeacher} disabled={!selectedTeacher || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{loading ? t('adminBooking.saving') : t('common.save')}</button>
+                                <button onClick={() => { setShowTeacherModal(false); setSelectedTeacher(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
+                            </div>
                         </div>
                     </div>
+                )
+            }
 
-                    <div className="bg-gray-50 p-2.5 sm:p-3 border-t">
-                        <button onClick={() => setSelectedSchedule(null)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-colors text-xs sm:text-sm">{t('common.close')}</button>
-                    </div>
-                </div>
-                </div>
-    )
-}
+            {/* Add Student Modal */}
+            {
+                showAddModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 flex flex-col my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
+                            <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5 flex-shrink-0">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold flex items-center gap-2"><UserPlus size={20} />{t('adminBooking.addStudent')}</h3>
+                                    <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
+                                </div>
+                            </div>
 
-{/* Teacher Modal */ }
-{
-    showTeacherModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
-            <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
-                <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold flex items-center gap-2"><GraduationCap size={20} />{t('adminBooking.assignTeacher')}</h3>
-                        <button onClick={() => { setShowTeacherModal(false); setSelectedTeacher(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
-                    </div>
-                    <p className="text-blue-200 text-sm mt-1">{selectedSchedule?.class?.name}</p>
-                </div>
-                <div className="p-5">
-                    <label className="block text-gray-700 font-semibold mb-3 text-sm">{t('adminBooking.selectTeacher')}:</label>
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {allTeachers.map((teacher) => (
-                            <button key={teacher.id} onClick={() => setSelectedTeacher(teacher.id)} className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${selectedTeacher === teacher.id ? 'border-[#1F4E8C] bg-blue-50' : 'border-gray-200 hover:border-blue-200 hover:bg-gray-50'}`}>
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${selectedTeacher === teacher.id ? 'bg-[#1F4E8C] text-white' : 'bg-gray-100 text-gray-600'}`}><GraduationCap size={18} /></div>
-                                <div className="flex-1"><p className="font-semibold text-gray-800">{teacher.name}</p></div>
-                                {selectedTeacher === teacher.id && <div className="w-6 h-6 bg-[#1F4E8C] rounded-full flex items-center justify-center"><span className="text-white text-xs">✓</span></div>}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div className="bg-gray-50 p-4 border-t flex gap-3">
-                    <button onClick={handleAssignTeacher} disabled={!selectedTeacher || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{loading ? t('adminBooking.saving') : t('common.save')}</button>
-                    <button onClick={() => { setShowTeacherModal(false); setSelectedTeacher(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
-                </div>
-            </div>
-        </div>
-    )
-}
+                            {/* Search Input */}
+                            <div className="p-4 border-b border-gray-100 flex-shrink-0">
+                                <div className="relative">
+                                    <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        value={studentSearchQuery}
+                                        onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                        placeholder="Search by name, ID, program, or level..."
+                                        className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 text-sm"
+                                    />
+                                    {studentSearchQuery && (
+                                        <button
+                                            onClick={() => setStudentSearchQuery('')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    {getAvailableStudents().length} student{getAvailableStudents().length !== 1 ? 's' : ''} found
+                                </p>
+                            </div>
 
-{/* Add Student Modal */ }
-{
-    showAddModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
-            <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 flex flex-col my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
-                <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5 flex-shrink-0">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold flex items-center gap-2"><UserPlus size={20} />{t('adminBooking.addStudent')}</h3>
-                        <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
-                    </div>
-                </div>
-
-                {/* Search Input */}
-                <div className="p-4 border-b border-gray-100 flex-shrink-0">
-                    <div className="relative">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            value={studentSearchQuery}
-                            onChange={(e) => setStudentSearchQuery(e.target.value)}
-                            placeholder="Search by name, ID, program, or level..."
-                            className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-emerald-400 text-sm"
-                        />
-                        {studentSearchQuery && (
-                            <button
-                                onClick={() => setStudentSearchQuery('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                        {getAvailableStudents().length} student{getAvailableStudents().length !== 1 ? 's' : ''} found
-                    </p>
-                </div>
-
-                <div className="p-5 overflow-y-auto flex-1">
-                    {getAvailableStudents().length === 0 ? (
-                        <div className="text-center py-10 text-gray-500">
-                            <Users size={40} className="mx-auto mb-3 text-gray-300" />
-                            <p className="text-sm">
-                                {studentSearchQuery ? 'No students match your search' : t('adminBooking.allStudentsRegistered')}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="space-y-2">
-                            {getAvailableStudents().map((student) => (
-                                <button key={student.id} onClick={() => handleAddStudent(student.id)} className="w-full flex items-center justify-between bg-gray-50 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 rounded-xl p-4 transition-all text-left">
-                                    <div>
-                                        <p className="font-semibold text-gray-800">{student.full_name}</p>
-                                        <p className="text-xs text-gray-500 font-mono">{student.student_id}</p>
-                                        <p className="text-xs text-gray-400 mt-1">{student.program} • {student.level}</p>
+                            <div className="p-5 overflow-y-auto flex-1">
+                                {getAvailableStudents().length === 0 ? (
+                                    <div className="text-center py-10 text-gray-500">
+                                        <Users size={40} className="mx-auto mb-3 text-gray-300" />
+                                        <p className="text-sm">
+                                            {studentSearchQuery ? 'No students match your search' : t('adminBooking.allStudentsRegistered')}
+                                        </p>
                                     </div>
-                                    <UserPlus className="text-emerald-500" size={18} />
+                                ) : (
+                                    <div className="space-y-2">
+                                        {getAvailableStudents().map((student) => (
+                                            <button key={student.id} onClick={() => handleAddStudent(student.id)} className="w-full flex items-center justify-between bg-gray-50 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 rounded-xl p-4 transition-all text-left">
+                                                <div>
+                                                    <p className="font-semibold text-gray-800">{student.full_name}</p>
+                                                    <p className="text-xs text-gray-500 font-mono">{student.student_id}</p>
+                                                    <p className="text-xs text-gray-400 mt-1">{student.program} • {student.level}</p>
+                                                </div>
+                                                <UserPlus className="text-emerald-500" size={18} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="bg-gray-50 p-4 border-t flex-shrink-0">
+                                <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Move Student Modal */}
+            {
+                showMoveModal && selectedStudent && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
+                            <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-lg font-bold flex items-center gap-2"><ArrowRight size={20} />{t('adminBooking.moveToClass')}</h3>
+                                        <p className="text-blue-200 text-sm mt-1">{selectedStudent.user?.full_name}</p>
+                                    </div>
+                                    <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
+                                </div>
+                            </div>
+                            <div className="p-5">
+                                <label className="block text-gray-700 font-semibold mb-3 text-sm">{t('adminBooking.selectTargetClass')}:</label>
+                                <select value={targetSchedule} onChange={(e) => setTargetSchedule(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#1F4E8C] text-sm bg-gray-50">
+                                    <option value="">-- {t('adminBooking.selectClass')} --</option>
+                                    {schedules.filter(s => s.id !== selectedSchedule.id && s.current_students < 10).map((schedule) => (
+                                        <option key={schedule.id} value={schedule.id}>{schedule.class?.name} - {getPhaseLabel(schedule.phase)} - {getDayLabel(schedule.day, schedule.phase)} - {getTimeLabel(schedule.time_slot)} ({schedule.current_students}/10)</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
+                                <button onClick={handleMoveStudent} disabled={!targetSchedule || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{t('adminBooking.move')}</button>
+                                <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* WhatsApp Notification Modal */}
+            {
+                showWhatsAppModal && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
+                            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold flex items-center gap-2">
+                                        <MessageCircle size={20} />
+                                        Send WhatsApp Notification
+                                    </h3>
+                                    <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                                <p className="text-green-100 text-sm mt-1">Share this update to your WhatsApp group</p>
+                            </div>
+                            <div className="p-5">
+                                <div className="bg-gray-50 rounded-xl p-4 mb-4 max-h-64 overflow-y-auto">
+                                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">{whatsAppMessage}</pre>
+                                </div>
+                                <p className="text-xs text-gray-500 mb-4">
+                                    💡 Click the button below to open WhatsApp with this message. Then select your group and send.
+                                </p>
+                            </div>
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
+                                <button
+                                    onClick={() => {
+                                        openWhatsApp(whatsAppMessage);
+                                        setShowWhatsAppModal(false);
+                                    }}
+                                    className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <MessageCircle size={18} />
+                                    Open WhatsApp
                                 </button>
-                            ))}
+                                <button
+                                    onClick={() => setShowWhatsAppModal(false)}
+                                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
+                                >
+                                    Skip
+                                </button>
+                            </div>
                         </div>
-                    )}
-                </div>
-                <div className="bg-gray-50 p-4 border-t flex-shrink-0">
-                    <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-{/* Move Student Modal */ }
-{
-    showMoveModal && selectedStudent && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
-            <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
-                <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h3 className="text-lg font-bold flex items-center gap-2"><ArrowRight size={20} />{t('adminBooking.moveToClass')}</h3>
-                            <p className="text-blue-200 text-sm mt-1">{selectedStudent.user?.full_name}</p>
-                        </div>
-                        <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
                     </div>
-                </div>
-                <div className="p-5">
-                    <label className="block text-gray-700 font-semibold mb-3 text-sm">{t('adminBooking.selectTargetClass')}:</label>
-                    <select value={targetSchedule} onChange={(e) => setTargetSchedule(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#1F4E8C] text-sm bg-gray-50">
-                        <option value="">-- {t('adminBooking.selectClass')} --</option>
-                        {schedules.filter(s => s.id !== selectedSchedule.id && s.current_students < 10).map((schedule) => (
-                            <option key={schedule.id} value={schedule.id}>{schedule.class?.name} - {getPhaseLabel(schedule.phase)} - {getDayLabel(schedule.day, schedule.phase)} - {getTimeLabel(schedule.time_slot)} ({schedule.current_students}/10)</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="bg-gray-50 p-4 border-t flex gap-3">
-                    <button onClick={handleMoveStudent} disabled={!targetSchedule || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{t('adminBooking.move')}</button>
-                    <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
-                </div>
-            </div>
-        </div>
-    )
-}
-
-{/* WhatsApp Notification Modal */ }
-{
-    showWhatsAppModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto pt-8 sm:pt-12">
-            <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 my-4 overflow-hidden" style={{ maxHeight: 'calc(100vh - 6rem)' }}>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5">
-                    <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                            <MessageCircle size={20} />
-                            Send WhatsApp Notification
-                        </h3>
-                        <button onClick={() => setShowWhatsAppModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                            <X size={18} />
-                        </button>
-                    </div>
-                    <p className="text-green-100 text-sm mt-1">Share this update to your WhatsApp group</p>
-                </div>
-                <div className="p-5">
-                    <div className="bg-gray-50 rounded-xl p-4 mb-4 max-h-64 overflow-y-auto">
-                        <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">{whatsAppMessage}</pre>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-4">
-                        💡 Click the button below to open WhatsApp with this message. Then select your group and send.
-                    </p>
-                </div>
-                <div className="bg-gray-50 p-4 border-t flex gap-3">
-                    <button
-                        onClick={() => {
-                            openWhatsApp(whatsAppMessage);
-                            setShowWhatsAppModal(false);
-                        }}
-                        className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-xl font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
-                    >
-                        <MessageCircle size={18} />
-                        Open WhatsApp
-                    </button>
-                    <button
-                        onClick={() => setShowWhatsAppModal(false)}
-                        className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
-                    >
-                        Skip
-                    </button>
-                </div>
-            </div>
-        </div>
-    )
-}
+                )
+            }
         </div >
     );
 };
