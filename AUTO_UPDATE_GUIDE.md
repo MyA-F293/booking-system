@@ -46,7 +46,7 @@ Reload page with fresh content
 ```javascript
 // versionCheck.js
 const APP_VERSION = '2025.02.19.1430'; // Auto-updated on build
-const VERSION_CHECK_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const VERSION_CHECK_INTERVAL = 1 * 60 * 1000; // 1 minute
 ```
 
 ## Build Process
@@ -85,7 +85,7 @@ Upload entire `dist` folder including:
 1. Open app in browser
 2. Check console for version: `🔄 Version check initialized: 2025.02.19.1430`
 3. Deploy new version
-4. Wait 5 minutes or refresh
+4. Wait 1 minute or refresh
 5. Should see update notification
 
 ## User Experience
@@ -126,7 +126,7 @@ When new version detected, user sees:
    # Upload to hosting
    ```
 
-4. Wait 5 minutes or manually trigger check
+4. Wait 1 minute or manually trigger check
 5. Should see update notification
 
 ### Force Update Check (Dev)
@@ -190,7 +190,7 @@ Auto-generated format: `YYYY.MM.DD.HHMM`
 ### Deployment Frequency
 - Critical bugs: Deploy immediately
 - Features: Deploy during low-traffic hours
-- Updates: Users auto-reload within 5-10 minutes
+- Updates: Users auto-reload within 1-2 minutes
 
 ## Advanced Configuration
 
@@ -239,7 +239,7 @@ Check `version.json` after each deployment:
 ✅ **Automatic**: Version updates on every build
 ✅ **User-Friendly**: Clear notification with reload button
 ✅ **No Manual Cache Clear**: System handles everything
-✅ **Fast**: Check every 5 minutes
+✅ **Fast**: Check every 1 minute
 ✅ **Reliable**: Multiple cache-busting strategies
 
-Users will always get the latest version within 5-10 minutes of deployment!
+Users will always get the latest version within 1-2 minutes of deployment!
