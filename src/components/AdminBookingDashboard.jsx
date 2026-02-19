@@ -1093,9 +1093,9 @@ const AdminBookingDashboard = () => {
 
             {/* Detail Modal */}
             {selectedSchedule && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
-                    <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full shadow-xl border border-gray-100/50 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-                        <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-3 sm:p-4 relative">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full shadow-xl border border-gray-100/50 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
+                        <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-4 relative flex-shrink-0">
                             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                             <div className="flex justify-between items-start relative z-10">
                                 <div className="flex items-start gap-2 sm:gap-3">
@@ -1114,7 +1114,7 @@ const AdminBookingDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="p-3 sm:p-4 overflow-y-auto flex-1">
+                        <div className="p-5 overflow-y-auto flex-1">
                             <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 border border-orange-100">
                                 <h4 className="font-bold text-[#F39C32] mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
                                     <Calendar size={14} className="sm:w-4 sm:h-4" />
@@ -1217,8 +1217,8 @@ const AdminBookingDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-2.5 sm:p-3 border-t">
-                            <button onClick={() => setSelectedSchedule(null)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold transition-colors text-xs sm:text-sm">{t('common.close')}</button>
+                        <div className="bg-gray-50 p-4 border-t flex-shrink-0">
+                            <button onClick={() => setSelectedSchedule(null)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-xl font-semibold transition-colors text-sm">{t('common.close')}</button>
                         </div>
                     </div>
                 </div>
