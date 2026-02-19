@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useToast } from './components/Toast';
@@ -424,6 +425,12 @@ const BookingSystemDB = ({ user }) => {
 
         if (!selectedPhase || !selectedDay || !selectedTime || !userId) {
             console.log('⚠️ Missing required data');
+            return;
+        }
+
+        // Validation: Harvard Class is only for English for Teens
+        if (classItem.name === 'Harvard Class' && currentUser?.program !== 'English for Teens') {
+            toast.error('Harvard Class is exclusively for English for Teens program students!');
             return;
         }
 
@@ -1093,9 +1100,9 @@ const BookingSystemDB = ({ user }) => {
             </div>
 
             {/* Booking Modal */}
-            {showBookingModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-2 sm:p-4 overflow-y-auto">
-                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 my-4 flex flex-col" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+            {showBookingModal && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-2 sm:p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 flex flex-col" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
 
                         {/* Header - Fixed at top */}
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-3 sm:p-6 flex justify-between items-center flex-shrink-0">
@@ -1329,18 +1336,23 @@ const BookingSystemDB = ({ user }) => {
                                                         ? 'bg-green-50 border-green-300'
                                                         : 'bg-yellow-50 border-yellow-300';
 
+                                            // Check if Harvard Class and user is not Teens
+                                            const isHarvardRestricted = classItem.name === 'Harvard Class' && currentUser?.program !== 'English for Teens';
+                                            const isDisabled = !canClick || isHarvardRestricted;
+
                                             return (
                                                 <button
                                                     key={classItem.id}
-                                                    disabled={!canClick}
+                                                    disabled={isDisabled}
                                                     onClick={() => handleClassSelect(classItem)}
                                                     className={`
                                                         relative p-3 sm:p-5 rounded-xl sm:rounded-2xl border-2 transition-all text-left
                                                         transform hover:scale-[1.02] hover:-rotate-1
                                                         shadow-lg ${stickyNoteClass}
-                                                        ${!canClick ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:shadow-xl'}
+                                                        ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:shadow-xl'}
                                                     `}
                                                     style={{ minHeight: '100px' }}
+                                                    title={isHarvardRestricted ? 'Harvard Class is only for English for Teens students' : ''}
                                                 >
                                                     {/* Status indicator */}
                                                     <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isOccupied ? 'bg-gray-500' : isFull ? 'bg-red-500' : isActive ? 'bg-green-500 animate-pulse' : 'bg-yellow-400'}`} />
@@ -1348,6 +1360,11 @@ const BookingSystemDB = ({ user }) => {
                                                     {/* Class name */}
                                                     <div className={`font-bold text-xs sm:text-lg mb-1 sm:mb-2 ${isOccupied ? 'text-gray-500' : isFull ? 'text-red-800' : 'text-[#1F4E8C]'}`}>
                                                         {classItem.name}
+                                                        {classItem.name === 'Harvard Class' && (
+                                                            <span className="ml-1.5 sm:ml-2 text-[8px] sm:text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold border border-red-200">
+                                                                🎓 Teens Only
+                                                            </span>
+                                                        )}
                                                     </div>
 
                                                     {/* Teacher */}
@@ -1441,12 +1458,13 @@ const BookingSystemDB = ({ user }) => {
 
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Settings Edit Modal - Admin Only */}
-            {showSettingsModal && currentUser?.role === 'admin' && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+            {showSettingsModal && currentUser?.role === 'admin' && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                     <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-5">
                             <div className="flex justify-between items-center">
@@ -1496,13 +1514,14 @@ const BookingSystemDB = ({ user }) => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Password Change Modal */}
-            {showPasswordModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
-                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+            {showPasswordModal && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1603,15 +1622,16 @@ const BookingSystemDB = ({ user }) => {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Floating Feedback Button */}
             <FeedbackButton user={currentUser} />
 
             {/* Booking Success Modal */}
-            {showBookingSuccessModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+            {showBookingSuccessModal && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                     <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
                         {/* Success Header with Animation */}
                         <div className="bg-gradient-to-br from-[#1F4E8C] via-[#2a5fa3] to-[#1F4E8C] p-5 sm:p-8 text-center relative overflow-hidden">
@@ -1695,7 +1715,8 @@ const BookingSystemDB = ({ user }) => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* User Guide Modal */}

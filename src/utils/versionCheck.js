@@ -1,7 +1,7 @@
 // Auto-reload system for cache busting
 // Detects new version and prompts user to reload
 
-const APP_VERSION = '2026.02.19.1336'; // Update this when deploying new version
+const APP_VERSION = '2026.02.20.0449'; // Update this when deploying new version
 const VERSION_CHECK_INTERVAL = 1 * 60 * 1000; // Check every 1 minute
 
 let versionCheckTimer = null;

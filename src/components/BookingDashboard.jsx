@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Users, User, Clock, RefreshCw, Loader2, BookOpen, X, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, getUserBookings, autoCopyBookingsToNextWeek, createBooking, hasUserBookedPhase, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
@@ -134,7 +135,13 @@ const BookingDashboard = ({ user }) => {
         try {
             setIsBooking(true);
 
-            // Validation 1: Check if already booked this phase
+            // Validation 1: Harvard Class is only for English for Teens
+            if (schedule.class?.name === 'Harvard Class' && user?.program !== 'English for Teens') {
+                toast.error('Harvard Class is exclusively for English for Teens program students!');
+                return;
+            }
+
+            // Validation 2: Check if already booked this phase
             const alreadyBookedPhase = await hasUserBookedPhase(
                 userId,
                 schedule.phase,
@@ -148,7 +155,7 @@ const BookingDashboard = ({ user }) => {
                 return;
             }
 
-            // Validation 2: Check if class is full
+            // Validation 3: Check if class is full
             if (schedule.current_students >= 10) {
                 toast.error('Class is full! Maximum 10 students per class.');
                 return;
@@ -400,13 +407,18 @@ const BookingDashboard = ({ user }) => {
                                                                         {getClassBadge(schedule.class?.name).emoji}
                                                                     </span>
                                                                     <div>
-                                                                        <div className="flex items-center gap-2">
+                                                                        <div className="flex items-center gap-2 flex-wrap">
                                                                             <h4 className="font-bold text-gray-800 text-sm">
                                                                                 {schedule.class?.name || 'Unknown'}
                                                                             </h4>
                                                                             {userHasBooked && (
                                                                                 <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[9px] font-bold">
                                                                                     ✓ Your Booking
+                                                                                </span>
+                                                                            )}
+                                                                            {schedule.class?.name === 'Harvard Class' && (
+                                                                                <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full text-[9px] font-semibold border border-red-200">
+                                                                                    🎓 Teens Only
                                                                                 </span>
                                                                             )}
                                                                         </div>
@@ -474,8 +486,17 @@ const BookingDashboard = ({ user }) => {
                                                                         </button>
                                                                         <button
                                                                             onClick={() => handleBookClass(schedule)}
-                                                                            disabled={isBooking || schedule.current_students >= 10}
+                                                                            disabled={
+                                                                                isBooking ||
+                                                                                schedule.current_students >= 10 ||
+                                                                                (schedule.class?.name === 'Harvard Class' && user?.program !== 'English for Teens')
+                                                                            }
                                                                             className="flex-1 bg-[#F39C32] hover:bg-[#e08a1f] text-white py-2 rounded-lg font-medium text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                            title={
+                                                                                schedule.class?.name === 'Harvard Class' && user?.program !== 'English for Teens'
+                                                                                    ? 'Harvard Class is only for English for Teens students'
+                                                                                    : ''
+                                                                            }
                                                                         >
                                                                             {isBooking ? 'Booking...' : schedule.current_students >= 10 ? 'Full' : 'Book Now'}
                                                                         </button>
@@ -496,9 +517,9 @@ const BookingDashboard = ({ user }) => {
             )}
 
             {/* Detail Modal */}
-            {selectedSchedule && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-2 sm:p-4 z-[60] overflow-y-auto">
-                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl mt-12 mb-4">
+            {selectedSchedule && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[60]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         {/* Modal Header */}
                         <div className="bg-[#1F4E8C] text-white p-3 sm:p-4">
                             <div className="flex justify-between items-start">
@@ -516,7 +537,7 @@ const BookingDashboard = ({ user }) => {
                             </div>
                         </div>
 
-                        <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
+                        <div className="p-3 sm:p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
                             {/* Schedule Info */}
                             <div className="bg-gray-50 rounded-lg sm:rounded-xl p-2.5 sm:p-3 mb-3 sm:mb-4 border border-gray-200">
                                 <h4 className="font-bold text-gray-800 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
@@ -561,6 +582,16 @@ const BookingDashboard = ({ user }) => {
                                     {t('booking.studentList')} ({scheduleStudents.length})
                                 </h4>
 
+                                {/* Info Banner */}
+                                {scheduleStudents.length > 0 && (
+                                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-2 sm:p-2.5 mb-2 sm:mb-3">
+                                        <p className="text-[10px] sm:text-xs text-blue-700 flex items-center gap-1.5">
+                                            <span className="text-blue-500">ℹ️</span>
+                                            <span>You can see all students enrolled in this class</span>
+                                        </p>
+                                    </div>
+                                )}
+
                                 {scheduleStudents.length === 0 ? (
                                     <div className="text-center py-6 sm:py-8 bg-gray-50 rounded-lg sm:rounded-xl border border-gray-200">
                                         <Users size={24} className="sm:w-8 sm:h-8 mx-auto mb-2 text-gray-300" />
@@ -568,29 +599,59 @@ const BookingDashboard = ({ user }) => {
                                     </div>
                                 ) : (
                                     <div className="space-y-1.5 sm:space-y-2">
-                                        {scheduleStudents.map((booking, index) => (
-                                            <div
-                                                key={booking.id}
-                                                className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 transition-all border border-gray-100"
-                                            >
-                                                <div className="flex items-center gap-2 sm:gap-3">
-                                                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-[#1F4E8C] text-white rounded-md sm:rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm">
-                                                        {index + 1}
+                                        {scheduleStudents.map((booking, index) => {
+                                            const isCurrentUser = booking.user_id === userId || booking.user?.id === userId;
+                                            return (
+                                                <div
+                                                    key={booking.id}
+                                                    className={`flex items-center justify-between rounded-md sm:rounded-lg p-2 sm:p-3 transition-all border ${isCurrentUser
+                                                        ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm'
+                                                        : 'bg-gray-50 hover:bg-gray-100 border-gray-100'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                                                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm flex-shrink-0 ${isCurrentUser
+                                                            ? 'bg-[#1F4E8C] text-white shadow-md'
+                                                            : 'bg-gray-200 text-gray-600'
+                                                            }`}>
+                                                            {index + 1}
+                                                        </div>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                                                <p className={`font-medium text-xs sm:text-sm truncate ${isCurrentUser ? 'text-[#1F4E8C]' : 'text-gray-800'
+                                                                    }`}>
+                                                                    {booking.user?.full_name || booking.users?.full_name || `User ID: ${booking.user_id}`}
+                                                                </p>
+                                                                {isCurrentUser && (
+                                                                    <span className="text-[9px] sm:text-[10px] bg-[#1F4E8C] text-white px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">
+                                                                        You
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <p className="text-[10px] sm:text-xs text-gray-500 font-mono">
+                                                                    {booking.user?.student_id || booking.users?.student_id || booking.user_id || '-'}
+                                                                </p>
+                                                                {(booking.user?.program || booking.users?.program) && (
+                                                                    <>
+                                                                        <span className="text-gray-300">•</span>
+                                                                        <p className="text-[10px] sm:text-xs text-gray-500">
+                                                                            {booking.user?.program || booking.users?.program}
+                                                                        </p>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="font-medium text-gray-800 text-xs sm:text-sm">
-                                                            {booking.user?.full_name || booking.users?.full_name || `User ID: ${booking.user_id}`}
-                                                        </p>
-                                                        <p className="text-[10px] sm:text-xs text-gray-500 font-mono">
-                                                            {booking.user?.student_id || booking.users?.student_id || booking.user_id || '-'}
-                                                        </p>
-                                                    </div>
+                                                    <span className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-medium flex-shrink-0 ${isCurrentUser
+                                                        ? 'bg-[#1F4E8C] text-white'
+                                                        : 'bg-emerald-100 text-emerald-700'
+                                                        }`}>
+                                                        ✓ {t('booking.confirmed')}
+                                                    </span>
                                                 </div>
-                                                <span className="text-[10px] sm:text-xs bg-emerald-100 text-emerald-700 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full font-medium">
-                                                    ✓ {t('booking.confirmed')}
-                                                </span>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
@@ -606,7 +667,8 @@ const BookingDashboard = ({ user }) => {
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

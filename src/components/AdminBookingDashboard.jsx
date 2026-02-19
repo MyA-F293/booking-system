@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle, Search } from 'lucide-react';
 import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentWeek, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
@@ -1092,10 +1093,10 @@ const AdminBookingDashboard = () => {
             )}
 
             {/* Detail Modal */}
-            {selectedSchedule && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full shadow-xl border border-gray-100/50 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-                        <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-4 relative flex-shrink-0">
+            {selectedSchedule && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-2xl sm:rounded-3xl max-w-3xl w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                        <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-4 relative">
                             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
                             <div className="flex justify-between items-start relative z-10">
                                 <div className="flex items-start gap-2 sm:gap-3">
@@ -1114,7 +1115,7 @@ const AdminBookingDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="p-5 overflow-y-auto flex-1">
+                        <div className="p-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
                             <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 border border-orange-100">
                                 <h4 className="font-bold text-[#F39C32] mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
                                     <Calendar size={14} className="sm:w-4 sm:h-4" />
@@ -1217,27 +1218,28 @@ const AdminBookingDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="bg-gray-50 p-4 border-t flex-shrink-0">
+                        <div className="bg-gray-50 p-4 border-t">
                             <button onClick={() => setSelectedSchedule(null)} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-xl font-semibold transition-colors text-sm">{t('common.close')}</button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )
             }
 
             {/* Teacher Modal */}
             {
-                showTeacherModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-                            <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5 flex-shrink-0">
+                showTeacherModal && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                            <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-bold flex items-center gap-2"><GraduationCap size={20} />{t('adminBooking.assignTeacher')}</h3>
                                     <button onClick={() => { setShowTeacherModal(false); setSelectedTeacher(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
                                 </div>
                                 <p className="text-blue-200 text-sm mt-1">{selectedSchedule?.class?.name}</p>
                             </div>
-                            <div className="p-5 overflow-y-auto flex-1">
+                            <div className="p-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
                                 <label className="block text-gray-700 font-semibold mb-3 text-sm">{t('adminBooking.selectTeacher')}:</label>
                                 <div className="space-y-2">
                                     {allTeachers.map((teacher) => (
@@ -1249,21 +1251,22 @@ const AdminBookingDashboard = () => {
                                     ))}
                                 </div>
                             </div>
-                            <div className="bg-gray-50 p-4 border-t flex gap-3 flex-shrink-0">
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
                                 <button onClick={handleAssignTeacher} disabled={!selectedTeacher || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{loading ? t('adminBooking.saving') : t('common.save')}</button>
                                 <button onClick={() => { setShowTeacherModal(false); setSelectedTeacher(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )
             }
 
             {/* Add Student Modal */}
             {
-                showAddModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-                            <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5 flex-shrink-0">
+                showAddModal && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                            <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-bold flex items-center gap-2"><UserPlus size={20} />{t('adminBooking.addStudent')}</h3>
                                     <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
@@ -1271,7 +1274,7 @@ const AdminBookingDashboard = () => {
                             </div>
 
                             {/* Search Input */}
-                            <div className="p-4 border-b border-gray-100 flex-shrink-0">
+                            <div className="p-4 border-b border-gray-100">
                                 <div className="relative">
                                     <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                                     <input
@@ -1295,7 +1298,7 @@ const AdminBookingDashboard = () => {
                                 </p>
                             </div>
 
-                            <div className="p-5 overflow-y-auto flex-1">
+                            <div className="p-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
                                 {getAvailableStudents().length === 0 ? (
                                     <div className="text-center py-10 text-gray-500">
                                         <Users size={40} className="mx-auto mb-3 text-gray-300" />
@@ -1318,20 +1321,21 @@ const AdminBookingDashboard = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className="bg-gray-50 p-4 border-t flex-shrink-0">
+                            <div className="bg-gray-50 p-4 border-t">
                                 <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )
             }
 
             {/* Move Student Modal */}
             {
-                showMoveModal && selectedStudent && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-                            <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5 flex-shrink-0">
+                showMoveModal && selectedStudent && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                            <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                                 <div className="flex justify-between items-center">
                                     <div>
                                         <h3 className="text-lg font-bold flex items-center gap-2"><ArrowRight size={20} />{t('adminBooking.moveToClass')}</h3>
@@ -1340,7 +1344,7 @@ const AdminBookingDashboard = () => {
                                     <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
                                 </div>
                             </div>
-                            <div className="p-5 overflow-y-auto flex-1">
+                            <div className="p-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
                                 <label className="block text-gray-700 font-semibold mb-3 text-sm">{t('adminBooking.selectTargetClass')}:</label>
                                 <select value={targetSchedule} onChange={(e) => setTargetSchedule(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#1F4E8C] text-sm bg-gray-50">
                                     <option value="">-- {t('adminBooking.selectClass')} --</option>
@@ -1349,21 +1353,22 @@ const AdminBookingDashboard = () => {
                                     ))}
                                 </select>
                             </div>
-                            <div className="bg-gray-50 p-4 border-t flex gap-3 flex-shrink-0">
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
                                 <button onClick={handleMoveStudent} disabled={!targetSchedule || loading} className="flex-1 bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white py-3 rounded-xl font-semibold text-sm hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all disabled:opacity-50">{t('adminBooking.move')}</button>
                                 <button onClick={() => { setShowMoveModal(false); setSelectedStudent(null); setTargetSchedule(''); }} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm">{t('common.cancel')}</button>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )
             }
 
             {/* WhatsApp Notification Modal */}
             {
-                showWhatsAppModal && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden flex flex-col" style={{ maxHeight: 'calc(100vh - 4rem)' }}>
-                            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5 flex-shrink-0">
+                showWhatsAppModal && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                            <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5">
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-bold flex items-center gap-2">
                                         <MessageCircle size={20} />
@@ -1375,7 +1380,7 @@ const AdminBookingDashboard = () => {
                                 </div>
                                 <p className="text-green-100 text-sm mt-1">Share this update to your WhatsApp group</p>
                             </div>
-                            <div className="p-5 overflow-y-auto flex-1">
+                            <div className="p-5 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
                                 <div className="bg-gray-50 rounded-xl p-4 mb-4">
                                     <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">{whatsAppMessage}</pre>
                                 </div>
@@ -1383,7 +1388,7 @@ const AdminBookingDashboard = () => {
                                     💡 Click the button below to open WhatsApp with this message. Then select your group and send.
                                 </p>
                             </div>
-                            <div className="bg-gray-50 p-4 border-t flex gap-3 flex-shrink-0">
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
                                 <button
                                     onClick={() => {
                                         openWhatsApp(whatsAppMessage);
@@ -1402,7 +1407,8 @@ const AdminBookingDashboard = () => {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )
             }
         </div >
