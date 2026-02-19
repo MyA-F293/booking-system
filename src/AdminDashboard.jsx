@@ -3,6 +3,7 @@ import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
 import { supabase } from './supabaseClient';
+import useModalScrollLock from './hooks/useModalScrollLock';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
 import AdminStatsDashboard from './components/AdminStatsDashboard';
 import AttendanceReport from './components/AttendanceReport';
@@ -89,6 +90,16 @@ const AdminDashboard = ({ user }) => {
     const [showBulkOperations, setShowBulkOperations] = useState(false);
     const [showAdminGuide, setShowAdminGuide] = useState(false);
     const [showActionsMenu, setShowActionsMenu] = useState(false);
+
+    // Lock body scroll when any modal is open
+    useModalScrollLock(
+        showEditStudentModal ||
+        showPasswordModal ||
+        showTeacherIdModal ||
+        showSettingsModal ||
+        showBulkOperations ||
+        showAdminGuide
+    );
 
     // Check if admin has seen the guide
     useEffect(() => {
@@ -1296,8 +1307,8 @@ const AdminDashboard = ({ user }) => {
 
                         {/* Edit Student Modal */}
                         {showEditStudentModal && editingStudent && (
-                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 z-50 overflow-y-auto">
-                                <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mt-12 mb-4">
+                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
+                                <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                                     <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-3 sm:p-5 flex-shrink-0">
                                         <div className="flex justify-between items-center">
                                             <div className="min-w-0 flex-1 mr-2">
@@ -1394,8 +1405,8 @@ const AdminDashboard = ({ user }) => {
 
                 {/* Password View/Reset Modal */}
                 {showPasswordModal && selectedStudentForPassword && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 z-50 overflow-y-auto">
-                        <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mt-12 mb-4">
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
+                        <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                             <div className="bg-gradient-to-r from-amber-500 to-amber-400 text-white p-3 sm:p-5 flex-shrink-0">
                                 <div className="flex justify-between items-center">
                                     <div className="min-w-0 flex-1 mr-2">
@@ -1888,8 +1899,8 @@ const AdminDashboard = ({ user }) => {
 
             {/* Settings Edit Modal */}
             {showSettingsModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-3 sm:p-4 z-50 overflow-y-auto">
-                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden max-h-[90vh] flex flex-col mt-12 mb-4">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
+                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-3 sm:p-5 flex-shrink-0">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
@@ -1943,8 +1954,8 @@ const AdminDashboard = ({ user }) => {
 
             {/* Teacher ID Modal */}
             {showTeacherIdModal && selectedTeacherForId && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-3 sm:p-4 overflow-y-auto">
-                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 animate-fadeIn max-h-[90vh] overflow-y-auto mt-12 mb-4">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+                    <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 animate-fadeIn my-4" style={{ maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto' }}>
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                                 <div className="p-3 bg-orange-100 rounded-xl">

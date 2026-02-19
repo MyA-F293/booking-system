@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useToast } from './components/Toast';
+import useModalScrollLock from './hooks/useModalScrollLock';
 
 import BookingDashboard from './components/BookingDashboard';
 // import StudentAttendanceHistory from './components/StudentAttendanceHistory';
@@ -114,6 +115,9 @@ const BookingSystemDB = ({ user }) => {
     // Success modal state
     const [showBookingSuccessModal, setShowBookingSuccessModal] = useState(false);
     const [lastBookedClass, setLastBookedClass] = useState(null);
+
+    // Lock body scroll when any modal is open
+    useModalScrollLock(showBookingModal || showSettingsModal || showPasswordModal || showBookingSuccessModal);
 
     // Constants - all programs and levels active
     const programs = [
@@ -1090,8 +1094,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Booking Modal */}
             {showBookingModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[60] p-2 sm:p-4 overflow-y-auto">
-                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 max-h-[85vh] flex flex-col mt-12 mb-4">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-2 sm:p-4 overflow-y-auto">
+                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 my-4 flex flex-col" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
 
                         {/* Header - Fixed at top */}
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-3 sm:p-6 flex justify-between items-center flex-shrink-0">
@@ -1442,8 +1446,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Settings Edit Modal - Admin Only */}
             {showSettingsModal && currentUser?.role === 'admin' && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-[60] overflow-y-auto">
-                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden mt-12 mb-4">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-5">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1497,8 +1501,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Password Change Modal */}
             {showPasswordModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-[60] overflow-y-auto">
-                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden mt-12 mb-4">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                    <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1607,8 +1611,8 @@ const BookingSystemDB = ({ user }) => {
 
             {/* Booking Success Modal */}
             {showBookingSuccessModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center p-4 z-[60] overflow-y-auto">
-                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-slide-up mt-12 mb-4">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                    <div className="bg-white w-full max-w-xs sm:max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-slide-up">
                         {/* Success Header with Animation */}
                         <div className="bg-gradient-to-br from-[#1F4E8C] via-[#2a5fa3] to-[#1F4E8C] p-5 sm:p-8 text-center relative overflow-hidden">
                             {/* Decorative Elements */}

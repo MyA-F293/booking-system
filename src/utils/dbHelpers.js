@@ -569,11 +569,10 @@ export const getScheduleStudents = async (scheduleId) => {
             schedule_id,
             status,
             created_at,
-            users!inner (
+            user:users!user_id (
                 id,
                 student_id,
-                full_name,
-                email
+                full_name
             )
         `)
         .eq('schedule_id', scheduleId)
@@ -584,14 +583,8 @@ export const getScheduleStudents = async (scheduleId) => {
         throw error;
     }
 
-    // Transform data to have user object at root level
-    const transformedData = (data || []).map(booking => ({
-        ...booking,
-        user: booking.users // Map users to user for consistency
-    }));
-
-    console.log('✅ dbHelpers: getScheduleStudents success:', transformedData);
-    return transformedData;
+    console.log('✅ dbHelpers: getScheduleStudents success:', data);
+    return data || [];
 }
 
 // ========================================
