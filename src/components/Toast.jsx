@@ -143,7 +143,7 @@ const ConfirmModal = ({ message, onConfirm, onCancel }) => {
 
     return (
         <div className={`
-            fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4
+            fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4
             transition-all duration-300
             ${isVisible ? 'bg-black/50 backdrop-blur-sm' : 'bg-transparent'}
         `}>
