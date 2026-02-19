@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 
 /**
  * Custom hook to lock body scroll when modal is open
- * AND automatically scroll to top when modal opens
  * 
  * Usage:
  * useModalScrollLock(isModalOpen);
@@ -10,23 +9,15 @@ import { useEffect } from 'react';
 export const useModalScrollLock = (isOpen) => {
     useEffect(() => {
         if (isOpen) {
-            // FIRST: Scroll to top immediately when modal opens
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const scrollY = window.scrollY;
 
-            // THEN: Lock body scroll after a small delay
-            const timer = setTimeout(() => {
-                const scrollY = window.scrollY;
-
-                // Lock body scroll
-                document.body.style.overflow = 'hidden';
-                document.body.style.position = 'fixed';
-                document.body.style.top = `-${scrollY}px`;
-                document.body.style.width = '100%';
-            }, 300); // Wait for smooth scroll to complete
+            // Lock body scroll immediately
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
 
             return () => {
-                clearTimeout(timer);
-
                 // Get the scroll position before unlocking
                 const scrollY = document.body.style.top;
 
@@ -36,7 +27,7 @@ export const useModalScrollLock = (isOpen) => {
                 document.body.style.top = '';
                 document.body.style.width = '';
 
-                // Restore scroll position (if user wants to go back)
+                // Restore scroll position
                 if (scrollY) {
                     window.scrollTo(0, parseInt(scrollY || '0') * -1);
                 }
