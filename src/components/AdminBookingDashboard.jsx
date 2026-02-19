@@ -1093,7 +1093,7 @@ const AdminBookingDashboard = () => {
 
             {/* Detail Modal */}
             {selectedSchedule && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-3 z-50">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-2 sm:p-3 z-50 overflow-y-auto">
                     <div className="bg-white rounded-xl sm:rounded-2xl max-w-3xl w-full shadow-2xl my-4 flex flex-col" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#F39C32] via-[#f5a847] to-[#F39C32] text-white p-3 sm:p-4 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
@@ -1226,7 +1226,7 @@ const AdminBookingDashboard = () => {
 
             {/* Teacher Modal */}
             {showTeacherModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
                     <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                             <div className="flex justify-between items-center">
@@ -1257,7 +1257,7 @@ const AdminBookingDashboard = () => {
 
             {/* Add Student Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
                     <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5 flex-shrink-0">
                             <div className="flex justify-between items-center">
@@ -1323,7 +1323,7 @@ const AdminBookingDashboard = () => {
 
             {/* Move Student Modal */}
             {showMoveModal && selectedStudent && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
                     <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl my-4" style={{ maxHeight: 'calc(100vh - 2rem)', overflowY: 'auto' }}>
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-5">
                             <div className="flex justify-between items-center">
@@ -1353,7 +1353,7 @@ const AdminBookingDashboard = () => {
 
             {/* WhatsApp Notification Modal */}
             {showWhatsAppModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-start justify-center p-4 z-50 overflow-y-auto">
                     <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-5">
                             <div className="flex justify-between items-center">
