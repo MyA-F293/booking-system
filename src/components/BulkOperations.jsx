@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload, Users, FileSpreadsheet, Download, CheckCircle, AlertCircle, Loader2, X, Calendar } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useToast } from './Toast';
-import { bulkCreateUsers, bulkAssignStudentsToClass, bulkUpdateAttendance, getAttendanceRecords, bulkCreateAttendance } from '../utils/dbHelpers';
+import { bulkCreateUsers, bulkAssignStudentsToClass, bulkUpdateAttendance, getAttendanceRecords, bulkCreateAttendance, getAllStudents } from '../utils/dbHelpers';
 
 const BulkOperations = ({ onClose }) => {
     const toast = useToast();
@@ -369,7 +369,10 @@ const BulkOperations = ({ onClose }) => {
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false, defval: '' });
 
             // Fetch existing data for matching
-            const existingAttendance = await getAttendanceRecords();
+            const [existingAttendance, allStudents] = await Promise.all([
+                getAttendanceRecords(),
+                getAllStudents()
+            ]);
 
             const students = new Set();
             const teachers = new Set();
@@ -377,6 +380,13 @@ const BulkOperations = ({ onClose }) => {
             const studentMap = new Map();
             const teacherMap = new Map();
             const classMap = new Map();
+
+            // Build student name to student_id map from users table
+            const studentIdMap = new Map();
+            allStudents.forEach(student => {
+                const nameNorm = normalizeString(student.full_name);
+                studentIdMap.set(nameNorm, student.student_id);
+            });
 
             existingAttendance.forEach(record => {
                 const studentNorm = normalizeString(record.student_name);
@@ -423,18 +433,28 @@ const BulkOperations = ({ onClose }) => {
                 let finalStudentName = studentName;
                 let finalTeacherName = teacherName;
                 let finalClassName = className;
+                let finalStudentId = null;
 
-                // Smart matching
+                // Smart matching for student
                 const studentNorm = normalizeString(studentName);
                 if (students.has(studentNorm)) {
                     finalStudentName = studentMap.get(studentNorm);
+                    finalStudentId = studentIdMap.get(studentNorm);
                 } else {
                     const match = findBestMatch(studentName, Array.from(studentMap.values()));
                     if (match.score >= 0.85) {
                         fuzzyMatches.push({ type: 'student', csv: studentName, database: match.match, score: match.score });
                         finalStudentName = match.match;
+                        const matchNorm = normalizeString(match.match);
+                        finalStudentId = studentIdMap.get(matchNorm);
                     } else {
                         newStudents.add(studentName);
+                        // Try to find student_id from allStudents by fuzzy matching
+                        const studentMatch = findBestMatch(studentName, allStudents.map(s => s.full_name));
+                        if (studentMatch.score >= 0.85) {
+                            const matchedStudent = allStudents.find(s => s.full_name === studentMatch.match);
+                            finalStudentId = matchedStudent?.student_id;
+                        }
                     }
                 }
 
@@ -493,7 +513,7 @@ const BulkOperations = ({ onClose }) => {
                     time_slot: mappedTimeSlot,
                     week_number: getWeekNumber(date),
                     year: date.getFullYear(),
-                    student_id: `IMPORT_${String(i + 1).padStart(4, '0')}`,
+                    student_id: finalStudentId || `IMPORT_${String(i + 1).padStart(4, '0')}`, // Use real student_id or fallback
                     student_name: finalStudentName,
                     status: mappedStatus,
                     created_at: date.toISOString()
