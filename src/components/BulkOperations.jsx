@@ -374,6 +374,11 @@ const BulkOperations = ({ onClose }) => {
                 getAllStudents()
             ]);
 
+            console.log('🔍 DEBUG: Fetched data');
+            console.log('📊 Total existing attendance records:', existingAttendance.length);
+            console.log('👥 Total students in database:', allStudents.length);
+            console.log('📋 Sample student from DB:', allStudents[0]);
+
             const students = new Set();
             const teachers = new Set();
             const classes = new Set();
@@ -387,6 +392,10 @@ const BulkOperations = ({ onClose }) => {
                 const nameNorm = normalizeString(student.full_name);
                 studentIdMap.set(nameNorm, student.student_id);
             });
+
+            console.log('🗺️ DEBUG: Student ID Map built');
+            console.log('📊 Total entries in studentIdMap:', studentIdMap.size);
+            console.log('📋 Sample mapping:', Array.from(studentIdMap.entries()).slice(0, 3));
 
             existingAttendance.forEach(record => {
                 const studentNorm = normalizeString(record.student_name);
@@ -437,23 +446,43 @@ const BulkOperations = ({ onClose }) => {
 
                 // Smart matching for student
                 const studentNorm = normalizeString(studentName);
+
+                console.log(`\n🔍 Processing student: "${studentName}"`);
+                console.log(`   Normalized: "${studentNorm}"`);
+
                 if (students.has(studentNorm)) {
                     finalStudentName = studentMap.get(studentNorm);
                     finalStudentId = studentIdMap.get(studentNorm);
+                    console.log(`   ✅ Exact match found in existing attendance`);
+                    console.log(`   📝 Final student_id: ${finalStudentId}`);
                 } else {
+                    console.log(`   ⚠️ Not in existing attendance, trying fuzzy match...`);
                     const match = findBestMatch(studentName, Array.from(studentMap.values()));
+                    console.log(`   📊 Best match score: ${match.score}`);
+
                     if (match.score >= 0.85) {
                         fuzzyMatches.push({ type: 'student', csv: studentName, database: match.match, score: match.score });
                         finalStudentName = match.match;
                         const matchNorm = normalizeString(match.match);
                         finalStudentId = studentIdMap.get(matchNorm);
+                        console.log(`   ✅ Fuzzy match found: "${match.match}"`);
+                        console.log(`   📝 Final student_id: ${finalStudentId}`);
                     } else {
                         newStudents.add(studentName);
+                        console.log(`   ⚠️ No match in attendance, trying direct student lookup...`);
+
                         // Try to find student_id from allStudents by fuzzy matching
                         const studentMatch = findBestMatch(studentName, allStudents.map(s => s.full_name));
+                        console.log(`   📊 Direct student match score: ${studentMatch.score}`);
+
                         if (studentMatch.score >= 0.85) {
                             const matchedStudent = allStudents.find(s => s.full_name === studentMatch.match);
                             finalStudentId = matchedStudent?.student_id;
+                            console.log(`   ✅ Found in students table: "${studentMatch.match}"`);
+                            console.log(`   📝 Final student_id: ${finalStudentId}`);
+                        } else {
+                            console.log(`   ❌ No match found anywhere!`);
+                            console.log(`   📝 Will use dummy ID: IMPORT_${String(i + 1).padStart(4, '0')}`);
                         }
                     }
                 }
@@ -519,8 +548,21 @@ const BulkOperations = ({ onClose }) => {
                     created_at: date.toISOString()
                 };
 
+                console.log(`   📦 Final record:`, {
+                    student_name: record.student_name,
+                    student_id: record.student_id,
+                    class_name: record.class_name,
+                    week_number: record.week_number,
+                    status: record.status
+                });
+
                 processedRecords.push(record);
             }
+
+            console.log('\n📊 SUMMARY:');
+            console.log(`   Total processed: ${processedRecords.length}`);
+            console.log(`   With real student_id: ${processedRecords.filter(r => !r.student_id.startsWith('IMPORT_')).length}`);
+            console.log(`   With dummy IMPORT_ id: ${processedRecords.filter(r => r.student_id.startsWith('IMPORT_')).length}`);
 
             // Store stats for display
             setImportAttendanceStats({
@@ -540,7 +582,18 @@ const BulkOperations = ({ onClose }) => {
             }
 
             // Import to database
+            console.log('\n💾 Sending to database...');
             const result = await bulkCreateAttendance(processedRecords);
+
+            console.log('\n✅ Database result:');
+            console.log(`   Success: ${result.success.length}`);
+            console.log(`   Failed: ${result.failed.length}`);
+            if (result.success.length > 0) {
+                console.log('   Sample success record:', result.success[0]);
+            }
+            if (result.failed.length > 0) {
+                console.log('   Sample failed record:', result.failed[0]);
+            }
 
             setResults({
                 type: 'import-attendance',

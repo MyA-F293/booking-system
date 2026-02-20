@@ -82,6 +82,10 @@ const AttendanceReportExcel = () => {
 
     // Build attendance matrix
     const buildAttendanceMatrix = () => {
+        console.log('\n🏗️ Building attendance matrix...');
+        console.log(`📊 Total attendance records: ${attendanceData.length}`);
+        console.log(`👥 Total students: ${students.length}`);
+
         const matrix = {};
 
         // Filter students
@@ -96,6 +100,11 @@ const AttendanceReportExcel = () => {
                 s.student_id?.toLowerCase().includes(query) ||
                 s.level?.toLowerCase().includes(query)
             );
+        }
+
+        console.log(`👥 Filtered students: ${filteredStudents.length}`);
+        if (filteredStudents.length > 0) {
+            console.log('📋 Sample student:', filteredStudents[0]);
         }
 
         // Initialize matrix for each student
@@ -117,7 +126,12 @@ const AttendanceReportExcel = () => {
             });
         });
 
+        console.log(`📊 Matrix initialized for ${Object.keys(matrix).length} students`);
+
         // Fill in attendance data
+        console.log('\n🔍 Matching attendance records to students...');
+        let matchedCount = 0;
+        let unmatchedCount = 0;
         attendanceData.forEach(record => {
             // Find student by matching student_id (not user_id)
             const studentEntry = Object.entries(matrix).find(([_, student]) =>
@@ -125,6 +139,7 @@ const AttendanceReportExcel = () => {
             );
 
             if (studentEntry) {
+                matchedCount++;
                 const [userId, student] = studentEntry;
                 const week = record.week_number;
 
@@ -145,8 +160,30 @@ const AttendanceReportExcel = () => {
                         day: record.day
                     };
                 }
+            } else {
+                unmatchedCount++;
+                if (unmatchedCount <= 5) {
+                    console.log(`❌ Unmatched record:`, {
+                        student_id: record.student_id,
+                        student_name: record.student_name,
+                        week: record.week_number,
+                        phase: record.phase
+                    });
+                }
             }
         });
+
+        console.log(`\n📊 Matching results:`);
+        console.log(`   ✅ Matched: ${matchedCount}`);
+        console.log(`   ❌ Unmatched: ${unmatchedCount}`);
+
+        if (unmatchedCount > 0) {
+            console.log(`\n⚠️ ${unmatchedCount} attendance records couldn't be matched to students!`);
+            console.log('   Possible reasons:');
+            console.log('   1. student_id in attendance doesn\'t match student_id in users table');
+            console.log('   2. Student is not active (is_active = false)');
+            console.log('   3. Student_id has IMPORT_ prefix (dummy ID)');
+        }
 
         return Object.values(matrix);
     };
