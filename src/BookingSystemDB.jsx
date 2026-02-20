@@ -430,7 +430,8 @@ const BookingSystemDB = ({ user }) => {
         }
 
         // Validation: Harvard Class is only for English for Teens
-        if (classItem.name === 'Harvard Class' && currentUser?.program !== 'English for Teens') {
+        const isTeensUser = currentUser?.program?.toLowerCase().includes('teens');
+        if (classItem.name === 'Harvard Class' && !isTeensUser) {
             toast.error('Harvard Class is exclusively for English for Teens program students!');
             return;
         }

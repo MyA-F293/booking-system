@@ -138,7 +138,8 @@ const BookingDashboard = ({ user }) => {
             setIsBooking(true);
 
             // Validation 1: Harvard Class is only for English for Teens
-            if (schedule.class?.name === 'Harvard Class' && user?.program !== 'English for Teens') {
+            const isTeensUser = user?.program?.toLowerCase().includes('teens');
+            if (schedule.class?.name === 'Harvard Class' && !isTeensUser) {
                 toast.error('Harvard Class is exclusively for English for Teens program students!');
                 return;
             }
@@ -493,11 +494,11 @@ const BookingDashboard = ({ user }) => {
                                                                             disabled={
                                                                                 isBooking ||
                                                                                 schedule.current_students >= 10 ||
-                                                                                (schedule.class?.name === 'Harvard Class' && user?.program !== 'English for Teens')
+                                                                                (schedule.class?.name === 'Harvard Class' && !user?.program?.toLowerCase().includes('teens'))
                                                                             }
                                                                             className="flex-1 bg-[#F39C32] hover:bg-[#e08a1f] text-white py-2 rounded-lg font-medium text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                                                             title={
-                                                                                schedule.class?.name === 'Harvard Class' && user?.program !== 'English for Teens'
+                                                                                schedule.class?.name === 'Harvard Class' && !user?.program?.toLowerCase().includes('teens')
                                                                                     ? 'Harvard Class is only for English for Teens students'
                                                                                     : ''
                                                                             }
