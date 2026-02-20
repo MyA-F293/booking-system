@@ -331,6 +331,16 @@ const AdminBookingDashboard = () => {
                 return;
             }
 
+            // ✅ NEW: Harvard Class restriction validation
+            if (selectedSchedule.class?.name === 'Harvard Class') {
+                const student = allStudents.find(s => s.id === studentId);
+                const isTeensStudent = student?.program?.toLowerCase().includes('teens');
+                if (!isTeensStudent) {
+                    toast.error('❌ Harvard Class is exclusively for English for Teens program students!');
+                    return;
+                }
+            }
+
             // Try to create booking
             await createBooking({ schedule_id: selectedSchedule.id, user_id: studentId, status: 'confirmed' });
             toast.success(t('adminBooking.studentAdded'));
@@ -546,6 +556,11 @@ const AdminBookingDashboard = () => {
     const getAvailableStudents = () => {
         const bookedStudentIds = scheduleStudents.map(b => b.user.id);
         let available = allStudents.filter(s => !bookedStudentIds.includes(s.id));
+
+        // ✅ NEW: Filter by Harvard Class restriction
+        if (selectedSchedule?.class?.name === 'Harvard Class') {
+            available = available.filter(s => s.program?.toLowerCase().includes('teens'));
+        }
 
         // Apply search filter if query exists
         if (studentSearchQuery.trim()) {
@@ -1268,7 +1283,17 @@ const AdminBookingDashboard = () => {
                         <div className="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                             <div className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white p-5">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold flex items-center gap-2"><UserPlus size={20} />{t('adminBooking.addStudent')}</h3>
+                                    <div>
+                                        <h3 className="text-lg font-bold flex items-center gap-2">
+                                            <UserPlus size={20} />
+                                            {t('adminBooking.addStudent')}
+                                        </h3>
+                                        {selectedSchedule?.class?.name === 'Harvard Class' && (
+                                            <p className="text-emerald-100 text-xs mt-1 flex items-center gap-1">
+                                                🎓 Only showing English for Teens students
+                                            </p>
+                                        )}
+                                    </div>
                                     <button onClick={() => { setShowAddModal(false); setStudentSearchQuery(''); }} className="p-2 hover:bg-white/20 rounded-lg transition-colors"><X size={18} /></button>
                                 </div>
                             </div>

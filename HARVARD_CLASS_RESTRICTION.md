@@ -88,6 +88,23 @@ if (classItem.name === 'Harvard Class' && currentUser?.program !== 'English for 
 - Combined with existing disabled logic
 - Added tooltip with explanation
 
+### File: `booking-system/src/components/AdminBookingDashboard.jsx`
+
+**1. Added validation in `handleAddStudent` function:**
+- Check if class is Harvard and student program is not Teens
+- Show error toast if restriction violated
+- Return early to prevent booking
+
+**2. Added filter in `getAvailableStudents` function:**
+- Filter students list to only show Teens for Harvard Class
+- Prevents admin from seeing non-eligible students
+- Applied before search filter
+
+**3. Added visual indicator in modal:**
+- "🎓 Only showing English for Teens students" message
+- Appears in modal header for Harvard Class
+- Clear feedback to admin
+
 ## 🎨 Visual Design
 
 ### Badge Style:
@@ -117,7 +134,12 @@ text-[9px] font-semibold border border-red-200
    - Error toast
    - Prevents unnecessary requests
 
-3. **Backend Validation** (Recommended)
+3. **Frontend Validation** (AdminBookingDashboard) ✅ NEW
+   - Filter student list in modal
+   - Validation before booking
+   - Error toast with clear message
+
+4. **Backend Validation** (Recommended)
    - Add database trigger or constraint
    - Final layer of protection
    - Prevents direct API manipulation
@@ -133,6 +155,9 @@ text-[9px] font-semibold border border-red-200
 - [x] Responsive on mobile and desktop
 - [x] No syntax errors
 - [x] Build successful
+- [x] **Admin can only add Teens students to Harvard Class**
+- [x] **Admin modal filters out non-Teens students for Harvard**
+- [x] **Admin gets error if trying to add non-Teens to Harvard**
 
 ## 📊 User Programs
 
