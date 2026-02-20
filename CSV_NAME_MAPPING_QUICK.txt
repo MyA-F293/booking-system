@@ -1,0 +1,94 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    CSV TO DATABASE NAME MAPPING                              ║
+║                         Quick Reference Card                                 ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📋 FIND & REPLACE IN CSV (Recommended Method):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CSV Name                    →  Database Name
+─────────────────────────────────────────────────────────────────────────────
+Ade Sherina                 →  Ade Sherina H
+Ahmad Zayni                 →  Ahmad Zayni Asyarifain
+Andi Fathir Meysar          →  A. M. Fathir Meysar Ananta
+Andi Nadila Salsabila       →  Andi Nadila Salsabila Musllim
+Asrul Arifin                →  Asrul
+Chentia Putri               →  Chentia Putri Anugrah
+Irfan                       →  M. Irfan
+Muh Fatwah Fajriansyah M    →  Muhammad Fatwa Fajriansyah M
+Muh. Fitrah Riyadi          →  Muh. Fitrah Ryadi
+Muhaimin                    →  Muhaimin Abubakar Assidiq Mamonto
+Nur Fadillah Syam           →  Nurfadhilah Syam
+
+❌ MISSING IN DATABASE (Add First!):
+─────────────────────────────────────────────────────────────────────────────
+Miftahul                    →  Need to add to students table
+Nia                         →  Need to add to students table
+
+
+🎯 QUICK STEPS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Add missing students:
+   Run: booking-system/database/ADD_MISSING_STUDENTS.sql
+
+2. Fix CSV names:
+   - Open CSV in Excel/Text Editor
+   - Find & Replace using table above
+   - Save CSV
+
+3. Import attendance:
+   - Use normal import process
+   - All names should match now
+
+4. Verify:
+   SELECT COUNT(*) FROM attendance WHERE student_id IS NULL;
+   -- Should return 0
+
+
+📊 STUDENT ID REFERENCE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ade Sherina H                           → EYSA26010056
+Ahmad Zayni Asyarifain                  → EYSA26010071
+A. M. Fathir Meysar Ananta              → EYSA26010006
+Andi Nadila Salsabila Musllim           → EYSA26010135
+Asrul                                   → EYSA26010134
+Chentia Putri Anugrah                   → EYSA26010027
+M. Irfan                                → EYSA26010008
+Muhammad Fatwa Fajriansyah M            → EYSA26012617
+Muh. Fitrah Ryadi                       → EYSA26010139
+Muhaimin Abubakar Assidiq Mamonto       → EYSA26010073
+Nurfadhilah Syam                        → EYSA26010053
+
+
+⚠️  COMMON TYPOS TO WATCH:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Fatwah    →  ✅ Fatwa
+❌ Riyadi    →  ✅ Ryadi
+❌ Fadillah  →  ✅ Fadhilah
+
+
+💡 PRO TIPS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Always backup database before import
+✓ Test with small sample first
+✓ Use exact spelling from database
+✓ Check for trailing spaces in names
+✓ Verify import with: SELECT * FROM attendance WHERE date = 'import_date'
+
+
+📁 RELATED FILES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📄 FIX_CSV_IMPORT_COMPLETE.md          - Full guide
+📄 database/FIX_CSV_TO_DB_MAPPING.sql  - SQL mapping table
+📄 database/ADD_MISSING_STUDENTS.sql   - Add Miftahul & Nia
+📄 database/CHECK_STUDENT_NAMES.sql    - Verify names
+
+
+═══════════════════════════════════════════════════════════════════════════════
+Last Updated: 2026-02-20 | Total Mappings: 11 | Missing Students: 2
+═══════════════════════════════════════════════════════════════════════════════

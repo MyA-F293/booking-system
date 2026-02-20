@@ -388,8 +388,9 @@ const BookingSystemDB = ({ user }) => {
         }
 
         // Check if this class is occupied by another program (Room Exclusivity Rule)
+        // Exception: Harvard Class uses program-based restriction, not room exclusivity
         const occupiedByOther = occupiedClasses.find(oc => oc.class_id === classItem.id);
-        if (occupiedByOther) {
+        if (occupiedByOther && classItem.name !== 'Harvard Class') {
             console.log('🚫 Class occupied by other program:', occupiedByOther.program);
             return {
                 count: 0,
@@ -1337,7 +1338,10 @@ const BookingSystemDB = ({ user }) => {
                                                         : 'bg-yellow-50 border-yellow-300';
 
                                             // Check if Harvard Class and user is not Teens
-                                            const isHarvardRestricted = classItem.name === 'Harvard Class' && currentUser?.program !== 'English for Teens';
+                                            // Harvard Class is only for TEENS batch or English for Teens program
+                                            const isTeensUser = currentUser?.batch === 'TEENS' ||
+                                                currentUser?.program?.toLowerCase().includes('teens');
+                                            const isHarvardRestricted = classItem.name === 'Harvard Class' && !isTeensUser;
                                             const isDisabled = !canClick || isHarvardRestricted;
 
                                             return (

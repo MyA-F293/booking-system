@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Calendar, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
@@ -1306,8 +1307,8 @@ const AdminDashboard = ({ user }) => {
                         </div>
 
                         {/* Edit Student Modal */}
-                        {showEditStudentModal && editingStudent && (
-                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
+                        {showEditStudentModal && editingStudent && createPortal(
+                            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                                 <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                                     <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white p-3 sm:p-5 flex-shrink-0">
                                         <div className="flex justify-between items-center">
@@ -1398,14 +1399,15 @@ const AdminDashboard = ({ user }) => {
                                         </div>
                                     </form>
                                 </div>
-                            </div>
+                            </div>,
+                            document.body
                         )}
                     </>
                 )}
 
                 {/* Password View/Reset Modal */}
-                {showPasswordModal && selectedStudentForPassword && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
+                {showPasswordModal && selectedStudentForPassword && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                         <div className="bg-white rounded-xl sm:rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                             <div className="bg-gradient-to-r from-amber-500 to-amber-400 text-white p-3 sm:p-5 flex-shrink-0">
                                 <div className="flex justify-between items-center">
@@ -1509,7 +1511,8 @@ const AdminDashboard = ({ user }) => {
                                 </button>
                             </div>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
 
                 {/* ========== TEACHERS TAB ========== */}

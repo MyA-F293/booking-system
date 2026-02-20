@@ -51,6 +51,8 @@ const BookingDashboard = ({ user }) => {
     const [selectedWeekTab, setSelectedWeekTab] = useState('next'); // Default to 'next' week for booking
     const [userBookings, setUserBookings] = useState([]); // Store user's bookings
     const [isBooking, setIsBooking] = useState(false); // Prevent double-click
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [bookedSchedule, setBookedSchedule] = useState(null);
 
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
@@ -168,6 +170,8 @@ const BookingDashboard = ({ user }) => {
                 status: 'confirmed'
             });
 
+            setBookedSchedule(schedule);
+            setShowSuccessModal(true);
             toast.success(`Successfully booked ${schedule.class?.name}!`);
             await loadUserBookings(); // Refresh data
         } catch (err) {
@@ -666,6 +670,55 @@ const BookingDashboard = ({ user }) => {
                                 {t('common.close')}
                             </button>
                         </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Loading Modal */}
+            {isBooking && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[70]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-sm">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#1F4E8C] mx-auto mb-4"></div>
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">Processing...</h3>
+                        <p className="text-gray-600">Please wait while we book your class</p>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Success Modal */}
+            {showSuccessModal && bookedSchedule && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[70]" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-md">
+                        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Booking Successful!</h3>
+                        <p className="text-gray-600 mb-4">
+                            You've successfully booked <span className="font-semibold text-[#1F4E8C]">{bookedSchedule.class?.name}</span>
+                        </p>
+                        <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+                            <div className="flex items-center gap-2 text-sm text-gray-700 mb-2">
+                                <Calendar size={16} className="text-[#1F4E8C]" />
+                                <span>{getDayLabel(bookedSchedule.day, bookedSchedule.phase)}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-700">
+                                <Clock size={16} className="text-[#F39C32]" />
+                                <span>{bookedSchedule.time_slot}</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                setBookedSchedule(null);
+                            }}
+                            className="w-full bg-[#1F4E8C] hover:bg-[#183d6e] text-white py-3 rounded-xl font-semibold transition-colors"
+                        >
+                            Done
+                        </button>
                     </div>
                 </div>,
                 document.body
