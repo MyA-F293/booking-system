@@ -374,19 +374,34 @@ const AdminStatsDashboard = () => {
             </div>
 
             <div ref={dashboardRef} className="space-y-6" style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '16px' }}>
-                {/* Student Booking Status Tracker - MODERN WHITE DESIGN WITH ANIMATIONS */}
+                {/* Student Booking Status Tracker - MODERN WHITE DESIGN WITH ENHANCED ANIMATIONS */}
                 <div className="relative overflow-hidden rounded-3xl p-8 shadow-2xl bg-white border border-gray-100">
-                    {/* Animated Background Gradient Orbs */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-200/40 to-red-200/40 rounded-full blur-3xl animate-float" style={{ animationDuration: '8s' }}></div>
-                    <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-200/40 to-purple-200/40 rounded-full blur-3xl animate-float" style={{ animationDuration: '10s', animationDelay: '2s' }}></div>
-                    <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-br from-green-200/30 to-emerald-200/30 rounded-full blur-3xl animate-float" style={{ animationDuration: '12s', animationDelay: '4s' }}></div>
+                    {/* Animated Background Gradient Orbs with Moving Gradients */}
+                    <div className="absolute top-0 right-0 w-96 h-96 rounded-full blur-3xl animate-float animate-gradient-move" style={{
+                        animationDuration: '8s',
+                        background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.4), rgba(239, 68, 68, 0.4))',
+                        backgroundSize: '200% 200%'
+                    }}></div>
+                    <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full blur-3xl animate-float animate-gradient-move" style={{
+                        animationDuration: '10s',
+                        animationDelay: '2s',
+                        background: 'linear-gradient(135deg, rgba(147, 197, 253, 0.4), rgba(196, 181, 253, 0.4))',
+                        backgroundSize: '200% 200%'
+                    }}></div>
+                    <div className="absolute top-1/2 left-1/2 w-64 h-64 rounded-full blur-3xl animate-float animate-gradient-move" style={{
+                        animationDuration: '12s',
+                        animationDelay: '4s',
+                        background: 'linear-gradient(135deg, rgba(134, 239, 172, 0.3), rgba(167, 243, 208, 0.3))',
+                        backgroundSize: '200% 200%'
+                    }}></div>
 
                     <div className="relative z-10">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-center gap-4">
-                                <div className="p-4 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-lg animate-pulse-slow">
-                                    <UserCheck size={32} className="text-white" strokeWidth={2.5} />
+                                <div className="p-4 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl shadow-lg animate-pulse-slow relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-slow"></div>
+                                    <UserCheck size={32} className="text-white relative z-10" strokeWidth={2.5} />
                                 </div>
                                 <div>
                                     <h3 className="text-3xl font-black text-gray-800 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text">
@@ -398,22 +413,27 @@ const AdminStatsDashboard = () => {
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-6xl font-black bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent animate-pulse-slow">
+                                <div className="text-6xl font-black bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 bg-clip-text text-transparent animate-gradient-text" style={{ backgroundSize: '200% auto' }}>
                                     {studentBookingStatus.bookingRate}%
                                 </div>
                                 <div className="text-gray-600 text-sm font-bold uppercase tracking-wider">Booking Rate</div>
                             </div>
                         </div>
 
-                        {/* Progress Bar with Animation */}
+                        {/* Progress Bar with Enhanced Animation */}
                         <div className="mb-8">
                             <div className="h-6 bg-gray-100 rounded-full overflow-hidden shadow-inner relative">
                                 <div
-                                    className="h-full bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
-                                    style={{ width: `${studentBookingStatus.bookingRate}%` }}
+                                    className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+                                    style={{
+                                        width: `${studentBookingStatus.bookingRate}%`,
+                                        background: 'linear-gradient(90deg, #fb923c, #f97316, #ef4444, #f97316, #fb923c)',
+                                        backgroundSize: '200% 100%',
+                                        animation: 'gradient-move 3s ease infinite'
+                                    }}
                                 >
                                     {/* Animated shine effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
                                 </div>
                             </div>
                             <div className="flex justify-between mt-2 text-xs text-gray-400 font-medium">
@@ -423,27 +443,29 @@ const AdminStatsDashboard = () => {
                             </div>
                         </div>
 
-                        {/* Stats Cards with Modern Design */}
+                        {/* Stats Cards with Enhanced Design */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Booked Students Card - WHITE WITH GREEN ACCENT */}
+                            {/* Booked Students Card - WHITE WITH GREEN ACCENT & GLOW */}
                             <button
                                 onClick={() => {
                                     setModalType('booked');
                                     setShowStudentModal(true);
                                 }}
-                                className="group relative overflow-hidden bg-white hover:bg-gray-50 rounded-3xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-2xl border-2 border-emerald-200 hover:border-emerald-400"
+                                className="group relative overflow-hidden bg-white rounded-3xl p-8 transition-all duration-500 hover:scale-[1.02] border-2 border-emerald-200 hover:border-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.3)]"
                             >
                                 {/* Animated background gradient */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-green-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                                {/* Floating particles */}
-                                <div className="absolute top-4 right-4 w-20 h-20 bg-emerald-200/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '6s' }}></div>
-                                <div className="absolute bottom-4 left-4 w-16 h-16 bg-green-200/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '8s', animationDelay: '1s' }}></div>
+                                {/* Enhanced Floating particles with more movement */}
+                                <div className="absolute top-4 right-4 w-24 h-24 bg-emerald-300/30 rounded-full blur-2xl animate-float-particle" style={{ animationDuration: '5s' }}></div>
+                                <div className="absolute bottom-4 left-4 w-20 h-20 bg-green-300/30 rounded-full blur-2xl animate-float-particle" style={{ animationDuration: '7s', animationDelay: '1s' }}></div>
+                                <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-emerald-200/20 rounded-full blur-xl animate-float-particle" style={{ animationDuration: '6s', animationDelay: '2s' }}></div>
 
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between mb-6">
-                                        <div className="p-4 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                            <CheckCircle2 size={36} className="text-white" strokeWidth={2.5} />
+                                        <div className="p-4 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-slow"></div>
+                                            <CheckCircle2 size={36} className="text-white relative z-10" strokeWidth={2.5} />
                                         </div>
                                         <div className="text-right">
                                             <div className="text-6xl font-black text-gray-800 group-hover:scale-110 transition-transform duration-300">
@@ -454,37 +476,40 @@ const AdminStatsDashboard = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div>
+                                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse absolute"></div>
                                             <div className="text-gray-800 font-bold text-xl">Already Booked</div>
                                         </div>
                                         <div className="text-gray-600 text-sm font-medium">Students who completed booking</div>
                                         <div className="text-emerald-600 text-sm font-semibold mt-3 flex items-center gap-2 group-hover:gap-3 transition-all">
                                             <span>View detailed list</span>
-                                            <span className="text-lg">→</span>
+                                            <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
                                         </div>
                                     </div>
                                 </div>
                             </button>
 
-                            {/* Not Booked Students Card - WHITE WITH RED ACCENT */}
+                            {/* Not Booked Students Card - WHITE WITH RED ACCENT & GLOW */}
                             <button
                                 onClick={() => {
                                     setModalType('notBooked');
                                     setShowStudentModal(true);
                                 }}
-                                className="group relative overflow-hidden bg-white hover:bg-gray-50 rounded-3xl p-8 transition-all duration-500 hover:scale-105 hover:shadow-2xl border-2 border-red-200 hover:border-red-400"
+                                className="group relative overflow-hidden bg-white rounded-3xl p-8 transition-all duration-500 hover:scale-[1.02] border-2 border-red-200 hover:border-red-400 hover:shadow-[0_0_30px_rgba(239,68,68,0.3)]"
                             >
                                 {/* Animated background gradient */}
                                 <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-                                {/* Floating particles */}
-                                <div className="absolute top-4 right-4 w-20 h-20 bg-red-200/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '7s' }}></div>
-                                <div className="absolute bottom-4 left-4 w-16 h-16 bg-orange-200/20 rounded-full blur-2xl animate-float" style={{ animationDuration: '9s', animationDelay: '1.5s' }}></div>
+                                {/* Enhanced Floating particles with more movement */}
+                                <div className="absolute top-4 right-4 w-24 h-24 bg-red-300/30 rounded-full blur-2xl animate-float-particle" style={{ animationDuration: '6s' }}></div>
+                                <div className="absolute bottom-4 left-4 w-20 h-20 bg-orange-300/30 rounded-full blur-2xl animate-float-particle" style={{ animationDuration: '8s', animationDelay: '1.5s' }}></div>
+                                <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-red-200/20 rounded-full blur-xl animate-float-particle" style={{ animationDuration: '7s', animationDelay: '2.5s' }}></div>
 
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between mb-6">
-                                        <div className="p-4 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-300 animate-pulse-slow">
-                                            <AlertCircle size={36} className="text-white" strokeWidth={2.5} />
+                                        <div className="p-4 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 animate-pulse-slow relative overflow-hidden">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-slow"></div>
+                                            <AlertCircle size={36} className="text-white relative z-10" strokeWidth={2.5} />
                                         </div>
                                         <div className="text-right">
                                             <div className="text-6xl font-black text-gray-800 group-hover:scale-110 transition-transform duration-300">
@@ -495,13 +520,14 @@ const AdminStatsDashboard = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
+                                            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse absolute"></div>
                                             <div className="text-gray-800 font-bold text-xl">Not Booked Yet</div>
                                         </div>
                                         <div className="text-gray-600 text-sm font-medium">Students need to book schedule</div>
                                         <div className="text-red-600 text-sm font-semibold mt-3 flex items-center gap-2 group-hover:gap-3 transition-all">
                                             <span>View detailed list</span>
-                                            <span className="text-lg">→</span>
+                                            <span className="text-lg group-hover:translate-x-1 transition-transform">→</span>
                                         </div>
                                     </div>
                                 </div>
@@ -510,7 +536,8 @@ const AdminStatsDashboard = () => {
 
                         {/* Quick Action Hint */}
                         <div className="mt-6 flex items-center justify-center gap-2 text-gray-400 text-sm">
-                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-ping"></div>
+                            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse absolute"></div>
                             <span>Click on cards above to see detailed student lists</span>
                         </div>
                     </div>
