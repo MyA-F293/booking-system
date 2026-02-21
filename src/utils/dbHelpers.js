@@ -346,8 +346,14 @@ export const getSchedules = async (filters = {}) => {
     if (filters.time_slot) query = query.eq('time_slot', filters.time_slot)
     if (filters.week_number) query = query.eq('week_number', filters.week_number)
     if (filters.year) query = query.eq('year', filters.year)
-    if (filters.batch) query = query.eq('batch', filters.batch)
     if (filters.teacher_id) query = query.eq('teacher_id', filters.teacher_id)
+
+    // Handle batch filter - normalize "Batch 1" to "1"
+    if (filters.batch) {
+        const batchNumber = filters.batch.toString().replace(/[^0-9]/g, '');
+        console.log('🔍 Batch filter in getSchedules:', { original: filters.batch, normalized: batchNumber });
+        query = query.eq('batch', batchNumber);
+    }
 
     const { data, error } = await query
 
@@ -392,7 +398,9 @@ export const getOccupiedClassesByOtherPrograms = async (params) => {
         .gt('current_students', 0);  // Only schedules that have at least 1 student
 
     if (batch) {
-        query = query.eq('batch', batch);
+        // Normalize batch format
+        const batchNumber = batch.toString().replace(/[^0-9]/g, '');
+        query = query.eq('batch', batchNumber);
     }
 
     const { data, error } = await query;
@@ -453,9 +461,11 @@ export const hasUserBookedPhase = async (userId, phase, weekNumber, year, batch 
             .eq('week_number', weekNumber)
             .eq('year', year);
 
-        // Filter by batch if provided
+        // Filter by batch if provided - normalize format
         if (batch) {
-            scheduleQuery = scheduleQuery.eq('batch', batch);
+            const batchNumber = batch.toString().replace(/[^0-9]/g, '');
+            console.log('🔍 Batch filter in hasUserBookedPhase:', { original: batch, normalized: batchNumber });
+            scheduleQuery = scheduleQuery.eq('batch', batchNumber);
         }
 
         const { data: schedules, error: scheduleError } = await scheduleQuery;
@@ -548,8 +558,14 @@ export const getUserBookings = async (userId, weekNumber, year, batch = null) =>
         .order('created_at', { ascending: false }) // Get latest bookings first
 
     // Filter by batch if provided
+    // Handle both "Batch 1" and "1" formats
     if (batch) {
-        query = query.eq('schedule.batch', batch)
+        // Extract number from batch string (e.g., "Batch 1" -> "1")
+        const batchNumber = batch.toString().replace(/[^0-9]/g, '');
+        console.log('🔍 Batch filter:', { original: batch, normalized: batchNumber });
+
+        // Try to match with normalized batch number
+        query = query.eq('schedule.batch', batchNumber)
     }
 
     const { data, error } = await query
