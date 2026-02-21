@@ -125,7 +125,8 @@ const AdminBookingDashboard = () => {
         time_slot: '',
         phase: '',
         week_number: '',
-        year: currentYear
+        year: currentYear,
+        program: ''
     });
     const [allClasses, setAllClasses] = useState([]);
 
@@ -348,7 +349,8 @@ const AdminBookingDashboard = () => {
             time_slot: '',
             phase: '',
             week_number: displayWeek,
-            year: currentYear
+            year: currentYear,
+            program: ''
         });
         setShowScheduleModal(true);
     };
@@ -363,7 +365,8 @@ const AdminBookingDashboard = () => {
             time_slot: schedule.time_slot,
             phase: schedule.phase,
             week_number: schedule.week_number,
-            year: schedule.year
+            year: schedule.year,
+            program: schedule.program || ''
         });
         setShowScheduleModal(true);
     };
@@ -372,7 +375,7 @@ const AdminBookingDashboard = () => {
     const handleSaveSchedule = async () => {
         try {
             // Validation
-            if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number) {
+            if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number || !scheduleForm.program) {
                 toast.error('Please fill all required fields!');
                 return;
             }
@@ -390,6 +393,7 @@ const AdminBookingDashboard = () => {
                         phase: scheduleForm.phase,
                         week_number: parseInt(scheduleForm.week_number),
                         year: parseInt(scheduleForm.year),
+                        program: scheduleForm.program,
                         current_students: 0
                     }])
                     .select();
@@ -411,7 +415,8 @@ const AdminBookingDashboard = () => {
                         time_slot: scheduleForm.time_slot,
                         phase: scheduleForm.phase,
                         week_number: parseInt(scheduleForm.week_number),
-                        year: parseInt(scheduleForm.year)
+                        year: parseInt(scheduleForm.year),
+                        program: scheduleForm.program
                     })
                     .eq('id', editingSchedule.id);
 
@@ -1692,6 +1697,23 @@ const AdminBookingDashboard = () => {
                                         <option value="phase1">Phase 1</option>
                                         <option value="phase2">Phase 2</option>
                                         <option value="recap">Recap</option>
+                                    </select>
+                                </div>
+
+                                {/* Program Selection */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Program <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={scheduleForm.program}
+                                        onChange={(e) => setScheduleForm({ ...scheduleForm, program: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                    >
+                                        <option value="">Select program</option>
+                                        <option value="Kids">Kids</option>
+                                        <option value="Teens">Teens</option>
+                                        <option value="Adults">Adults</option>
                                     </select>
                                 </div>
 
