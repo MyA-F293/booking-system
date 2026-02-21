@@ -529,7 +529,7 @@ export const markPhaseBooked = async (userId, phase, weekNumber, year) => {
  * Get user's bookings for specific week and batch
  */
 export const getUserBookings = async (userId, weekNumber, year, batch = null) => {
-    console.log('📡 dbHelpers: getUserBookings called', { userId, weekNumber, year, batch });
+    console.log('📡 dbHelpers: getUserBookings called', { userId, weekNumber, year, batch, timestamp: new Date().toISOString() });
 
     let query = supabase
         .from('bookings')
@@ -545,6 +545,7 @@ export const getUserBookings = async (userId, weekNumber, year, batch = null) =>
         .eq('status', 'confirmed')
         .eq('schedule.week_number', weekNumber)
         .eq('schedule.year', year)
+        .order('created_at', { ascending: false }) // Get latest bookings first
 
     // Filter by batch if provided
     if (batch) {
@@ -559,6 +560,13 @@ export const getUserBookings = async (userId, weekNumber, year, batch = null) =>
     }
 
     console.log('✅ dbHelpers: getUserBookings success, found:', data?.length || 0);
+    console.log('📋 Bookings details:', data?.map(b => ({
+        id: b.id,
+        class: b.schedule?.class?.name,
+        day: b.schedule?.day,
+        time: b.schedule?.time_slot,
+        created: b.created_at
+    })));
     return data || []
 }
 

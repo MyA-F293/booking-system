@@ -90,6 +90,7 @@ const BookingDashboard = ({ user }) => {
             setLoading(true);
             console.log('📡 Loading all schedules for week:', displayWeek);
             console.log('👤 User batch:', userBatch);
+            console.log('🔄 Timestamp:', new Date().toISOString()); // Cache busting log
 
             // Get ALL schedules for the selected week (show all, regardless of batch)
             const filters = {
