@@ -126,7 +126,8 @@ const AdminBookingDashboard = () => {
         phase: '',
         week_number: '',
         year: currentYear,
-        program: ''
+        program: '',
+        level: ''
     });
     const [allClasses, setAllClasses] = useState([]);
 
@@ -350,7 +351,8 @@ const AdminBookingDashboard = () => {
             phase: '',
             week_number: displayWeek,
             year: currentYear,
-            program: ''
+            program: '',
+            level: ''
         });
         setShowScheduleModal(true);
     };
@@ -366,7 +368,8 @@ const AdminBookingDashboard = () => {
             phase: schedule.phase,
             week_number: schedule.week_number,
             year: schedule.year,
-            program: schedule.program || ''
+            program: schedule.program || '',
+            level: schedule.level || ''
         });
         setShowScheduleModal(true);
     };
@@ -375,7 +378,7 @@ const AdminBookingDashboard = () => {
     const handleSaveSchedule = async () => {
         try {
             // Validation
-            if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number || !scheduleForm.program) {
+            if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number || !scheduleForm.program || !scheduleForm.level) {
                 toast.error('Please fill all required fields!');
                 return;
             }
@@ -394,6 +397,7 @@ const AdminBookingDashboard = () => {
                         week_number: parseInt(scheduleForm.week_number),
                         year: parseInt(scheduleForm.year),
                         program: scheduleForm.program,
+                        level: scheduleForm.level,
                         current_students: 0
                     }])
                     .select();
@@ -416,7 +420,8 @@ const AdminBookingDashboard = () => {
                         phase: scheduleForm.phase,
                         week_number: parseInt(scheduleForm.week_number),
                         year: parseInt(scheduleForm.year),
-                        program: scheduleForm.program
+                        program: scheduleForm.program,
+                        level: scheduleForm.level
                     })
                     .eq('id', editingSchedule.id);
 
@@ -1714,6 +1719,24 @@ const AdminBookingDashboard = () => {
                                         <option value="English Campus & Career">English Campus & Career</option>
                                         <option value="English for Teens">English for Teens</option>
                                         <option value="Private">Private</option>
+                                    </select>
+                                </div>
+
+                                {/* Level Selection */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Level <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={scheduleForm.level}
+                                        onChange={(e) => setScheduleForm({ ...scheduleForm, level: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                    >
+                                        <option value="">Select level</option>
+                                        <option value="Starter">Starter</option>
+                                        <option value="Upper Starter">Upper Starter</option>
+                                        <option value="Pre-Intermediate">Pre-Intermediate</option>
+                                        <option value="Intermediate">Intermediate</option>
                                     </select>
                                 </div>
 
