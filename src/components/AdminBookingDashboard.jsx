@@ -78,6 +78,11 @@ const getClassBadge = (className) => {
 const AdminBookingDashboard = () => {
     const { t } = useLanguage();
     const toast = useToast();
+
+    // Define currentWeek and currentYear FIRST before using in state
+    const currentWeek = getCurrentWeek();
+    const currentYear = getCurrentYear();
+
     const [schedules, setSchedules] = useState([]);
     const [allStudents, setAllStudents] = useState([]);
     const [allTeachers, setAllTeachers] = useState([]);
@@ -158,8 +163,6 @@ const AdminBookingDashboard = () => {
         return errorMessage;
     };
 
-    const currentWeek = getCurrentWeek();
-    const currentYear = getCurrentYear();
     const nextWeek = currentWeek + 1;
     const displayWeek = selectedWeekTab === 'current' ? currentWeek : nextWeek;
 
