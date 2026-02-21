@@ -1711,9 +1711,9 @@ const AdminBookingDashboard = () => {
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
                                     >
                                         <option value="">Select program</option>
-                                        <option value="Kids">Kids</option>
-                                        <option value="Teens">Teens</option>
-                                        <option value="Adults">Adults</option>
+                                        <option value="English Campus & Career">English Campus & Career</option>
+                                        <option value="English for Teens">English for Teens</option>
+                                        <option value="Private">Private</option>
                                     </select>
                                 </div>
 
