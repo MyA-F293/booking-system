@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle, Search } from 'lucide-react';
+import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle, Search, AlertCircle } from 'lucide-react';
 import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentWeek, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -131,6 +131,14 @@ const AdminBookingDashboard = () => {
     });
     const [allClasses, setAllClasses] = useState([]);
 
+    // Student assignment for new schedule
+    const [selectedStudentsForSchedule, setSelectedStudentsForSchedule] = useState([]);
+    const [studentFilterProgram, setStudentFilterProgram] = useState('all');
+
+    // Duplicate warning
+    const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+    const [duplicateScheduleInfo, setDuplicateScheduleInfo] = useState(null);
+
     // Lock body scroll when any modal is open
     useModalScrollLock(
         selectedSchedule ||
@@ -138,7 +146,8 @@ const AdminBookingDashboard = () => {
         showMoveModal ||
         showTeacherModal ||
         showWhatsAppModal ||
-        showScheduleModal
+        showScheduleModal ||
+        showDuplicateWarning
     );
 
     // Helper function to parse database errors into user-friendly messages
@@ -386,6 +395,34 @@ const AdminBookingDashboard = () => {
             setLoading(true);
 
             if (scheduleFormMode === 'create') {
+                // Check for duplicate schedule
+                const { data: existingSchedules, error: checkError } = await supabase
+                    .from('schedules')
+                    .select('*, class:classes(*)')
+                    .eq('class_id', scheduleForm.class_id)
+                    .eq('day', scheduleForm.day)
+                    .eq('time_slot', scheduleForm.time_slot)
+                    .eq('phase', scheduleForm.phase)
+                    .eq('week_number', parseInt(scheduleForm.week_number))
+                    .eq('year', parseInt(scheduleForm.year));
+
+                if (checkError) {
+                    console.error('Error checking duplicates:', checkError);
+                }
+
+                if (existingSchedules && existingSchedules.length > 0) {
+                    // Found duplicate - show warning modal
+                    setDuplicateScheduleInfo({
+                        className: existingSchedules[0].class?.name,
+                        day: scheduleForm.day,
+                        timeSlot: scheduleForm.time_slot,
+                        phase: scheduleForm.phase
+                    });
+                    setShowDuplicateWarning(true);
+                    setLoading(false);
+                    return;
+                }
+
                 // Create new schedule
                 const { data, error } = await supabase
                     .from('schedules')
@@ -408,7 +445,31 @@ const AdminBookingDashboard = () => {
                     return;
                 }
 
-                toast.success('✅ Schedule created successfully!');
+                // If students selected, assign them to the new schedule
+                if (selectedStudentsForSchedule.length > 0 && data && data[0]) {
+                    const newScheduleId = data[0].id;
+                    const bookings = selectedStudentsForSchedule.map(studentId => ({
+                        user_id: studentId,
+                        schedule_id: newScheduleId
+                    }));
+
+                    const { error: bookingError } = await supabase
+                        .from('bookings')
+                        .insert(bookings);
+
+                    if (bookingError) {
+                        console.error('Error assigning students:', bookingError);
+                        toast.warning(`Schedule created but failed to assign ${selectedStudentsForSchedule.length} students`);
+                    } else {
+                        toast.success(`✅ Schedule created with ${selectedStudentsForSchedule.length} students assigned!`);
+                    }
+                } else {
+                    toast.success('✅ Schedule created successfully!');
+                }
+
+                // Reset student selection
+                setSelectedStudentsForSchedule([]);
+                setStudentFilterProgram('all');
             } else {
                 // Update existing schedule
                 const { error } = await supabase
