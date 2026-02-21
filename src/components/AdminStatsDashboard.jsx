@@ -419,51 +419,69 @@ const AdminStatsDashboard = () => {
 
                         {/* Stats Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Booked Students Card */}
+                            {/* Booked Students Card - GREEN THEME */}
                             <button
                                 onClick={() => {
                                     setModalType('booked');
                                     setShowStudentModal(true);
                                 }}
-                                className="group relative overflow-hidden bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-2xl p-5 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-white/20"
+                                className="group relative overflow-hidden bg-gradient-to-br from-emerald-500/90 to-green-600/90 backdrop-blur-md hover:from-emerald-500 hover:to-green-600 rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl border-2 border-emerald-300/50"
                             >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+                                {/* Decorative elements */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
                                 <div className="relative z-10">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="p-3 bg-emerald-500/20 rounded-xl">
-                                            <CheckCircle2 size={24} className="text-emerald-300" />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-white/30 backdrop-blur-sm rounded-xl shadow-lg">
+                                            <CheckCircle2 size={32} className="text-white" strokeWidth={2.5} />
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-3xl font-bold text-white">{studentBookingStatus.booked.length}</div>
-                                            <div className="text-emerald-300 text-xs font-semibold">Students</div>
+                                            <div className="text-5xl font-black text-white drop-shadow-lg">{studentBookingStatus.booked.length}</div>
+                                            <div className="text-emerald-100 text-sm font-bold uppercase tracking-wider">Students</div>
                                         </div>
                                     </div>
-                                    <div className="text-white font-semibold text-lg mb-1">Already Booked</div>
-                                    <div className="text-white/70 text-sm">Click to view list →</div>
+                                    <div className="space-y-1">
+                                        <div className="text-white font-bold text-xl">✓ Already Booked</div>
+                                        <div className="text-emerald-100 text-sm font-medium">Students who completed booking</div>
+                                        <div className="text-white/80 text-xs mt-2 flex items-center gap-1">
+                                            <span>Click to view list</span>
+                                            <span className="text-lg">→</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </button>
 
-                            {/* Not Booked Students Card */}
+                            {/* Not Booked Students Card - RED/ORANGE WARNING THEME */}
                             <button
                                 onClick={() => {
                                     setModalType('notBooked');
                                     setShowStudentModal(true);
                                 }}
-                                className="group relative overflow-hidden bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-2xl p-5 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-white/20"
+                                className="group relative overflow-hidden bg-gradient-to-br from-red-500/90 to-orange-600/90 backdrop-blur-md hover:from-red-500 hover:to-orange-600 rounded-2xl p-6 transition-all duration-300 hover:scale-105 hover:shadow-2xl border-2 border-red-300/50"
                             >
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+                                {/* Decorative elements */}
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+                                <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
                                 <div className="relative z-10">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <div className="p-3 bg-amber-500/20 rounded-xl">
-                                            <AlertCircle size={24} className="text-amber-300" />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-white/30 backdrop-blur-sm rounded-xl shadow-lg animate-pulse">
+                                            <AlertCircle size={32} className="text-white" strokeWidth={2.5} />
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-3xl font-bold text-white">{studentBookingStatus.notBooked.length}</div>
-                                            <div className="text-amber-300 text-xs font-semibold">Students</div>
+                                            <div className="text-5xl font-black text-white drop-shadow-lg">{studentBookingStatus.notBooked.length}</div>
+                                            <div className="text-red-100 text-sm font-bold uppercase tracking-wider">Students</div>
                                         </div>
                                     </div>
-                                    <div className="text-white font-semibold text-lg mb-1">Not Booked Yet</div>
-                                    <div className="text-white/70 text-sm">Click to view list →</div>
+                                    <div className="space-y-1">
+                                        <div className="text-white font-bold text-xl">⚠ Not Booked Yet</div>
+                                        <div className="text-red-100 text-sm font-medium">Students need to book schedule</div>
+                                        <div className="text-white/80 text-xs mt-2 flex items-center gap-1">
+                                            <span>Click to view list</span>
+                                            <span className="text-lg">→</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </button>
                         </div>
@@ -664,7 +682,7 @@ const AdminStatsDashboard = () => {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
                     <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-gray-100 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
                         {/* Modal Header */}
-                        <div className={`p-6 ${modalType === 'booked' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-orange-500 to-orange-600'}`}>
+                        <div className={`p-6 ${modalType === 'booked' ? 'bg-gradient-to-r from-emerald-600 to-green-600' : 'bg-gradient-to-r from-red-600 to-orange-600'}`}>
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
                                     {modalType === 'booked' ? (
@@ -713,15 +731,15 @@ const AdminStatsDashboard = () => {
                                         <div
                                             key={student.id}
                                             className={`p-4 rounded-xl border-2 transition-all hover:shadow-lg ${modalType === 'booked'
-                                                ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-400'
-                                                : 'bg-orange-50 border-orange-200 hover:border-orange-400'
+                                                ? 'bg-emerald-50 border-emerald-300 hover:border-emerald-500'
+                                                : 'bg-red-50 border-red-300 hover:border-red-500'
                                                 }`}
                                             style={{
                                                 animation: `slideInUp 0.3s ease-out ${idx * 0.05}s both`
                                             }}
                                         >
                                             <div className="flex items-start gap-3">
-                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${modalType === 'booked' ? 'bg-emerald-500' : 'bg-orange-500'
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${modalType === 'booked' ? 'bg-emerald-600' : 'bg-red-600'
                                                     }`}>
                                                     {idx + 1}
                                                 </div>
@@ -738,9 +756,9 @@ const AdminStatsDashboard = () => {
                                                     </div>
                                                 </div>
                                                 {modalType === 'booked' ? (
-                                                    <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0" />
+                                                    <CheckCircle2 size={20} className="text-emerald-600 flex-shrink-0" />
                                                 ) : (
-                                                    <AlertCircle size={20} className="text-orange-500 flex-shrink-0" />
+                                                    <AlertCircle size={20} className="text-red-600 flex-shrink-0" />
                                                 )}
                                             </div>
                                         </div>
