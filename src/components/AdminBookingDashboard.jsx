@@ -110,13 +110,28 @@ const AdminBookingDashboard = () => {
     const [filterDay, setFilterDay] = useState('all'); // 'all', 'monday', 'tuesday', etc.
     const [expandedClasses, setExpandedClasses] = useState(new Set()); // Track which classes are expanded
 
+    // CRUD Schedule states
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [scheduleFormMode, setScheduleFormMode] = useState('create'); // 'create' or 'edit'
+    const [editingSchedule, setEditingSchedule] = useState(null);
+    const [scheduleForm, setScheduleForm] = useState({
+        class_id: '',
+        day: '',
+        time_slot: '',
+        phase: '',
+        week_number: '',
+        year: currentYear
+    });
+    const [allClasses, setAllClasses] = useState([]);
+
     // Lock body scroll when any modal is open
     useModalScrollLock(
         selectedSchedule ||
         showAddModal ||
         showMoveModal ||
         showTeacherModal ||
-        showWhatsAppModal
+        showWhatsAppModal ||
+        showScheduleModal
     );
 
     // Helper function to parse database errors into user-friendly messages
@@ -302,7 +317,165 @@ const AdminBookingDashboard = () => {
 
     useEffect(() => {
         loadData();
+        loadAllClasses();
     }, [selectedWeekTab]);
+
+    // Load all classes for dropdown
+    const loadAllClasses = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('classes')
+                .select('*')
+                .order('name');
+
+            if (error) throw error;
+            setAllClasses(data || []);
+        } catch (err) {
+            console.error('Error loading classes:', err);
+        }
+    };
+
+    // Open create schedule modal
+    const handleCreateSchedule = () => {
+        setScheduleFormMode('create');
+        setEditingSchedule(null);
+        setScheduleForm({
+            class_id: '',
+            day: '',
+            time_slot: '',
+            phase: '',
+            week_number: displayWeek,
+            year: currentYear
+        });
+        setShowScheduleModal(true);
+    };
+
+    // Open edit schedule modal
+    const handleEditSchedule = (schedule) => {
+        setScheduleFormMode('edit');
+        setEditingSchedule(schedule);
+        setScheduleForm({
+            class_id: schedule.class_id,
+            day: schedule.day,
+            time_slot: schedule.time_slot,
+            phase: schedule.phase,
+            week_number: schedule.week_number,
+            year: schedule.year
+        });
+        setShowScheduleModal(true);
+    };
+
+    // Create or update schedule
+    const handleSaveSchedule = async () => {
+        try {
+            // Validation
+            if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number) {
+                toast.error('Please fill all required fields!');
+                return;
+            }
+
+            setLoading(true);
+
+            if (scheduleFormMode === 'create') {
+                // Create new schedule
+                const { data, error } = await supabase
+                    .from('schedules')
+                    .insert([{
+                        class_id: scheduleForm.class_id,
+                        day: scheduleForm.day,
+                        time_slot: scheduleForm.time_slot,
+                        phase: scheduleForm.phase,
+                        week_number: parseInt(scheduleForm.week_number),
+                        year: parseInt(scheduleForm.year),
+                        current_students: 0
+                    }])
+                    .select();
+
+                if (error) {
+                    console.error('Error creating schedule:', error);
+                    toast.error(getErrorMessage(error.message));
+                    return;
+                }
+
+                toast.success('✅ Schedule created successfully!');
+            } else {
+                // Update existing schedule
+                const { error } = await supabase
+                    .from('schedules')
+                    .update({
+                        class_id: scheduleForm.class_id,
+                        day: scheduleForm.day,
+                        time_slot: scheduleForm.time_slot,
+                        phase: scheduleForm.phase,
+                        week_number: parseInt(scheduleForm.week_number),
+                        year: parseInt(scheduleForm.year)
+                    })
+                    .eq('id', editingSchedule.id);
+
+                if (error) {
+                    console.error('Error updating schedule:', error);
+                    toast.error(getErrorMessage(error.message));
+                    return;
+                }
+
+                toast.success('✅ Schedule updated successfully!');
+            }
+
+            setShowScheduleModal(false);
+            await loadAllSchedules();
+        } catch (err) {
+            console.error('Error saving schedule:', err);
+            toast.error('Failed to save schedule');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Delete schedule
+    const handleDeleteSchedule = async (schedule) => {
+        // Handle both schedule object and scheduleId
+        const scheduleToDelete = typeof schedule === 'object' ? schedule : schedules.find(s => s.id === schedule);
+
+        if (!scheduleToDelete) {
+            toast.error('Schedule not found!');
+            return;
+        }
+
+        toast.confirm(
+            `${t('adminBooking.confirmDeleteSchedule')} "${scheduleToDelete.class?.name}" (${scheduleToDelete.current_students} ${t('adminBooking.studentsCount')})? ${t('adminBooking.allBookingsDeleted')}`,
+            async () => {
+                try {
+                    setLoading(true);
+
+                    // First delete all bookings for this schedule
+                    const { error: bookingsError } = await supabase
+                        .from('bookings')
+                        .delete()
+                        .eq('schedule_id', scheduleToDelete.id);
+
+                    if (bookingsError) throw bookingsError;
+
+                    // Then delete the schedule
+                    const { error: scheduleError } = await supabase
+                        .from('schedules')
+                        .delete()
+                        .eq('id', scheduleToDelete.id);
+
+                    if (scheduleError) throw scheduleError;
+
+                    toast.success(t('adminBooking.scheduleDeleted'));
+                    setSelectedSchedule(null);
+                    await loadAllSchedules();
+                } catch (err) {
+                    console.error('Error deleting schedule:', err);
+                    toast.error(t('adminBooking.deleteScheduleFailed') + err.message);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        );
+    };
+
 
     const handleViewDetails = async (schedule) => {
         try {
@@ -512,42 +685,6 @@ const AdminBookingDashboard = () => {
         );
     };
 
-    const handleDeleteSchedule = async (schedule) => {
-        toast.confirm(
-            `${t('adminBooking.confirmDeleteSchedule')} "${schedule.class?.name}" (${schedule.current_students} ${t('adminBooking.studentsCount')})? ${t('adminBooking.allBookingsDeleted')}`,
-            async () => {
-                try {
-                    setLoading(true);
-
-                    // First delete all bookings for this schedule
-                    const { error: bookingsError } = await supabase
-                        .from('bookings')
-                        .delete()
-                        .eq('schedule_id', schedule.id);
-
-                    if (bookingsError) throw bookingsError;
-
-                    // Then delete the schedule
-                    const { error: scheduleError } = await supabase
-                        .from('schedules')
-                        .delete()
-                        .eq('id', schedule.id);
-
-                    if (scheduleError) throw scheduleError;
-
-                    toast.success(t('adminBooking.scheduleDeleted'));
-                    setSelectedSchedule(null);
-                    await loadAllSchedules();
-                } catch (err) {
-                    console.error('Error deleting schedule:', err);
-                    toast.error(t('adminBooking.deleteScheduleFailed') + err.message);
-                } finally {
-                    setLoading(false);
-                }
-            }
-        );
-    };
-
     const getPhaseLabel = (phase) => t(`phase.${phase}`);
     const getPhaseDays = (phase) => t(`phase.${phase}Days`);
     const getTimeLabel = (timeSlot) => t(`time.${timeSlot}`);
@@ -672,6 +809,16 @@ const AdminBookingDashboard = () => {
 
                         {/* Right - Week Toggle & Actions */}
                         <div className="flex items-center gap-2 sm:gap-3">
+                            {/* Create Schedule Button */}
+                            <button
+                                onClick={handleCreateSchedule}
+                                className="px-2.5 sm:px-3 py-1.5 bg-[#1F4E8C] hover:bg-[#183d6e] text-white rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 shadow-md"
+                                title="Create new schedule"
+                            >
+                                <UserPlus size={14} />
+                                <span className="hidden sm:inline">Create</span>
+                            </button>
+
                             {/* Week Toggle */}
                             <div className="flex items-center bg-white/10 rounded-full p-0.5 border border-white/20">
                                 <button
@@ -993,7 +1140,14 @@ const AdminBookingDashboard = () => {
                                                                     Manage ({schedule.current_students})
                                                                 </button>
                                                                 <button
-                                                                    onClick={() => handleDeleteSchedule(schedule)}
+                                                                    onClick={() => handleEditSchedule(schedule)}
+                                                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg transition-all"
+                                                                    title="Edit Schedule"
+                                                                >
+                                                                    <Edit3 size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteSchedule(schedule.id)}
                                                                     className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg transition-all"
                                                                     title="Delete Schedule"
                                                                 >
@@ -1436,6 +1590,182 @@ const AdminBookingDashboard = () => {
                     document.body
                 )
             }
+
+            {/* Create/Edit Schedule Modal */}
+            {showScheduleModal && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full shadow-xl border border-gray-100/50 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] px-6 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-white/20 rounded-lg">
+                                    <Calendar size={24} className="text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-white">
+                                        {scheduleFormMode === 'create' ? 'Create New Schedule' : 'Edit Schedule'}
+                                    </h3>
+                                    <p className="text-blue-100 text-sm">
+                                        {scheduleFormMode === 'create' ? 'Add a new class schedule' : 'Update schedule details'}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowScheduleModal(false)}
+                                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                            >
+                                <X size={24} className="text-white" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
+                            <div className="space-y-4">
+                                {/* Class Selection */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Class <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={scheduleForm.class_id}
+                                        onChange={(e) => setScheduleForm({ ...scheduleForm, class_id: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                    >
+                                        <option value="">Select a class</option>
+                                        {allClasses.map(cls => (
+                                            <option key={cls.id} value={cls.id}>{cls.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Day Selection */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Day <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={scheduleForm.day}
+                                        onChange={(e) => setScheduleForm({ ...scheduleForm, day: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                    >
+                                        <option value="">Select a day</option>
+                                        <option value="monday">Monday</option>
+                                        <option value="tuesday">Tuesday</option>
+                                        <option value="wednesday">Wednesday</option>
+                                        <option value="thursday">Thursday</option>
+                                        <option value="friday">Friday</option>
+                                        <option value="saturday">Saturday</option>
+                                        <option value="sunday">Sunday</option>
+                                    </select>
+                                </div>
+
+                                {/* Time Slot Selection */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Time Slot <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={scheduleForm.time_slot}
+                                        onChange={(e) => setScheduleForm({ ...scheduleForm, time_slot: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                    >
+                                        <option value="">Select time slot</option>
+                                        <option value="afternoon">Afternoon (16:00 - 17:30)</option>
+                                        <option value="evening">Evening (19:00 - 20:30)</option>
+                                    </select>
+                                </div>
+
+                                {/* Phase Selection */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Phase <span className="text-red-500">*</span>
+                                    </label>
+                                    <select
+                                        value={scheduleForm.phase}
+                                        onChange={(e) => setScheduleForm({ ...scheduleForm, phase: e.target.value })}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                    >
+                                        <option value="">Select phase</option>
+                                        <option value="phase1">Phase 1</option>
+                                        <option value="phase2">Phase 2</option>
+                                        <option value="recap">Recap</option>
+                                    </select>
+                                </div>
+
+                                {/* Week Number */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Week Number <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={scheduleForm.week_number}
+                                            onChange={(e) => setScheduleForm({ ...scheduleForm, week_number: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                            min="1"
+                                            max="53"
+                                        />
+                                    </div>
+
+                                    {/* Year */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Year <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={scheduleForm.year}
+                                            onChange={(e) => setScheduleForm({ ...scheduleForm, year: e.target.value })}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                            min="2024"
+                                            max="2030"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Info Box */}
+                                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                                    <div className="flex gap-3">
+                                        <div className="text-blue-600 flex-shrink-0">ℹ️</div>
+                                        <div className="text-sm text-blue-800">
+                                            <p className="font-semibold mb-1">Admin Privilege</p>
+                                            <p>As an admin, you can create schedules for any week without time restrictions.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3">
+                            <button
+                                onClick={() => setShowScheduleModal(false)}
+                                className="flex-1 px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveSchedule}
+                                disabled={loading}
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a0f] text-white rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={20} className="animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        {scheduleFormMode === 'create' ? 'Create Schedule' : 'Update Schedule'}
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div >
     );
 };
