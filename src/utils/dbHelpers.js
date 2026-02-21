@@ -263,8 +263,8 @@ export const getClasses = async () => {
 /**
  * Get or create schedule
  */
-export const getOrCreateSchedule = async (scheduleData) => {
-    console.log('📡 dbHelpers: getOrCreateSchedule called with:', scheduleData);
+export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
+    console.log('📡 dbHelpers: getOrCreateSchedule called with:', scheduleData, 'retry:', retryCount);
 
     const { class_id, program, level, phase, day, time_slot, week_number, year, batch } = scheduleData
 
@@ -302,6 +302,13 @@ export const getOrCreateSchedule = async (scheduleData) => {
             .single()
 
         if (createError) {
+            // ✅ Handle duplicate key error (race condition)
+            if (createError.code === '23505' && retryCount < 3) {
+                console.log('⚠️ Duplicate key detected, retrying to fetch existing schedule...');
+                // Wait a bit and retry fetching
+                await new Promise(resolve => setTimeout(resolve, 100 * (retryCount + 1)));
+                return getOrCreateSchedule(scheduleData, retryCount + 1);
+            }
             console.error('❌ Error creating schedule:', createError);
             throw createError;
         }
