@@ -396,7 +396,7 @@ const AdminBookingDashboard = () => {
 
                 if (error) {
                     console.error('Error creating schedule:', error);
-                    toast.error(getErrorMessage(error.message));
+                    toast.error(parseDbError(error));
                     return;
                 }
 
@@ -417,7 +417,7 @@ const AdminBookingDashboard = () => {
 
                 if (error) {
                     console.error('Error updating schedule:', error);
-                    toast.error(getErrorMessage(error.message));
+                    toast.error(parseDbError(error));
                     return;
                 }
 
