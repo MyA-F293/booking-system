@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
-import { Users, BookOpen, GraduationCap, Calendar, TrendingUp, Clock, RefreshCw, Loader2, FileSpreadsheet, FileText } from 'lucide-react';
+import { Users, BookOpen, GraduationCap, Calendar, TrendingUp, Clock, RefreshCw, Loader2, FileSpreadsheet, FileText, CheckCircle2, AlertCircle, X, Search, UserCheck, UserX } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { getCurrentWeek, getCurrentYear } from '../utils/dbHelpers';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
+import useModalScrollLock from '../hooks/useModalScrollLock';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -28,6 +30,13 @@ const AdminStatsDashboard = () => {
         classCapacity: []
     });
     const [rawBookings, setRawBookings] = useState([]);
+    const [studentBookingStatus, setStudentBookingStatus] = useState({
+        booked: [],
+        notBooked: [],
+        bookingRate: 0
+    });
+    const [showStudentModal, setShowStudentModal] = useState(false);
+    const [modalType, setModalType] = useState('booked'); // 'booked' or 'notBooked'
 
     const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
@@ -36,6 +45,9 @@ const AdminStatsDashboard = () => {
 
     const COLORS = ['#F39C32', '#1F4E8C', '#10B981', '#EF4444', '#8B5CF6', '#EC4899'];
 
+    // Lock body scroll when modal is open
+    useModalScrollLock(showStudentModal);
+
     useEffect(() => {
         loadStats();
     }, [selectedWeek]);
@@ -43,6 +55,14 @@ const AdminStatsDashboard = () => {
     const loadStats = async () => {
         setLoading(true);
         try {
+            // Get all active students
+            const { data: allStudents } = await supabase
+                .from('users')
+                .select('id, full_name, student_id, program, level')
+                .eq('role', 'student')
+                .eq('is_active', true)
+                .order('full_name');
+
             const { count: studentCount } = await supabase
                 .from('users')
                 .select('*', { count: 'exact', head: true })
@@ -62,7 +82,7 @@ const AdminStatsDashboard = () => {
                 .from('bookings')
                 .select(`
                     *,
-                    user:users(full_name, student_id),
+                    user:users(id, full_name, student_id, program, level),
                     schedule:schedules(
                         phase,
                         time_slot,
@@ -80,6 +100,18 @@ const AdminStatsDashboard = () => {
             );
 
             setRawBookings(currentWeekBookings);
+
+            // Calculate student booking status
+            const bookedStudentIds = new Set(currentWeekBookings.map(b => b.user?.id).filter(Boolean));
+            const bookedStudents = (allStudents || []).filter(s => bookedStudentIds.has(s.id));
+            const notBookedStudents = (allStudents || []).filter(s => !bookedStudentIds.has(s.id));
+            const bookingRate = allStudents?.length > 0 ? Math.round((bookedStudents.length / allStudents.length) * 100) : 0;
+
+            setStudentBookingStatus({
+                booked: bookedStudents,
+                notBooked: notBookedStudents,
+                bookingRate
+            });
 
             const phaseData = [
                 { name: 'Phase 1', value: currentWeekBookings.filter(b => b.schedule?.phase === 'phase1').length, fill: '#1F4E8C' },
@@ -342,6 +374,108 @@ const AdminStatsDashboard = () => {
             </div>
 
             <div ref={dashboardRef} className="space-y-6" style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '16px' }}>
+                {/* Student Booking Status Tracker - NEW MODERN DESIGN */}
+                <div className="relative overflow-hidden rounded-3xl p-6 shadow-xl" style={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                }}>
+                    {/* Decorative Background Elements */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl"></div>
+
+                    <div className="relative z-10">
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-2xl">
+                                    <UserCheck size={28} className="text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-white">Student Booking Status</h3>
+                                    <p className="text-white/80 text-sm">Week {displayWeek} • Real-time tracking</p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-4xl font-bold text-white">{studentBookingStatus.bookingRate}%</div>
+                                <div className="text-white/80 text-sm">Booking Rate</div>
+                            </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mb-6">
+                            <div className="h-4 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+                                <div
+                                    className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
+                                    style={{ width: `${studentBookingStatus.bookingRate}%` }}
+                                >
+                                    <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
+                                </div>
+                            </div>
+                            <div className="flex justify-between mt-2 text-xs text-white/70">
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Booked Students Card */}
+                            <button
+                                onClick={() => {
+                                    setModalType('booked');
+                                    setShowStudentModal(true);
+                                }}
+                                className="group relative overflow-hidden bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-2xl p-5 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-white/20"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="p-3 bg-emerald-500/20 rounded-xl">
+                                            <CheckCircle2 size={24} className="text-emerald-300" />
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-3xl font-bold text-white">{studentBookingStatus.booked.length}</div>
+                                            <div className="text-emerald-300 text-xs font-semibold">Students</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-white font-semibold text-lg mb-1">Already Booked</div>
+                                    <div className="text-white/70 text-sm">Click to view list →</div>
+                                </div>
+                            </button>
+
+                            {/* Not Booked Students Card */}
+                            <button
+                                onClick={() => {
+                                    setModalType('notBooked');
+                                    setShowStudentModal(true);
+                                }}
+                                className="group relative overflow-hidden bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-2xl p-5 transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-white/20"
+                            >
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-red-400/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="p-3 bg-red-500/20 rounded-xl">
+                                            <AlertCircle size={24} className="text-red-300" />
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-3xl font-bold text-white">{studentBookingStatus.notBooked.length}</div>
+                                            <div className="text-red-300 text-xs font-semibold">Students</div>
+                                        </div>
+                                    </div>
+                                    <div className="text-white font-semibold text-lg mb-1">Not Booked Yet</div>
+                                    <div className="text-white/70 text-sm">Click to view list →</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* Quick Action Hint */}
+                        <div className="mt-4 flex items-center gap-2 text-white/60 text-xs">
+                            <div className="w-2 h-2 bg-white/60 rounded-full animate-pulse"></div>
+                            <span>Click on cards above to see detailed student lists</span>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Summary Cards with Animations */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInLeft stagger-1" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
@@ -524,6 +658,115 @@ const AdminStatsDashboard = () => {
                     </div>
                 )}
             </div>
+
+            {/* Student List Modal */}
+            {showStudentModal && createPortal(
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <div className="bg-white rounded-3xl max-w-4xl w-full shadow-2xl border border-gray-100 overflow-hidden" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                        {/* Modal Header */}
+                        <div className={`p-6 ${modalType === 'booked' ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-red-500 to-red-600'}`}>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    {modalType === 'booked' ? (
+                                        <div className="p-3 bg-white/20 rounded-xl">
+                                            <CheckCircle2 size={24} className="text-white" />
+                                        </div>
+                                    ) : (
+                                        <div className="p-3 bg-white/20 rounded-xl">
+                                            <AlertCircle size={24} className="text-white" />
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-white">
+                                            {modalType === 'booked' ? 'Students Who Already Booked' : 'Students Who Haven\'t Booked'}
+                                        </h3>
+                                        <p className="text-white/80 text-sm">
+                                            Week {displayWeek} • {modalType === 'booked' ? studentBookingStatus.booked.length : studentBookingStatus.notBooked.length} students
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowStudentModal(false)}
+                                    className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                                >
+                                    <X size={24} className="text-white" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
+                            {(modalType === 'booked' ? studentBookingStatus.booked : studentBookingStatus.notBooked).length === 0 ? (
+                                <div className="text-center py-12">
+                                    {modalType === 'booked' ? (
+                                        <UserCheck size={64} className="mx-auto mb-4 text-gray-300" />
+                                    ) : (
+                                        <UserX size={64} className="mx-auto mb-4 text-gray-300" />
+                                    )}
+                                    <p className="text-gray-500 text-lg">
+                                        {modalType === 'booked' ? 'No students have booked yet' : 'All students have booked!'}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {(modalType === 'booked' ? studentBookingStatus.booked : studentBookingStatus.notBooked).map((student, idx) => (
+                                        <div
+                                            key={student.id}
+                                            className={`p-4 rounded-xl border-2 transition-all hover:shadow-lg ${modalType === 'booked'
+                                                    ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-400'
+                                                    : 'bg-red-50 border-red-200 hover:border-red-400'
+                                                }`}
+                                            style={{
+                                                animation: `slideInUp 0.3s ease-out ${idx * 0.05}s both`
+                                            }}
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${modalType === 'booked' ? 'bg-emerald-500' : 'bg-red-500'
+                                                    }`}>
+                                                    {idx + 1}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-semibold text-gray-800 truncate">{student.full_name}</div>
+                                                    <div className="text-sm text-gray-500 font-mono">{student.student_id}</div>
+                                                    <div className="flex gap-2 mt-2">
+                                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
+                                                            {student.program}
+                                                        </span>
+                                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-medium">
+                                                            {student.level}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {modalType === 'booked' ? (
+                                                    <CheckCircle2 size={20} className="text-emerald-500 flex-shrink-0" />
+                                                ) : (
+                                                    <AlertCircle size={20} className="text-red-500 flex-shrink-0" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-6 bg-gray-50 border-t border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <div className="text-sm text-gray-600">
+                                    Total: {modalType === 'booked' ? studentBookingStatus.booked.length : studentBookingStatus.notBooked.length} students
+                                </div>
+                                <button
+                                    onClick={() => setShowStudentModal(false)}
+                                    className="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-semibold transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 };
