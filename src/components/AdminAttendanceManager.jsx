@@ -198,10 +198,11 @@ const AdminAttendanceManager = () => {
                 year: currentYear
             });
 
-            console.log('📊 Existing attendance records:', existingAttendance);
+            console.log('📊 AdminAttendanceManager: Existing attendance records:', existingAttendance?.length || 0);
 
-            // Build attendance map
+            // Build attendance map - FILTER OUT INVALID RECORDS
             const initialAttendance = {};
+            let unmatchedCount = 0;
 
             if (existingAttendance && existingAttendance.length > 0) {
                 // If attendance exists, populate from database
@@ -211,6 +212,14 @@ const AdminAttendanceManager = () => {
                     const student = studentsData.find(s => s.user?.student_id === record.student_id);
                     if (student) {
                         attendanceMap[student.user_id] = record.status;
+                    } else {
+                        unmatchedCount++;
+                        console.warn('⚠️ Unmatched attendance record:', {
+                            student_id: record.student_id,
+                            student_name: record.student_name,
+                            class: record.class_name,
+                            week: record.week_number
+                        });
                     }
                 });
 
@@ -219,13 +228,16 @@ const AdminAttendanceManager = () => {
                     initialAttendance[student.user_id] = attendanceMap[student.user_id] || null;
                 });
 
-                console.log('✅ Loaded existing attendance:', initialAttendance);
+                console.log('✅ AdminAttendanceManager: Loaded existing attendance:', Object.keys(attendanceMap).length, 'matched');
+                if (unmatchedCount > 0) {
+                    console.warn(`⚠️ AdminAttendanceManager: ${unmatchedCount} attendance records couldn't be matched (invalid student_id)`);
+                }
             } else {
                 // No existing attendance, set all to null
                 studentsData.forEach(student => {
                     initialAttendance[student.user_id] = null;
                 });
-                console.log('📝 No existing attendance, starting fresh');
+                console.log('📝 AdminAttendanceManager: No existing attendance, starting fresh');
             }
 
             setAttendance(initialAttendance);
@@ -292,14 +304,14 @@ const AdminAttendanceManager = () => {
 
             // Show success notification with clear feedback
             const successMessage = result.skipped > 0
-                ? `Attendance submitted for ${result.inserted} student(s).\n\n${result.skipped} record(s) were skipped (already existed).`
-                : `Attendance submitted for ${result.inserted} student(s).`;
+                ? `Attendance submitted for ${result.inserted} student(s).\n\n${result.skipped} record(s) were skipped (already existed).\n\n💡 Go to "Attendance" tab and click Refresh to see updated report.`
+                : `Attendance submitted for ${result.inserted} student(s).\n\n💡 Go to "Attendance" tab and click Refresh to see updated report.`;
 
             // Show modal popup
             showSuccess(successMessage, '✅ SUCCESS!');
 
-            // Also show toast notification
-            toast.success(`✅ ${result.inserted} student(s) marked`, { duration: 3000 });
+            // Also show toast notification with reminder
+            toast.success(`✅ ${result.inserted} student(s) marked. Go to Attendance tab to see report.`, { duration: 5000 });
 
             // Reload schedules to update status
             await loadAllSchedules();
