@@ -557,16 +557,16 @@ export const getUserBookings = async (userId, weekNumber, year, batch = null) =>
         .eq('schedule.year', year)
         .order('created_at', { ascending: false }) // Get latest bookings first
 
-    // Filter by batch if provided
-    // Handle both "Batch 1" and "1" formats
-    if (batch) {
-        // Extract number from batch string (e.g., "Batch 1" -> "1")
-        const batchNumber = batch.toString().replace(/[^0-9]/g, '');
-        console.log('🔍 Batch filter:', { original: batch, normalized: batchNumber });
+    // ❌ REMOVED: Batch filter was too strict and hiding bookings
+    // Students should see ALL their bookings regardless of schedule batch
+    // The batch filter was causing bookings to disappear when schedule.batch was NULL or different
 
-        // Try to match with normalized batch number
-        query = query.eq('schedule.batch', batchNumber)
-    }
+    // Filter by batch if provided - DISABLED for now
+    // if (batch) {
+    //     const batchNumber = batch.toString().replace(/[^0-9]/g, '');
+    //     console.log('🔍 Batch filter:', { original: batch, normalized: batchNumber });
+    //     query = query.eq('schedule.batch', batchNumber)
+    // }
 
     const { data, error } = await query
 
@@ -581,6 +581,8 @@ export const getUserBookings = async (userId, weekNumber, year, batch = null) =>
         class: b.schedule?.class?.name,
         day: b.schedule?.day,
         time: b.schedule?.time_slot,
+        phase: b.schedule?.phase,
+        schedule_batch: b.schedule?.batch,
         created: b.created_at
     })));
     return data || []
