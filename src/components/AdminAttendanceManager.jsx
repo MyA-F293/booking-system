@@ -78,7 +78,8 @@ const AdminAttendanceManager = () => {
                 year: currentYear
             });
 
-            console.log('📊 Found', allAttendance?.length || 0, 'attendance records');
+            console.log('📊 AdminAttendanceManager: Found', allAttendance?.length || 0, 'attendance records');
+            console.log('📋 AdminAttendanceManager: Attendance records sample:', allAttendance?.slice(0, 3));
 
             const attendanceMap = {};
             if (allAttendance && allAttendance.length > 0) {
@@ -88,6 +89,9 @@ const AdminAttendanceManager = () => {
                     }
                     attendanceMap[record.schedule_id]++;
                 });
+                console.log('📊 AdminAttendanceManager: Attendance map:', attendanceMap);
+            } else {
+                console.log('⚠️ AdminAttendanceManager: No attendance records found for week', selectedWeek);
             }
 
             const schedulesWithStatus = data.map(schedule => ({

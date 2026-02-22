@@ -1014,14 +1014,26 @@ export const submitBatchAttendance = async (attendanceRecords) => {
  */
 export const getAttendanceRecords = async (filters = {}) => {
     console.log('📡 dbHelpers: getAttendanceRecords called with filters:', filters);
+    console.log('🔍 dbHelpers: Filter details:', {
+        student_id: filters.student_id || 'none',
+        teacher_id: filters.teacher_id || 'none',
+        week_number: filters.week_number || 'none',
+        year: filters.year || 'none',
+        status: filters.status || 'none',
+        class_name: filters.class_name || 'none'
+    });
 
     // Fetch ALL records using pagination to bypass 1000 row limit
     let allData = [];
     let from = 0;
     const pageSize = 1000;
     let hasMore = true;
+    let pageCount = 0;
 
     while (hasMore) {
+        pageCount++;
+        console.log(`📄 dbHelpers: Fetching page ${pageCount}, range ${from}-${from + pageSize - 1}`);
+
         let query = supabase
             .from('attendance')
             .select('*', { count: 'exact' })
@@ -1051,9 +1063,11 @@ export const getAttendanceRecords = async (filters = {}) => {
         const { data, error, count } = await query;
 
         if (error) {
-            console.error('❌ Error fetching attendance:', error);
+            console.error('❌ dbHelpers: Error fetching attendance page', pageCount, ':', error);
             throw error;
         }
+
+        console.log(`✅ dbHelpers: Page ${pageCount} fetched:`, data?.length || 0, 'records, total count:', count);
 
         if (data && data.length > 0) {
             allData = [...allData, ...data];
@@ -1061,12 +1075,25 @@ export const getAttendanceRecords = async (filters = {}) => {
 
             // Check if there are more records
             hasMore = data.length === pageSize && allData.length < count;
+
+            if (hasMore) {
+                console.log(`🔄 dbHelpers: More records available, fetching next page...`);
+            }
         } else {
             hasMore = false;
+            console.log('🏁 dbHelpers: No more records to fetch');
         }
     }
 
-    console.log('✅ Fetched', allData.length, 'attendance records (all pages)');
+    console.log('✅ dbHelpers: getAttendanceRecords complete - Total records:', allData.length);
+    console.log('📋 dbHelpers: Sample records (first 3):', allData.slice(0, 3).map(r => ({
+        id: r.id,
+        student_id: r.student_id,
+        class_name: r.class_name,
+        week: r.week_number,
+        status: r.status
+    })));
+
     return allData;
 };
 
