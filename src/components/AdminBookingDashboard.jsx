@@ -222,9 +222,27 @@ const AdminBookingDashboard = () => {
         ? schedules.filter(s => s.current_students > 0)
         : schedules;
 
+    // Debug Oxford Class filtering
+    const oxfordVisible = visibleSchedules.filter(s => s.class?.name === 'Oxford Class' && s.day === 'monday');
+    if (oxfordVisible.length > 0) {
+        console.log('👁️ Oxford Class Monday after hideEmpty filter:', oxfordVisible.map(s => ({
+            time_slot: s.time_slot,
+            students: s.current_students
+        })));
+    }
+
     const filteredSchedules = filterDay === 'all'
         ? visibleSchedules
         : visibleSchedules.filter(s => s.day?.toLowerCase() === filterDay);
+
+    // Debug Oxford Class after day filter
+    const oxfordFiltered = filteredSchedules.filter(s => s.class?.name === 'Oxford Class' && s.day === 'monday');
+    if (oxfordFiltered.length > 0) {
+        console.log('🔍 Oxford Class Monday after day filter:', oxfordFiltered.map(s => ({
+            time_slot: s.time_slot,
+            students: s.current_students
+        })));
+    }
 
     // Group filtered schedules by class
     const groupedByClass = groupSchedulesByClass(filteredSchedules);
@@ -281,6 +299,21 @@ const AdminBookingDashboard = () => {
         const filters = { week_number: displayWeek, year: currentYear };
         const data = await getSchedules(filters);
 
+        console.log('🔍 RAW SCHEDULES FROM DB:', data.length);
+
+        // Log Oxford Class schedules specifically
+        const oxfordSchedules = data.filter(s => s.class?.name === 'Oxford Class' && s.day === 'monday');
+        if (oxfordSchedules.length > 0) {
+            console.log('🎓 Oxford Class Monday schedules:', oxfordSchedules.map(s => ({
+                id: s.id,
+                day: s.day,
+                time_slot: s.time_slot,
+                phase: s.phase,
+                week: s.week_number,
+                students: s.current_students
+            })));
+        }
+
         // DEDUPLICATION: Remove duplicate schedules based on unique combination
         // of class_id, day, time_slot, phase, week_number
         const uniqueSchedules = [];
@@ -288,15 +321,32 @@ const AdminBookingDashboard = () => {
 
         data.forEach(schedule => {
             const uniqueKey = `${schedule.class_id}-${schedule.day}-${schedule.time_slot}-${schedule.phase}-${schedule.week_number}`;
+
+            // Enhanced logging for Oxford Class
+            if (schedule.class?.name === 'Oxford Class' && schedule.day === 'monday') {
+                console.log('🔑 Oxford Monday unique key:', uniqueKey, 'Already seen?', seenKeys.has(uniqueKey));
+            }
+
             if (!seenKeys.has(uniqueKey)) {
                 seenKeys.add(uniqueKey);
                 uniqueSchedules.push(schedule);
             } else {
-                console.log('🔍 Duplicate schedule found and removed:', schedule.class?.name, schedule.day, schedule.time_slot);
+                console.log('🔍 Duplicate schedule found and removed:', schedule.class?.name, schedule.day, schedule.time_slot, schedule.phase);
             }
         });
 
         console.log(`📊 Loaded ${data.length} schedules, removed ${data.length - uniqueSchedules.length} duplicates, showing ${uniqueSchedules.length} unique schedules`);
+
+        // Final check for Oxford Class
+        const oxfordFinal = uniqueSchedules.filter(s => s.class?.name === 'Oxford Class' && s.day === 'monday');
+        if (oxfordFinal.length > 0) {
+            console.log('✅ FINAL Oxford Class Monday schedules:', oxfordFinal.map(s => ({
+                id: s.id,
+                time_slot: s.time_slot,
+                students: s.current_students
+            })));
+        }
+
         setSchedules(uniqueSchedules);
     };
 
