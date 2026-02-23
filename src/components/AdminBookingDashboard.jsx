@@ -442,10 +442,16 @@ const AdminBookingDashboard = () => {
                 return;
             }
 
+            // Prevent double submission
+            if (loading) {
+                console.log('⚠️ Already processing, ignoring duplicate submission');
+                return;
+            }
+
             setLoading(true);
 
             if (scheduleFormMode === 'create') {
-                // Check for duplicate schedule
+                // Check for duplicate schedule with batch check
                 const { data: existingSchedules, error: checkError } = await supabase
                     .from('schedules')
                     .select('*, class:classes(*)')
@@ -458,20 +464,27 @@ const AdminBookingDashboard = () => {
 
                 if (checkError) {
                     console.error('Error checking duplicates:', checkError);
+                    toast.error('Failed to check for duplicates');
+                    setLoading(false);
+                    return;
                 }
 
                 if (existingSchedules && existingSchedules.length > 0) {
                     // Found duplicate - show warning modal
+                    console.log('⚠️ Duplicate schedule detected:', existingSchedules);
                     setDuplicateScheduleInfo({
                         className: existingSchedules[0].class?.name,
                         day: scheduleForm.day,
                         timeSlot: scheduleForm.time_slot,
-                        phase: scheduleForm.phase
+                        phase: scheduleForm.phase,
+                        weekNumber: scheduleForm.week_number
                     });
                     setShowDuplicateWarning(true);
                     setLoading(false);
                     return;
                 }
+
+                console.log('✅ No duplicates found, creating schedule...');
 
                 // Create new schedule
                 const { data, error } = await supabase
@@ -485,22 +498,33 @@ const AdminBookingDashboard = () => {
                         year: parseInt(scheduleForm.year),
                         program: scheduleForm.program,
                         level: scheduleForm.level,
-                        current_students: 0
+                        current_students: 0,
+                        batch: null // Will be set when first student books
                     }])
                     .select();
 
                 if (error) {
-                    console.error('Error creating schedule:', error);
-                    toast.error(parseDbError(error));
+                    console.error('❌ Error creating schedule:', error);
+
+                    // Check if it's a duplicate constraint error
+                    if (error.code === '23505' || error.message?.includes('unique_schedule')) {
+                        toast.error('⚠️ Schedule already exists! Please refresh the page.');
+                    } else {
+                        toast.error(parseDbError(error));
+                    }
+                    setLoading(false);
                     return;
                 }
+
+                console.log('✅ Schedule created:', data);
 
                 // If students selected, assign them to the new schedule
                 if (selectedStudentsForSchedule.length > 0 && data && data[0]) {
                     const newScheduleId = data[0].id;
                     const bookings = selectedStudentsForSchedule.map(studentId => ({
                         user_id: studentId,
-                        schedule_id: newScheduleId
+                        schedule_id: newScheduleId,
+                        status: 'confirmed'
                     }));
 
                     const { error: bookingError } = await supabase
@@ -539,6 +563,7 @@ const AdminBookingDashboard = () => {
                 if (error) {
                     console.error('Error updating schedule:', error);
                     toast.error(parseDbError(error));
+                    setLoading(false);
                     return;
                 }
 
