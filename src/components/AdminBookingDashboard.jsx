@@ -435,23 +435,23 @@ const AdminBookingDashboard = () => {
 
     // Create or update schedule
     const handleSaveSchedule = async () => {
+        // Validation
+        if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number || !scheduleForm.program || !scheduleForm.level) {
+            toast.error('Please fill all required fields!');
+            return;
+        }
+
+        // ✅ FIX: Prevent double submission (race condition protection)
+        if (loading) {
+            console.log('⚠️ Already processing, ignoring duplicate submission');
+            return;
+        }
+
         try {
-            // Validation
-            if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number || !scheduleForm.program || !scheduleForm.level) {
-                toast.error('Please fill all required fields!');
-                return;
-            }
-
-            // Prevent double submission
-            if (loading) {
-                console.log('⚠️ Already processing, ignoring duplicate submission');
-                return;
-            }
-
             setLoading(true);
 
             if (scheduleFormMode === 'create') {
-                // Check for duplicate schedule with batch check
+                // ✅ FIX: Check for duplicate schedule INSIDE try-catch
                 const { data: existingSchedules, error: checkError } = await supabase
                     .from('schedules')
                     .select('*, class:classes(*)')
@@ -463,10 +463,9 @@ const AdminBookingDashboard = () => {
                     .eq('year', parseInt(scheduleForm.year));
 
                 if (checkError) {
-                    console.error('Error checking duplicates:', checkError);
-                    toast.error('Failed to check for duplicates');
-                    setLoading(false);
-                    return;
+                    console.error('❌ Error checking duplicates:', checkError);
+                    toast.error('Failed to check for duplicates. Please try again.');
+                    return; // ✅ FIX: Early return, loading will be reset in finally
                 }
 
                 if (existingSchedules && existingSchedules.length > 0) {
@@ -480,16 +479,15 @@ const AdminBookingDashboard = () => {
                         weekNumber: scheduleForm.week_number
                     });
                     setShowDuplicateWarning(true);
-                    setLoading(false);
-                    return;
+                    return; // ✅ FIX: Early return, loading will be reset in finally
                 }
 
                 console.log('✅ No duplicates found, creating schedule...');
 
-                // Create new schedule
+                // ✅ FIX: Create new schedule with single insert (not array)
                 const { data, error } = await supabase
                     .from('schedules')
-                    .insert([{
+                    .insert({
                         class_id: scheduleForm.class_id,
                         day: scheduleForm.day,
                         time_slot: scheduleForm.time_slot,
@@ -500,27 +498,29 @@ const AdminBookingDashboard = () => {
                         level: scheduleForm.level,
                         current_students: 0,
                         batch: null // Will be set when first student books
-                    }])
-                    .select();
+                    })
+                    .select()
+                    .single(); // ✅ FIX: Use .single() to ensure only one record
 
                 if (error) {
                     console.error('❌ Error creating schedule:', error);
 
-                    // Check if it's a duplicate constraint error
-                    if (error.code === '23505' || error.message?.includes('unique_schedule')) {
-                        toast.error('⚠️ Schedule already exists! Please refresh the page.');
+                    // ✅ FIX: Better error handling for duplicate constraint
+                    if (error.code === '23505' || error.message?.includes('unique') || error.message?.includes('duplicate')) {
+                        toast.error('⚠️ Schedule already exists! Another admin may have created it. Refreshing...');
+                        // Auto-refresh to show the existing schedule
+                        setTimeout(() => loadAllSchedules(), 1000);
                     } else {
                         toast.error(parseDbError(error));
                     }
-                    setLoading(false);
-                    return;
+                    return; // ✅ FIX: Early return, loading will be reset in finally
                 }
 
                 console.log('✅ Schedule created:', data);
 
-                // If students selected, assign them to the new schedule
-                if (selectedStudentsForSchedule.length > 0 && data && data[0]) {
-                    const newScheduleId = data[0].id;
+                // ✅ FIX: Assign students if selected
+                if (selectedStudentsForSchedule.length > 0 && data) {
+                    const newScheduleId = data.id; // ✅ FIX: data is now single object, not array
                     const bookings = selectedStudentsForSchedule.map(studentId => ({
                         user_id: studentId,
                         schedule_id: newScheduleId,
@@ -545,7 +545,7 @@ const AdminBookingDashboard = () => {
                 setSelectedStudentsForSchedule([]);
                 setStudentFilterProgram('all');
             } else {
-                // Update existing schedule
+                // ✅ FIX: Update existing schedule
                 const { error } = await supabase
                     .from('schedules')
                     .update({
@@ -561,21 +561,22 @@ const AdminBookingDashboard = () => {
                     .eq('id', editingSchedule.id);
 
                 if (error) {
-                    console.error('Error updating schedule:', error);
+                    console.error('❌ Error updating schedule:', error);
                     toast.error(parseDbError(error));
-                    setLoading(false);
-                    return;
+                    return; // ✅ FIX: Early return, loading will be reset in finally
                 }
 
                 toast.success('✅ Schedule updated successfully!');
             }
 
+            // ✅ FIX: Close modal and refresh
             setShowScheduleModal(false);
             await loadAllSchedules();
         } catch (err) {
-            console.error('Error saving schedule:', err);
-            toast.error('Failed to save schedule');
+            console.error('❌ Unexpected error saving schedule:', err);
+            toast.error('Failed to save schedule. Please try again.');
         } finally {
+            // ✅ FIX: Always reset loading state
             setLoading(false);
         }
     };
@@ -2045,7 +2046,7 @@ const AdminBookingDashboard = () => {
                             <button
                                 onClick={handleSaveSchedule}
                                 disabled={loading}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a0f] text-white rounded-xl font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a0f] text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center gap-2"
                             >
                                 {loading ? (
                                     <>
