@@ -107,23 +107,31 @@ const BookingDashboard = ({ user }) => {
             };
             const data = await getSchedules(filters);
 
-            // Show ALL schedules, not just ones with students > 0
-            // This prevents hiding schedules when counter is temporarily 0
-            console.log('✅ All schedules loaded:', data.length);
-            console.log('📋 Schedules:', data.map(s => ({
-                id: s.id,
-                class: s.class?.name,
-                batch: s.batch,
-                students: s.current_students
-            })));
-            setSchedules(data);
-
-            // Load user's bookings (filter by batch for user's own bookings)
+            // Load user's bookings first to know which schedules user has booked
+            let userBookingScheduleIds = [];
             if (userId) {
                 const bookings = await getUserBookings(userId, displayWeek, currentYear, userBatch);
                 console.log('✅ User bookings loaded:', bookings.length);
                 setUserBookings(bookings);
+                userBookingScheduleIds = bookings.map(b => b.schedule_id);
             }
+
+            // Smart filter: Show schedules that have students OR user has booked
+            // This prevents showing empty schedules while still showing user's bookings
+            const relevantSchedules = data.filter(s =>
+                s.current_students > 0 || userBookingScheduleIds.includes(s.id)
+            );
+
+            console.log('✅ All schedules loaded:', data.length);
+            console.log('📋 Relevant schedules (with students or user booked):', relevantSchedules.length);
+            console.log('📋 Schedules:', relevantSchedules.map(s => ({
+                id: s.id,
+                class: s.class?.name,
+                batch: s.batch,
+                students: s.current_students,
+                userBooked: userBookingScheduleIds.includes(s.id)
+            })));
+            setSchedules(relevantSchedules);
         } catch (err) {
             console.error('❌ Error loading schedules:', err);
             toast.error('Failed to load schedules. Please refresh.');
