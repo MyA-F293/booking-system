@@ -870,7 +870,9 @@ export const autoCopyBookingsToNextWeek = async () => {
                 day: schedule.day,
                 time_slot: schedule.time_slot,
                 week_number: targetWeek,
-                year: currentYear
+                year: currentYear,
+                batch: null, // Will be set by trigger when first student books
+                current_students: 0
             };
 
             const targetWeekSchedule = await getOrCreateSchedule(scheduleData);

@@ -72,6 +72,11 @@ const BookingDashboard = ({ user }) => {
         autoCopyBookingsToNextWeek().then(result => {
             if (result.copied && result.count > 0) {
                 console.log('✅ Auto-copied', result.count, 'bookings');
+                toast.success(`✅ ${result.count} jadwal minggu lalu sudah di-copy otomatis!`);
+                // Reload bookings to show the copied ones
+                loadUserBookings();
+            } else if (result.reason === 'already_copied') {
+                console.log('ℹ️ Bookings already copied for this week');
             }
         }).catch(err => {
             console.error('❌ Auto-copy failed:', err);
