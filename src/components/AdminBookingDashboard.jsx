@@ -296,10 +296,15 @@ const AdminBookingDashboard = () => {
     };
 
     const loadAllSchedules = async () => {
-        const filters = { week_number: displayWeek, year: currentYear };
+        const timestamp = Date.now(); // Cache busting timestamp
+        const filters = {
+            week_number: displayWeek,
+            year: currentYear,
+            _cacheBust: timestamp // Force fresh data from Supabase
+        };
         const data = await getSchedules(filters);
 
-        console.log('🔍 RAW SCHEDULES FROM DB:', data.length);
+        console.log('🔍 RAW SCHEDULES FROM DB:', data.length, 'Cache bust:', timestamp);
 
         // Log Oxford Class schedules specifically
         const oxfordSchedules = data.filter(s => s.class?.name === 'Oxford Class' && s.day === 'monday');
