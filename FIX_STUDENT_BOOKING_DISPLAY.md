@@ -1,87 +1,350 @@
-# Fix Student Booking Display Issue
+# 🔍 Fix: Student Booking Display Shows 0/10 When There Are Students
 
-## Problem
-Student M. Irfan hanya melihat 1 booking (Phase 1 Monday) padahal di admin terlihat dia punya 2 bookings:
-- Phase 1 Monday
-- Phase 2 Friday Afternoon (Oxford Class)
+## Problem Description
 
-## Root Cause
-Fungsi `getUserBookings()` di `dbHelpers.js` memfilter bookings berdasarkan `schedule.batch`:
+User reported that the booking display sometimes shows all classes as "0/10" and "WAITING" status when there should be students already booked.
 
-```javascript
-// OLD CODE - TOO STRICT
-if (batch) {
-    const batchNumber = batch.toString().replace(/[^0-9]/g, '');
-    query = query.eq('schedule.batch', batchNumber)  // ❌ Hides bookings if schedule.batch is NULL or different
-}
+Screenshot shows:
+- All classes (Fahd, Harvard, Oxford, Tokyo, Tsinghua) displaying "0/10"
+- All showing "WAITING" status
+- This is incorrect - there should be students already booked
+
+## Possible Root Causes
+
+### 1. Browser Cache Issue ⚠️
+**Most Likely Cause**
+
+The browser is showing cached/stale data from an older version of the page.
+
+**Symptoms:**
+- Display shows 0/10 for all classes
+- Refresh button doesn't update the data
+- Data is correct in database but not on screen
+
+**Solution:**
+```
+Hard refresh the browser:
+- Windows: Ctrl + Shift + R or Ctrl + F5
+- Mac: Cmd + Shift + R
+- Or clear browser cache completely
 ```
 
-Masalahnya:
-1. User M. Irfan punya `batch = "1"` atau `"Batch 1"`
-2. Schedule Oxford Class mungkin punya `batch = NULL` atau berbeda
-3. Filter `eq('schedule.batch', batchNumber)` akan menyembunyikan booking jika batch tidak exact match
-4. Siswa tidak bisa melihat booking mereka sendiri yang sudah confirmed
+### 2. current_students Counter Not Synced
 
-## Solution
-Hapus batch filter dari `getUserBookings()` karena:
-- Siswa harus melihat SEMUA booking mereka yang sudah confirmed
-- Tidak peduli schedule batch-nya apa
-- Booking sudah dibuat = siswa sudah terdaftar = harus ditampilkan
+The `current_students` field in schedules table doesn't match actual booking count.
 
-```javascript
-// NEW CODE - SHOW ALL BOOKINGS
-export const getUserBookings = async (userId, weekNumber, year, batch = null) => {
-    let query = supabase
-        .from('bookings')
-        .select(...)
-        .eq('user_id', userId)
-        .eq('status', 'confirmed')
-        .eq('schedule.week_number', weekNumber)
-        .eq('schedule.year', year)
-    
-    // ❌ REMOVED: Batch filter - too strict
-    // Students should see ALL their confirmed bookings
-    
-    const { data, error } = await query
-    return data || []
-}
-```
-
-## Impact
-✅ Siswa sekarang bisa melihat SEMUA booking mereka yang confirmed
-✅ Tidak ada booking yang tersembunyi karena batch mismatch
-✅ Display di student view akan match dengan admin view
-
-## Testing
-1. Login sebagai M. Irfan (EYSA26010808)
-2. Buka tab "My Bookings This Week"
-3. Seharusnya melihat 2 bookings:
-   - Phase 1 Monday
-   - Phase 2 Friday Afternoon (Oxford Class)
-
-## Files Changed
-- `src/utils/dbHelpers.js` - Removed batch filter from `getUserBookings()`
-
-## Verification Query
-Run this to check M. Irfan's bookings:
+**Check with SQL:**
 ```sql
+-- Run: booking-system/database/DEBUG_BOOKING_DISPLAY.sql
+-- Section 3: Check mismatch between current_students and actual bookings
+```
+
+**Solution:**
+```sql
+-- Fix counter mismatch
+UPDATE schedules s
+SET current_students = (
+    SELECT COUNT(*)
+    FROM bookings b
+    WHERE b.schedule_id = s.id
+      AND b.status = 'confirmed'
+)
+WHERE s.week_number = 9
+  AND s.year = 2026;
+```
+
+### 3. Batch Format Mismatch
+
+User batch = "Batch 1" but Schedule batch = "1" causing filter to hide schedules.
+
+**Status:** ✅ ALREADY FIXED in previous session
+- Fixed in `getUserBookings()` - removed strict batch filter
+- Fixed in `getSchedules()` - normalize batch format
+- Fixed in `hasUserBookedPhase()` - normalize batch format
+
+**Verify:**
+```sql
+-- Check batch formats
 SELECT 
-    b.id as booking_id,
-    u.full_name,
-    u.batch as user_batch,
-    c.name as class_name,
+    s.id,
+    c.name,
+    s.batch,
+    s.current_students
+FROM schedules s
+LEFT JOIN classes c ON s.class_id = c.id
+WHERE s.week_number = 9
+  AND s.year = 2026
+  AND s.batch ~ 'Batch';  -- Should return 0 rows
+```
+
+### 4. Duplicate Schedules
+
+Multiple schedules exist for same class/day/time/phase, showing wrong one.
+
+**Status:** ✅ ALREADY FIXED in previous session
+- Ran `COMPREHENSIVE_DUPLICATE_FIX.sql`
+- Reduced from 600 schedules to 52 unique schedules
+
+**Verify:**
+```sql
+-- Check for duplicates
+SELECT 
+    c.name,
     s.day,
     s.time_slot,
     s.phase,
-    s.batch as schedule_batch
-FROM bookings b
-JOIN users u ON b.user_id = u.id
-JOIN schedules s ON b.schedule_id = s.id
-JOIN classes c ON s.class_id = c.id
-WHERE u.full_name LIKE '%Irfan%'
-    AND b.status = 'confirmed'
-    AND s.week_number = 9
-ORDER BY s.phase, s.day;
+    COUNT(*) as count
+FROM schedules s
+LEFT JOIN classes c ON s.class_id = c.id
+WHERE s.week_number = 9
+  AND s.year = 2026
+GROUP BY c.name, s.day, s.time_slot, s.phase
+HAVING COUNT(*) > 1;  -- Should return 0 rows
 ```
 
-Both bookings should be returned regardless of schedule.batch value.
+### 5. Week Filter Issue
+
+Frontend is showing wrong week (e.g., showing week 10 data when week 9 is selected).
+
+**Check:**
+- Look at browser console logs
+- Check `displayWeek` variable in React DevTools
+- Verify week toggle buttons are working
+
+### 6. Data Fetching Issue
+
+Frontend is not fetching data correctly or filtering too strictly.
+
+**Current Code Analysis:**
+
+```javascript
+// In BookingDashboard.jsx - loadUserBookings()
+const filters = {
+    week_number: displayWeek,
+    year: currentYear
+    // ✅ GOOD: No batch filter here - shows all schedules
+};
+const data = await getSchedules(filters);
+const activeSchedules = data.filter(s => s.current_students > 0);
+```
+
+**Potential Issue:**
+```javascript
+// This line filters OUT schedules with 0 students
+const activeSchedules = data.filter(s => s.current_students > 0);
+```
+
+If `current_students` is not synced with actual bookings, this will hide schedules that have bookings but `current_students = 0`.
+
+## Diagnostic Steps
+
+### Step 1: Run Diagnostic SQL
+
+```bash
+# Open Supabase SQL Editor
+# Run: booking-system/database/DEBUG_BOOKING_DISPLAY.sql
+```
+
+This will show:
+1. Current week number
+2. All schedules for week 9
+3. Mismatch between current_students and actual bookings
+4. Duplicate schedules
+5. Batch format issues
+6. Schedules with 0 students but have bookings
+
+### Step 2: Check Browser Console
+
+```javascript
+// Open browser DevTools (F12)
+// Look for these logs in Console:
+
+// Should see:
+✅ All schedules loaded: 52
+📋 Schedules: [{id: 123, class: "Oxford Class", batch: "1", students: 28}, ...]
+✅ User bookings loaded: 3
+
+// Should NOT see:
+❌ Error loading schedules
+❌ All schedules loaded: 0
+```
+
+### Step 3: Hard Refresh Browser
+
+```
+Windows: Ctrl + Shift + R
+Mac: Cmd + Shift + R
+```
+
+### Step 4: Check Network Tab
+
+```
+1. Open DevTools (F12)
+2. Go to Network tab
+3. Refresh page
+4. Look for Supabase API calls
+5. Check response data - does it have schedules with students?
+```
+
+## Solutions
+
+### Solution 1: Fix current_students Counter (Most Likely)
+
+If diagnostic shows mismatch between `current_students` and actual bookings:
+
+```sql
+-- Fix all schedules for week 9
+UPDATE schedules s
+SET current_students = (
+    SELECT COUNT(*)
+    FROM bookings b
+    WHERE b.schedule_id = s.id
+      AND b.status = 'confirmed'
+)
+WHERE s.week_number = 9
+  AND s.year = 2026;
+
+-- Verify fix
+SELECT 
+    s.id,
+    c.name,
+    s.current_students,
+    COUNT(b.id) as actual_count
+FROM schedules s
+LEFT JOIN classes c ON s.class_id = c.id
+LEFT JOIN bookings b ON b.schedule_id = s.id AND b.status = 'confirmed'
+WHERE s.week_number = 9
+  AND s.year = 2026
+GROUP BY s.id, c.name, s.current_students
+HAVING s.current_students != COUNT(b.id);
+-- Should return 0 rows
+```
+
+### Solution 2: Clear Browser Cache
+
+```
+1. Open browser settings
+2. Clear browsing data
+3. Select "Cached images and files"
+4. Clear data
+5. Refresh page
+```
+
+### Solution 3: Remove Strict Filter in Frontend
+
+If schedules have bookings but `current_students = 0`, modify frontend:
+
+```javascript
+// In BookingDashboard.jsx - loadUserBookings()
+
+// BEFORE (too strict):
+const activeSchedules = data.filter(s => s.current_students > 0);
+
+// AFTER (show all schedules):
+const activeSchedules = data; // Show all schedules, let user see availability
+```
+
+### Solution 4: Add Trigger to Auto-Update current_students
+
+Prevent future mismatches by adding database trigger:
+
+```sql
+-- Create trigger to auto-update current_students
+CREATE OR REPLACE FUNCTION update_schedule_student_count()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Update current_students count
+    UPDATE schedules
+    SET current_students = (
+        SELECT COUNT(*)
+        FROM bookings
+        WHERE schedule_id = COALESCE(NEW.schedule_id, OLD.schedule_id)
+          AND status = 'confirmed'
+    )
+    WHERE id = COALESCE(NEW.schedule_id, OLD.schedule_id);
+    
+    RETURN COALESCE(NEW, OLD);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger on INSERT
+CREATE TRIGGER booking_insert_update_count
+AFTER INSERT ON bookings
+FOR EACH ROW
+EXECUTE FUNCTION update_schedule_student_count();
+
+-- Trigger on UPDATE
+CREATE TRIGGER booking_update_update_count
+AFTER UPDATE ON bookings
+FOR EACH ROW
+WHEN (OLD.status IS DISTINCT FROM NEW.status)
+EXECUTE FUNCTION update_schedule_student_count();
+
+-- Trigger on DELETE
+CREATE TRIGGER booking_delete_update_count
+AFTER DELETE ON bookings
+FOR EACH ROW
+EXECUTE FUNCTION update_schedule_student_count();
+```
+
+## Quick Fix (Run This Now)
+
+```sql
+-- 1. Fix current_students counter
+UPDATE schedules s
+SET current_students = (
+    SELECT COUNT(*)
+    FROM bookings b
+    WHERE b.schedule_id = s.id
+      AND b.status = 'confirmed'
+)
+WHERE s.week_number = 9
+  AND s.year = 2026;
+
+-- 2. Verify fix
+SELECT 
+    c.name,
+    s.day,
+    s.time_slot,
+    s.phase,
+    s.current_students,
+    COUNT(b.id) as actual_bookings
+FROM schedules s
+LEFT JOIN classes c ON s.class_id = c.id
+LEFT JOIN bookings b ON b.schedule_id = s.id AND b.status = 'confirmed'
+WHERE s.week_number = 9
+  AND s.year = 2026
+GROUP BY s.id, c.name, s.day, s.time_slot, s.phase, s.current_students
+ORDER BY c.name, s.phase;
+```
+
+Then:
+1. Hard refresh browser (Ctrl + Shift + R)
+2. Check if display is now correct
+
+## Prevention
+
+To prevent this issue in the future:
+
+1. ✅ Install database trigger (Solution 4 above)
+2. ✅ Run duplicate prevention system (already created)
+3. ✅ Use batch normalization (already implemented)
+4. Add cache busting to frontend (version check)
+
+## Files Created
+
+- `booking-system/database/DEBUG_BOOKING_DISPLAY.sql` - Diagnostic queries
+- `booking-system/FIX_STUDENT_BOOKING_DISPLAY.md` - This guide
+
+## Next Steps
+
+1. Run `DEBUG_BOOKING_DISPLAY.sql` in Supabase
+2. Share results with me
+3. I'll identify exact root cause
+4. Apply appropriate solution
+5. Verify fix works
+
+## Status
+
+- ⏳ Waiting for diagnostic results
+- Need to identify which of the 6 possible causes is the actual problem

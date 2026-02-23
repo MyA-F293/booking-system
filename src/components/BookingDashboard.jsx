@@ -93,26 +93,30 @@ const BookingDashboard = ({ user }) => {
     async function loadUserBookings() {
         try {
             setLoading(true);
+            const timestamp = Date.now(); // Cache busting timestamp
             console.log('📡 Loading all schedules for week:', displayWeek);
             console.log('👤 User batch:', userBatch);
-            console.log('🔄 Timestamp:', new Date().toISOString()); // Cache busting log
+            console.log('🔄 Cache bust timestamp:', timestamp);
 
             // Get ALL schedules for the selected week (show all, regardless of batch)
             const filters = {
                 week_number: displayWeek,
-                year: currentYear
+                year: currentYear,
+                _cacheBust: timestamp // Force fresh data from Supabase
                 // Don't filter by batch here - show all schedules
             };
             const data = await getSchedules(filters);
-            const activeSchedules = data.filter(s => s.current_students > 0);
-            console.log('✅ All schedules loaded:', activeSchedules.length);
-            console.log('📋 Schedules:', activeSchedules.map(s => ({
+
+            // Show ALL schedules, not just ones with students > 0
+            // This prevents hiding schedules when counter is temporarily 0
+            console.log('✅ All schedules loaded:', data.length);
+            console.log('📋 Schedules:', data.map(s => ({
                 id: s.id,
                 class: s.class?.name,
                 batch: s.batch,
                 students: s.current_students
             })));
-            setSchedules(activeSchedules);
+            setSchedules(data);
 
             // Load user's bookings (filter by batch for user's own bookings)
             if (userId) {
@@ -122,6 +126,7 @@ const BookingDashboard = ({ user }) => {
             }
         } catch (err) {
             console.error('❌ Error loading schedules:', err);
+            toast.error('Failed to load schedules. Please refresh.');
         } finally {
             setLoading(false);
         }
@@ -259,6 +264,8 @@ const BookingDashboard = ({ user }) => {
     const groupedSchedules = phases.reduce((acc, phase) => {
         acc[phase] = schedules
             .filter(s => s.phase === phase)
+            // Show ALL schedules, including ones with 0 students
+            // This prevents display issues when counter is temporarily out of sync
             .sort((a, b) => {
                 const dayA = dayOrder[a.day] || 99;
                 const dayB = dayOrder[b.day] || 99;
@@ -406,11 +413,22 @@ const BookingDashboard = ({ user }) => {
                                                 // Check if user has booked this schedule
                                                 const userHasBooked = userBookings.some(b => b.schedule_id === schedule.id);
 
+                                                // Show warning if schedule shows 0 but user has booked it (cache issue)
+                                                const possibleCacheIssue = userHasBooked && schedule.current_students === 0;
+
                                                 return (
                                                     <div
                                                         key={schedule.id}
                                                         className={`bg-white rounded-xl border ${userHasBooked ? 'border-green-400 ring-2 ring-green-200' : 'border-gray-200'} shadow-sm hover:shadow-md transition-all overflow-hidden border-l-4 ${status.border}`}
                                                     >
+                                                        {possibleCacheIssue && (
+                                                            <div className="bg-yellow-50 border-b border-yellow-200 px-3 py-1.5">
+                                                                <p className="text-[10px] text-yellow-700 flex items-center gap-1">
+                                                                    <span>⚠️</span>
+                                                                    <span>Display may be outdated - try refreshing</span>
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                         <div className="p-3">
                                                             <div className="flex justify-between items-start mb-2">
                                                                 <div className="flex items-start gap-2">
