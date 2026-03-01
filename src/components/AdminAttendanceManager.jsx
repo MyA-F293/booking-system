@@ -261,11 +261,21 @@ const AdminAttendanceManager = () => {
         });
     };
 
-    const handleSubmitAttendance = async () => {
-        if (!selectedSchedule) return;
+    const handleSubmitAttendance = async (e) => {
+        // Prevent any default behavior
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        if (!selectedSchedule) {
+            console.log('⚠️ No schedule selected');
+            return;
+        }
 
         if (submitting) {
-            console.log('⚠️ Already submitting');
+            console.log('⚠️ Already submitting, please wait...');
+            toast.warning('Please wait, submitting attendance...');
             return;
         }
 
@@ -277,7 +287,7 @@ const AdminAttendanceManager = () => {
 
         try {
             setSubmitting(true);
-            console.log('📤 Admin submitting attendance...');
+            console.log('📤 Admin submitting attendance for', markedAttendance.length, 'students...');
 
             const attendanceRecords = students
                 .filter(student => attendance[student.user_id] !== null)
@@ -297,6 +307,8 @@ const AdminAttendanceManager = () => {
                     student_name: student.user?.full_name || '-',
                     status: attendance[student.user_id]
                 }));
+
+            console.log('📋 Attendance records to submit:', attendanceRecords);
 
             const result = await submitBatchAttendance(attendanceRecords);
 
@@ -324,6 +336,7 @@ const AdminAttendanceManager = () => {
         } catch (err) {
             console.error('❌ Error submitting attendance:', err);
             toast.error('Failed to submit attendance: ' + err.message);
+            // Don't clear form on error so user can retry
         } finally {
             setSubmitting(false);
         }
@@ -641,6 +654,34 @@ const AdminAttendanceManager = () => {
                             </div>
                         ) : (
                             <>
+                                {/* Summary Bar */}
+                                <div className="mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border-2 border-orange-300">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-[#E67E22] to-[#D35400] rounded-xl flex items-center justify-center">
+                                                <Users size={24} className="text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-600">Attendance Progress</p>
+                                                <p className="text-2xl font-bold text-[#E67E22]">
+                                                    {Object.values(attendance).filter(s => s !== null).length} / {students.length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 text-xs">
+                                            <div className="px-3 py-1 bg-green-100 text-green-700 rounded-lg font-semibold">
+                                                ✓ {Object.values(attendance).filter(s => s === 'present').length} Present
+                                            </div>
+                                            <div className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg font-semibold">
+                                                ⏰ {Object.values(attendance).filter(s => s === 'late').length} Late
+                                            </div>
+                                            <div className="px-3 py-1 bg-red-100 text-red-700 rounded-lg font-semibold">
+                                                ✗ {Object.values(attendance).filter(s => s === 'absent').length} Absent
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                                     {students.map((student, index) => (
                                         <div key={student.user_id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 bg-orange-50/50 rounded-xl border border-orange-200 gap-3 sm:gap-0">
@@ -688,8 +729,8 @@ const AdminAttendanceManager = () => {
 
                                 <button
                                     onClick={handleSubmitAttendance}
-                                    disabled={submitting}
-                                    className="w-full bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
+                                    disabled={submitting || Object.values(attendance).filter(s => s !== null).length === 0}
+                                    className="w-full bg-gradient-to-r from-[#E67E22] to-[#D35400] hover:from-[#D35400] hover:to-[#C0392B] text-white px-6 sm:px-8 py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center gap-2 shadow-lg text-sm sm:text-base"
                                 >
                                     {submitting ? (
                                         <>
@@ -699,7 +740,7 @@ const AdminAttendanceManager = () => {
                                     ) : (
                                         <>
                                             <CheckCircle size={18} className="sm:w-5 sm:h-5" />
-                                            <span>Submit Attendance</span>
+                                            <span>Submit Attendance ({Object.values(attendance).filter(s => s !== null).length}/{students.length})</span>
                                         </>
                                     )}
                                 </button>
