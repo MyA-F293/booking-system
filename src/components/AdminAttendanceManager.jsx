@@ -319,8 +319,8 @@ const AdminAttendanceManager = () => {
                     phase: selectedSchedule.phase,
                     day: selectedSchedule.day,
                     time_slot: selectedSchedule.time_slot,
-                    week_number: selectedWeek,
-                    year: currentYear,
+                    week_number: selectedSchedule.week_number, // ✅ FIX: Use schedule's week_number, not selectedWeek
+                    year: selectedSchedule.year, // ✅ FIX: Use schedule's year, not currentYear
                     student_id: student.user.student_id,
                     student_name: student.user.full_name,
                     status: attendance[student.user_id]
