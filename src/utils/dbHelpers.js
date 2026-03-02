@@ -594,30 +594,53 @@ export const getUserBookings = async (userId, weekNumber, year, batch = null) =>
 export const getScheduleStudents = async (scheduleId) => {
     console.log('📡 dbHelpers: getScheduleStudents called for schedule:', scheduleId);
 
-    const { data, error } = await supabase
+    // Query bookings and manually join with users using user_id
+    const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
-        .select(`
-            id,
-            user_id,
-            schedule_id,
-            status,
-            created_at,
-            user:users!user_id (
-                id,
-                student_id,
-                full_name
-            )
-        `)
+        .select('id, user_id, schedule_id, status, created_at')
         .eq('schedule_id', scheduleId)
-        .eq('status', 'confirmed')
+        .eq('status', 'confirmed');
 
-    if (error) {
-        console.error('❌ dbHelpers: getScheduleStudents error:', error);
-        throw error;
+    if (bookingsError) {
+        console.error('❌ dbHelpers: getScheduleStudents bookings error:', bookingsError);
+        throw bookingsError;
     }
 
-    console.log('✅ dbHelpers: getScheduleStudents success:', data);
-    return data || [];
+    if (!bookingsData || bookingsData.length === 0) {
+        console.log('⚠️ No bookings found for schedule:', scheduleId);
+        return [];
+    }
+
+    // Get user IDs (convert UUID to string for matching)
+    const userIds = bookingsData.map(b => b.user_id);
+
+    // Fetch users data - match by id (UUID) not student_id (TEXT)
+    const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, student_id, full_name')
+        .in('id', userIds);
+
+    if (usersError) {
+        console.error('❌ dbHelpers: getScheduleStudents users error:', usersError);
+        throw usersError;
+    }
+
+    // Create a map of users by id for quick lookup
+    const usersMap = {};
+    usersData?.forEach(user => {
+        usersMap[user.id] = user;
+    });
+
+    // Combine bookings with user data
+    const result = bookingsData.map(booking => ({
+        ...booking,
+        user: usersMap[booking.user_id] || null
+    }));
+
+    console.log('✅ dbHelpers: getScheduleStudents success:', result.length, 'students');
+    console.log('📋 Sample student data:', result[0]);
+
+    return result;
 }
 
 // ========================================
@@ -947,19 +970,18 @@ export const submitAttendance = async (attendanceRecord) => {
 
 /**
  * Submit multiple attendance records (batch)
- * Includes duplicate prevention - will not insert if attendance already exists for schedule_id + student_id
+ * Supports UPSERT - will insert new records or update existing ones if status changed
  */
 export const submitBatchAttendance = async (attendanceRecords) => {
     console.log('📡 dbHelpers: submitBatchAttendance called', attendanceRecords.length, 'records');
 
-    // Check for existing attendance records to prevent duplicates
+    // Check for existing attendance records
     const scheduleIds = [...new Set(attendanceRecords.map(r => r.schedule_id))];
-    const studentIds = [...new Set(attendanceRecords.map(r => r.student_id))];
 
     console.log('🔍 Checking for existing attendance records...');
     const { data: existingRecords, error: checkError } = await supabase
         .from('attendance')
-        .select('schedule_id, student_id')
+        .select('id, schedule_id, student_id, status')
         .in('schedule_id', scheduleIds);
 
     if (checkError) {
@@ -967,49 +989,100 @@ export const submitBatchAttendance = async (attendanceRecords) => {
         throw checkError;
     }
 
-    // Create a Set of existing combinations for fast lookup
-    const existingSet = new Set(
-        existingRecords?.map(r => `${r.schedule_id}_${r.student_id}`) || []
-    );
-
-    // Filter out records that already exist
-    const newRecords = attendanceRecords.filter(record => {
-        const key = `${record.schedule_id}_${record.student_id}`;
-        const exists = existingSet.has(key);
-        if (exists) {
-            console.log('⚠️ Skipping duplicate attendance for student:', record.student_name, 'schedule:', record.schedule_id);
-        }
-        return !exists;
+    // Create a Map of existing records for fast lookup
+    const existingMap = new Map();
+    existingRecords?.forEach(r => {
+        const key = `${r.schedule_id}_${r.student_id}`;
+        existingMap.set(key, r);
     });
 
-    if (newRecords.length === 0) {
-        console.log('⚠️ All attendance records already exist - no new records to insert');
-        return {
-            success: true,
-            inserted: 0,
-            skipped: attendanceRecords.length,
-            message: 'Attendance already submitted for all students'
-        };
+    // Separate records into: new inserts, updates, and unchanged
+    const toInsert = [];
+    const toUpdate = [];
+    let unchangedCount = 0;
+
+    attendanceRecords.forEach(record => {
+        const key = `${record.schedule_id}_${record.student_id}`;
+        const existing = existingMap.get(key);
+
+        if (!existing) {
+            // New record - insert
+            toInsert.push(record);
+            console.log('➕ New attendance:', record.student_name, '-', record.status);
+        } else if (existing.status !== record.status) {
+            // Existing record with different status - update
+            toUpdate.push({
+                id: existing.id,
+                ...record
+            });
+            console.log('🔄 Update attendance:', record.student_name, existing.status, '→', record.status);
+        } else {
+            // Existing record with same status - skip
+            unchangedCount++;
+            console.log('⏭️ Skip unchanged:', record.student_name, '-', record.status);
+        }
+    });
+
+    let insertedCount = 0;
+    let updatedCount = 0;
+
+    // Insert new records
+    if (toInsert.length > 0) {
+        console.log(`📝 Inserting ${toInsert.length} new records...`);
+        const { data, error } = await supabase
+            .from('attendance')
+            .insert(toInsert)
+            .select();
+
+        if (error) {
+            console.error('❌ Error inserting attendance:', error);
+            throw error;
+        }
+        insertedCount = data.length;
+        console.log('✅ Inserted:', insertedCount, 'records');
     }
 
-    console.log(`📝 Inserting ${newRecords.length} new records (skipped ${attendanceRecords.length - newRecords.length} duplicates)`);
+    // Update existing records
+    if (toUpdate.length > 0) {
+        console.log(`🔄 Updating ${toUpdate.length} records...`);
 
-    const { data, error } = await supabase
-        .from('attendance')
-        .insert(newRecords)
-        .select();
+        // Update one by one (Supabase doesn't support batch update easily)
+        for (const record of toUpdate) {
+            const { error } = await supabase
+                .from('attendance')
+                .update({
+                    status: record.status,
+                    teacher_id: record.teacher_id,
+                    teacher_name: record.teacher_name
+                })
+                .eq('id', record.id);
 
-    if (error) {
-        console.error('❌ Error submitting batch attendance:', error);
-        throw error;
+            if (error) {
+                console.error('❌ Error updating attendance:', error);
+                throw error;
+            }
+            updatedCount++;
+        }
+        console.log('✅ Updated:', updatedCount, 'records');
     }
 
-    console.log('✅ Batch attendance submitted successfully:', data.length, 'records');
+    const totalProcessed = insertedCount + updatedCount;
+    console.log('✅ Batch attendance complete:', {
+        inserted: insertedCount,
+        updated: updatedCount,
+        unchanged: unchangedCount,
+        total: attendanceRecords.length
+    });
+
     return {
         success: true,
-        inserted: data.length,
-        skipped: attendanceRecords.length - newRecords.length,
-        data
+        inserted: insertedCount,
+        updated: updatedCount,
+        unchanged: unchangedCount,
+        total: totalProcessed,
+        message: totalProcessed > 0
+            ? `${insertedCount} new, ${updatedCount} updated, ${unchangedCount} unchanged`
+            : 'All attendance records unchanged'
     };
 };
 
@@ -1019,6 +1092,7 @@ export const submitBatchAttendance = async (attendanceRecords) => {
 export const getAttendanceRecords = async (filters = {}) => {
     console.log('📡 dbHelpers: getAttendanceRecords called with filters:', filters);
     console.log('🔍 dbHelpers: Filter details:', {
+        schedule_id: filters.schedule_id || 'none',
         student_id: filters.student_id || 'none',
         teacher_id: filters.teacher_id || 'none',
         week_number: filters.week_number || 'none',
@@ -1045,6 +1119,9 @@ export const getAttendanceRecords = async (filters = {}) => {
             .range(from, from + pageSize - 1);
 
         // Apply filters
+        if (filters.schedule_id) {
+            query = query.eq('schedule_id', filters.schedule_id);
+        }
         if (filters.student_id) {
             query = query.eq('student_id', filters.student_id);
         }

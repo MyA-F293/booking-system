@@ -203,6 +203,7 @@ const AdminAttendanceManager = () => {
             // Build attendance map - FILTER OUT INVALID RECORDS
             const initialAttendance = {};
             let unmatchedCount = 0;
+            const invalidRecordIds = [];
 
             if (existingAttendance && existingAttendance.length > 0) {
                 // If attendance exists, populate from database
@@ -214,7 +215,9 @@ const AdminAttendanceManager = () => {
                         attendanceMap[student.user_id] = record.status;
                     } else {
                         unmatchedCount++;
-                        console.warn('⚠️ Unmatched attendance record:', {
+                        invalidRecordIds.push(record.id);
+                        console.warn('⚠️ Unmatched attendance record (INVALID DATA):', {
+                            id: record.id,
                             student_id: record.student_id,
                             student_name: record.student_name,
                             class: record.class_name,
@@ -230,7 +233,9 @@ const AdminAttendanceManager = () => {
 
                 console.log('✅ AdminAttendanceManager: Loaded existing attendance:', Object.keys(attendanceMap).length, 'matched');
                 if (unmatchedCount > 0) {
-                    console.warn(`⚠️ AdminAttendanceManager: ${unmatchedCount} attendance records couldn't be matched (invalid student_id)`);
+                    console.error(`❌ AdminAttendanceManager: ${unmatchedCount} INVALID attendance records found!`);
+                    console.error('💡 Solution: Run database/CLEAN_INVALID_ATTENDANCE.sql to clean up');
+                    toast.error(`Found ${unmatchedCount} invalid attendance records. Please clean database.`, { duration: 8000 });
                 }
             } else {
                 // No existing attendance, set all to null
@@ -289,6 +294,19 @@ const AdminAttendanceManager = () => {
             setSubmitting(true);
             console.log('📤 Admin submitting attendance for', markedAttendance.length, 'students...');
 
+            // VALIDATION: Check for invalid student IDs
+            const invalidStudents = students.filter(student =>
+                attendance[student.user_id] !== null &&
+                (!student.user?.student_id || student.user.student_id === '-' || student.user.student_id === '')
+            );
+
+            if (invalidStudents.length > 0) {
+                console.error('❌ Found students with invalid student_id:', invalidStudents);
+                toast.error(`Cannot submit: ${invalidStudents.length} student(s) have invalid ID. Please contact admin.`, { duration: 8000 });
+                setSubmitting(false);
+                return;
+            }
+
             const attendanceRecords = students
                 .filter(student => attendance[student.user_id] !== null)
                 .map(student => ({
@@ -303,8 +321,8 @@ const AdminAttendanceManager = () => {
                     time_slot: selectedSchedule.time_slot,
                     week_number: selectedWeek,
                     year: currentYear,
-                    student_id: student.user?.student_id || '-',
-                    student_name: student.user?.full_name || '-',
+                    student_id: student.user.student_id,
+                    student_name: student.user.full_name,
                     status: attendance[student.user_id]
                 }));
 
@@ -315,15 +333,25 @@ const AdminAttendanceManager = () => {
             console.log('✅ Attendance submitted successfully!', result);
 
             // Show success notification with clear feedback
-            const successMessage = result.skipped > 0
-                ? `Attendance submitted for ${result.inserted} student(s).\n\n${result.skipped} record(s) were skipped (already existed).\n\n💡 Go to "Attendance" tab and click Refresh to see updated report.`
-                : `Attendance submitted for ${result.inserted} student(s).\n\n💡 Go to "Attendance" tab and click Refresh to see updated report.`;
+            let successMessage = '';
+            if (result.inserted > 0 && result.updated > 0) {
+                successMessage = `✅ ${result.inserted} new record(s) added\n🔄 ${result.updated} record(s) updated\n⏭️ ${result.unchanged} unchanged\n\n💡 Go to "Attendance" tab to see the report.`;
+            } else if (result.inserted > 0) {
+                successMessage = `✅ ${result.inserted} new record(s) added\n⏭️ ${result.unchanged} unchanged\n\n💡 Go to "Attendance" tab to see the report.`;
+            } else if (result.updated > 0) {
+                successMessage = `🔄 ${result.updated} record(s) updated\n⏭️ ${result.unchanged} unchanged\n\n💡 Go to "Attendance" tab to see the report.`;
+            } else {
+                successMessage = `⏭️ All ${result.unchanged} record(s) unchanged\n\nNo changes were made.`;
+            }
 
             // Show modal popup
-            showSuccess(successMessage, '✅ SUCCESS!');
+            showSuccess(successMessage, result.total > 0 ? '✅ SUCCESS!' : 'ℹ️ NO CHANGES');
 
-            // Also show toast notification with reminder
-            toast.success(`✅ ${result.inserted} student(s) marked. Go to Attendance tab to see report.`, { duration: 5000 });
+            // Also show toast notification
+            const toastMsg = result.total > 0
+                ? `✅ ${result.inserted} new, 🔄 ${result.updated} updated`
+                : `⏭️ No changes made`;
+            toast.success(toastMsg, { duration: 5000 });
 
             // Reload schedules to update status
             await loadAllSchedules();
@@ -335,7 +363,20 @@ const AdminAttendanceManager = () => {
 
         } catch (err) {
             console.error('❌ Error submitting attendance:', err);
-            toast.error('Failed to submit attendance: ' + err.message);
+            console.error('❌ Error details:', {
+                message: err.message,
+                code: err.code,
+                details: err.details,
+                hint: err.hint
+            });
+
+            // Show detailed error to user
+            const errorMsg = err.message || 'Unknown error occurred';
+            const errorDetails = err.details ? `\n\nDetails: ${err.details}` : '';
+            const errorHint = err.hint ? `\n\nHint: ${err.hint}` : '';
+
+            toast.error(`Failed to submit attendance: ${errorMsg}${errorDetails}${errorHint}`, { duration: 10000 });
+
             // Don't clear form on error so user can retry
         } finally {
             setSubmitting(false);
