@@ -103,6 +103,10 @@ const AdminBookingDashboard = () => {
     const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
     const [whatsAppMessage, setWhatsAppMessage] = useState('');
 
+    // Copy Week Modal state
+    const [showCopyWeekModal, setShowCopyWeekModal] = useState(false);
+    const [isCopying, setIsCopying] = useState(false);
+
     // Search state for Add Student modal
     const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
@@ -147,7 +151,8 @@ const AdminBookingDashboard = () => {
         showTeacherModal ||
         showWhatsAppModal ||
         showScheduleModal ||
-        showDuplicateWarning
+        showDuplicateWarning ||
+        showCopyWeekModal
     );
 
     // Helper function to parse database errors into user-friendly messages
@@ -804,6 +809,155 @@ const AdminBookingDashboard = () => {
         );
     };
 
+    const handleCopyPreviousWeek = async () => {
+        try {
+            setIsCopying(true);
+            setShowCopyWeekModal(false);
+
+            const displayWeek = selectedWeekTab === 'current' ? currentWeek : currentWeek + 1;
+            const sourceWeek = displayWeek - 1;
+            const targetWeek = displayWeek;
+
+            toast.info(`🔄 Copying bookings from Week ${sourceWeek} to Week ${targetWeek}...`);
+
+            // Get all bookings from source week
+            const { data: sourceBookings, error: fetchError } = await supabase
+                .from('bookings')
+                .select(`
+                    *,
+                    schedule:schedules!inner(
+                        id,
+                        class_id,
+                        teacher_id,
+                        program,
+                        level,
+                        phase,
+                        day,
+                        time_slot,
+                        week_number,
+                        year,
+                        batch
+                    )
+                `)
+                .eq('status', 'confirmed')
+                .eq('schedule.week_number', sourceWeek)
+                .eq('schedule.year', currentYear);
+
+            if (fetchError) throw fetchError;
+
+            if (!sourceBookings || sourceBookings.length === 0) {
+                toast.warning(`⚠️ No bookings found in Week ${sourceWeek} to copy`);
+                return;
+            }
+
+            let copiedCount = 0;
+            let skippedCount = 0;
+            let errorCount = 0;
+
+            for (const booking of sourceBookings) {
+                try {
+                    const schedule = booking.schedule;
+
+                    // Find or create schedule for target week with same parameters
+                    const scheduleData = {
+                        class_id: schedule.class_id,
+                        teacher_id: schedule.teacher_id,
+                        program: schedule.program,
+                        level: schedule.level,
+                        phase: schedule.phase,
+                        day: schedule.day,
+                        time_slot: schedule.time_slot,
+                        week_number: targetWeek,
+                        year: currentYear,
+                        batch: schedule.batch,
+                        current_students: 0
+                    };
+
+                    // Check if schedule exists
+                    let { data: targetSchedule, error: scheduleError } = await supabase
+                        .from('schedules')
+                        .select('*')
+                        .eq('class_id', schedule.class_id)
+                        .eq('program', schedule.program)
+                        .eq('level', schedule.level)
+                        .eq('phase', schedule.phase)
+                        .eq('day', schedule.day)
+                        .eq('time_slot', schedule.time_slot)
+                        .eq('week_number', targetWeek)
+                        .eq('year', currentYear)
+                        .maybeSingle();
+
+                    if (scheduleError) throw scheduleError;
+
+                    // Create schedule if doesn't exist
+                    if (!targetSchedule) {
+                        const { data: newSchedule, error: createError } = await supabase
+                            .from('schedules')
+                            .insert([scheduleData])
+                            .select()
+                            .single();
+
+                        if (createError) throw createError;
+                        targetSchedule = newSchedule;
+                    }
+
+                    // Check if user already has booking for target week in this phase
+                    const { data: existingBookings, error: bookingCheckError } = await supabase
+                        .from('bookings')
+                        .select('id, schedule:schedules!inner(phase, week_number, year)')
+                        .eq('user_id', booking.user_id)
+                        .eq('status', 'confirmed')
+                        .eq('schedule.phase', schedule.phase)
+                        .eq('schedule.week_number', targetWeek)
+                        .eq('schedule.year', currentYear);
+
+                    if (bookingCheckError) throw bookingCheckError;
+
+                    if (existingBookings && existingBookings.length > 0) {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Check if class is full (max 10)
+                    if (targetSchedule.current_students >= 10) {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Create booking for target week
+                    const { error: createBookingError } = await supabase
+                        .from('bookings')
+                        .insert([{
+                            schedule_id: targetSchedule.id,
+                            user_id: booking.user_id,
+                            status: 'confirmed'
+                        }]);
+
+                    if (createBookingError) throw createBookingError;
+
+                    copiedCount++;
+                } catch (err) {
+                    console.error('Error copying booking:', err);
+                    errorCount++;
+                }
+            }
+
+            // Show result
+            let message = `✅ Successfully copied ${copiedCount} booking(s) to Week ${targetWeek}`;
+            if (skippedCount > 0) message += `\n⏭️ Skipped ${skippedCount} (already booked or class full)`;
+            if (errorCount > 0) message += `\n❌ Failed ${errorCount}`;
+
+            toast.success(message);
+            await loadAllSchedules();
+
+        } catch (err) {
+            console.error('Error copying week:', err);
+            toast.error('❌ Failed to copy bookings: ' + err.message);
+        } finally {
+            setIsCopying(false);
+        }
+    };
+
     const handleDeleteStudent = async (bookingId, studentName, studentId) => {
         toast.confirm(
             `${t('adminBooking.confirmDelete')} ${studentName} ${t('adminBooking.fromThisClass')}?`,
@@ -972,6 +1126,21 @@ const AdminBookingDashboard = () => {
                             >
                                 <UserPlus size={14} />
                                 <span className="hidden sm:inline">Create</span>
+                            </button>
+
+                            {/* Copy Previous Week Button */}
+                            <button
+                                onClick={() => setShowCopyWeekModal(true)}
+                                disabled={isCopying}
+                                className="px-2.5 sm:px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Copy bookings from previous week"
+                            >
+                                {isCopying ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                    <ArrowRight size={14} />
+                                )}
+                                <span className="hidden sm:inline">Copy</span>
                             </button>
 
                             {/* Week Toggle */}
@@ -1738,6 +1907,70 @@ const AdminBookingDashboard = () => {
                                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
                                 >
                                     Skip
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            }
+
+            {/* Copy Week Confirmation Modal */}
+            {
+                showCopyWeekModal && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full shadow-xl border border-gray-100/50 overflow-hidden">
+                            <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-5">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold flex items-center gap-2">
+                                        <ArrowRight size={20} />
+                                        Copy Previous Week
+                                    </h3>
+                                    <button onClick={() => setShowCopyWeekModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                                <p className="text-green-100 text-sm mt-1">Copy all bookings to current week</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                                    <p className="text-sm text-blue-900 mb-2">
+                                        <strong>This will copy all bookings from:</strong>
+                                    </p>
+                                    <div className="flex items-center justify-center gap-3 my-3">
+                                        <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-300">
+                                            <p className="text-xs text-gray-500">From</p>
+                                            <p className="text-lg font-bold text-blue-700">Week {selectedWeekTab === 'current' ? currentWeek - 1 : currentWeek}</p>
+                                        </div>
+                                        <ArrowRight size={24} className="text-blue-500" />
+                                        <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-300">
+                                            <p className="text-xs text-gray-500">To</p>
+                                            <p className="text-lg font-bold text-green-700">Week {selectedWeekTab === 'current' ? currentWeek : currentWeek + 1}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                                    <p className="text-xs text-yellow-800">
+                                        ⚠️ <strong>Note:</strong> Students who already have bookings in the target week will be skipped automatically.
+                                    </p>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-4">
+                                    Are you sure you want to continue?
+                                </p>
+                            </div>
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
+                                <button
+                                    onClick={handleCopyPreviousWeek}
+                                    className="flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-semibold text-sm hover:from-green-700 hover:to-green-800 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <ArrowRight size={18} />
+                                    Yes, Copy Now
+                                </button>
+                                <button
+                                    onClick={() => setShowCopyWeekModal(false)}
+                                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
+                                >
+                                    Cancel
                                 </button>
                             </div>
                         </div>
