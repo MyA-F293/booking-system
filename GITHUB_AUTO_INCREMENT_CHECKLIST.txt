@@ -1,0 +1,82 @@
+╔══════════════════════════════════════════════════════════════╗
+║  GITHUB ACTIONS - AUTO INCREMENT WEEK SETUP CHECKLIST       ║
+║  Estimasi: 5-10 menit                                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 STEP 1: SETUP API FUNCTION DI SUPABASE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] 1. Buka Supabase Dashboard > SQL Editor
+[ ] 2. Copy SQL dari: database/CREATE_API_INCREMENT_WEEK.sql
+[ ] 3. GANTI 'eysa-auto-week-2026-xyz123' dengan API key rahasia Anda
+    Contoh: 'eysa-secret-key-abc123def456'
+[ ] 4. Run SQL
+[ ] 5. Test: SELECT api_increment_week('your-api-key-here');
+[ ] 6. Verify: Harus return {"success": true, ...}
+[ ] 7. SIMPAN API key ini untuk Step 2
+
+📋 STEP 2: SETUP GITHUB SECRETS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] 1. Go to: GitHub repo > Settings > Secrets and variables > Actions
+[ ] 2. Click: New repository secret
+
+[ ] 3. Add Secret #1:
+    Name:  SUPABASE_URL
+    Value: https://your-project.supabase.co
+    (dari: Supabase > Settings > API > Project URL)
+
+[ ] 4. Add Secret #2:
+    Name:  SUPABASE_ANON_KEY
+    Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    (dari: Supabase > Settings > API > anon public key)
+
+[ ] 5. Add Secret #3:
+    Name:  SUPABASE_API_KEY
+    Value: eysa-secret-key-abc123def456
+    (API key yang Anda buat di Step 1)
+
+[ ] 6. Verify: Semua 3 secrets sudah tersimpan
+
+📋 STEP 3: PUSH KE GITHUB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] 1. File workflow sudah ada: .github/workflows/auto-increment-week.yml
+[ ] 2. Commit & push:
+    git add .
+    git commit -m "Setup auto-increment week"
+    git push
+[ ] 3. Go to: GitHub repo > Actions tab
+[ ] 4. Verify: Workflow "Auto Increment Week" muncul
+
+📋 STEP 4: TEST MANUAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[ ] 1. Go to: Actions tab
+[ ] 2. Click: "Auto Increment Week" workflow
+[ ] 3. Click: "Run workflow" dropdown
+[ ] 4. Click: "Run workflow" button
+[ ] 5. Wait: Beberapa detik
+[ ] 6. Click: Workflow run yang baru muncul
+[ ] 7. Check logs:
+    ✅ "Week incremented successfully!"
+    ✅ "Week changed from X to Y"
+[ ] 8. Verify di Supabase:
+    SELECT current_week FROM settings WHERE id = 1;
+
+✅ DONE!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Week akan otomatis increment setiap Senin jam 00:01 WIB!
+
+📊 MONITORING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Check GitHub Actions history setiap Senin
+- Check Supabase: SELECT current_week, updated_at FROM settings WHERE id = 1;
+
+🔧 FALLBACK
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Jika GitHub Actions gagal, admin bisa manual:
+- Klik button "Next Week" (▶) di admin dashboard
+- Atau run SQL: SELECT increment_current_week();
+
+📚 DOKUMENTASI LENGKAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- SETUP_GITHUB_AUTO_INCREMENT.md (panduan lengkap)
+- AUTO_INCREMENT_WEEK_GUIDE.md (semua metode)
+- QUICK_SETUP_AUTO_INCREMENT.md (quick reference)

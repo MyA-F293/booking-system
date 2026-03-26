@@ -818,134 +818,24 @@ const AdminBookingDashboard = () => {
             const sourceWeek = displayWeek - 1;
             const targetWeek = displayWeek;
 
-            toast.info(`🔄 Copying bookings from Week ${sourceWeek} to Week ${targetWeek}...`);
+            toast.info(`🔄 Smart Copy: Week ${sourceWeek} → Week ${targetWeek}...`);
 
-            // Get all bookings from source week
-            const { data: sourceBookings, error: fetchError } = await supabase
-                .from('bookings')
-                .select(`
-                    *,
-                    schedule:schedules!inner(
-                        id,
-                        class_id,
-                        teacher_id,
-                        program,
-                        level,
-                        phase,
-                        day,
-                        time_slot,
-                        week_number,
-                        year,
-                        batch
-                    )
-                `)
-                .eq('status', 'confirmed')
-                .eq('schedule.week_number', sourceWeek)
-                .eq('schedule.year', currentYear);
+            // ⚡ FAST: Call RPC function (single database call instead of hundreds)
+            const { data, error } = await supabase.rpc('smart_copy_week', {
+                source_week_param: sourceWeek,
+                target_week_param: targetWeek,
+                year_param: currentYear
+            });
 
-            if (fetchError) throw fetchError;
+            if (error) throw error;
 
-            if (!sourceBookings || sourceBookings.length === 0) {
-                toast.warning(`⚠️ No bookings found in Week ${sourceWeek} to copy`);
-                return;
-            }
-
-            let copiedCount = 0;
-            let skippedCount = 0;
-            let errorCount = 0;
-
-            for (const booking of sourceBookings) {
-                try {
-                    const schedule = booking.schedule;
-
-                    // Find or create schedule for target week with same parameters
-                    const scheduleData = {
-                        class_id: schedule.class_id,
-                        teacher_id: schedule.teacher_id,
-                        program: schedule.program,
-                        level: schedule.level,
-                        phase: schedule.phase,
-                        day: schedule.day,
-                        time_slot: schedule.time_slot,
-                        week_number: targetWeek,
-                        year: currentYear,
-                        batch: schedule.batch,
-                        current_students: 0
-                    };
-
-                    // Check if schedule exists
-                    let { data: targetSchedule, error: scheduleError } = await supabase
-                        .from('schedules')
-                        .select('*')
-                        .eq('class_id', schedule.class_id)
-                        .eq('program', schedule.program)
-                        .eq('level', schedule.level)
-                        .eq('phase', schedule.phase)
-                        .eq('day', schedule.day)
-                        .eq('time_slot', schedule.time_slot)
-                        .eq('week_number', targetWeek)
-                        .eq('year', currentYear)
-                        .maybeSingle();
-
-                    if (scheduleError) throw scheduleError;
-
-                    // Create schedule if doesn't exist
-                    if (!targetSchedule) {
-                        const { data: newSchedule, error: createError } = await supabase
-                            .from('schedules')
-                            .insert([scheduleData])
-                            .select()
-                            .single();
-
-                        if (createError) throw createError;
-                        targetSchedule = newSchedule;
-                    }
-
-                    // Check if user already has booking for target week in this phase
-                    const { data: existingBookings, error: bookingCheckError } = await supabase
-                        .from('bookings')
-                        .select('id, schedule:schedules!inner(phase, week_number, year)')
-                        .eq('user_id', booking.user_id)
-                        .eq('status', 'confirmed')
-                        .eq('schedule.phase', schedule.phase)
-                        .eq('schedule.week_number', targetWeek)
-                        .eq('schedule.year', currentYear);
-
-                    if (bookingCheckError) throw bookingCheckError;
-
-                    if (existingBookings && existingBookings.length > 0) {
-                        skippedCount++;
-                        continue;
-                    }
-
-                    // Check if class is full (max 10)
-                    if (targetSchedule.current_students >= 10) {
-                        skippedCount++;
-                        continue;
-                    }
-
-                    // Create booking for target week
-                    const { error: createBookingError } = await supabase
-                        .from('bookings')
-                        .insert([{
-                            schedule_id: targetSchedule.id,
-                            user_id: booking.user_id,
-                            status: 'confirmed'
-                        }]);
-
-                    if (createBookingError) throw createBookingError;
-
-                    copiedCount++;
-                } catch (err) {
-                    console.error('Error copying booking:', err);
-                    errorCount++;
-                }
-            }
-
-            // Show result
-            let message = `✅ Successfully copied ${copiedCount} booking(s) to Week ${targetWeek}`;
-            if (skippedCount > 0) message += `\n⏭️ Skipped ${skippedCount} (already booked or class full)`;
-            if (errorCount > 0) message += `\n❌ Failed ${errorCount}`;
+            // Show detailed result
+            const result = data;
+            let message = `✅ Smart Copy Complete!\n`;
+            message += `📅 Schedules created: ${result.schedules_created}\n`;
+            message += `✅ Bookings copied: ${result.bookings_copied}\n`;
+            if (result.bookings_skipped > 0) message += `⏭️ Skipped: ${result.bookings_skipped} (already booked)\n`;
+            if (result.overcapacity_prevented > 0) message += `🛡️ Overcapacity prevented: ${result.overcapacity_prevented}`;
 
             toast.success(message);
             await loadAllSchedules();

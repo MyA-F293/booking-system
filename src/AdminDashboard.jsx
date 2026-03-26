@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Calendar, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Calendar, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText, ChevronRight } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
-import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher, getCurrentWeek } from './utils/dbHelpers';
+import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher } from './utils/dbHelpers';
 import { supabase } from './supabaseClient';
 import useModalScrollLock from './hooks/useModalScrollLock';
 import AdminBookingDashboard from './components/AdminBookingDashboard';
@@ -16,12 +16,14 @@ import BackupButton from './components/BackupButton';
 import FullBackupButton from './components/FullBackupButton';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
+import { useWeek } from './contexts/WeekContext';
 import { useToast } from './components/Toast';
 import jsPDF from 'jspdf';
 
 const AdminDashboard = ({ user }) => {
     const { t } = useLanguage();
     const { settings, updateSettings } = useSettings();
+    const { currentWeek, incrementWeek, refreshWeek } = useWeek();
     const toast = useToast();
 
     // Settings edit state
@@ -92,6 +94,11 @@ const AdminDashboard = ({ user }) => {
     const [showAdminGuide, setShowAdminGuide] = useState(false);
     const [showActionsMenu, setShowActionsMenu] = useState(false);
 
+    // Reset Batch state
+    const [showResetBatchModal, setShowResetBatchModal] = useState(false);
+    const [resetBatchNumber, setResetBatchNumber] = useState('1');
+    const [resetBatchLoading, setResetBatchLoading] = useState(false);
+
     // Lock body scroll when any modal is open
     useModalScrollLock(
         showEditStudentModal ||
@@ -99,7 +106,8 @@ const AdminDashboard = ({ user }) => {
         showTeacherIdModal ||
         showSettingsModal ||
         showBulkOperations ||
-        showAdminGuide
+        showAdminGuide ||
+        showResetBatchModal
     );
 
     // Check if admin has seen the guide
@@ -118,13 +126,18 @@ const AdminDashboard = ({ user }) => {
         }
 
         const query = studentSearchQuery.toLowerCase().trim();
-        return students.filter(student =>
-            student.full_name?.toLowerCase().includes(query) ||
-            student.student_id?.toLowerCase().includes(query) ||
-            student.program?.toLowerCase().includes(query) ||
-            student.level?.toLowerCase().includes(query) ||
-            student.batch?.toString().includes(query)
-        );
+        return students.filter(student => {
+            // Convert batch to string safely (handle null/undefined)
+            const batchStr = student.batch ? student.batch.toString() : '';
+
+            return (
+                student.full_name?.toLowerCase().includes(query) ||
+                student.student_id?.toLowerCase().includes(query) ||
+                student.program?.toLowerCase().includes(query) ||
+                student.level?.toLowerCase().includes(query) ||
+                batchStr.includes(query)  // Search batch as plain string (works for "1", "2", "3")
+            );
+        });
     };
 
     // ========== STUDENT FUNCTIONS ==========
@@ -235,7 +248,7 @@ const AdminDashboard = ({ user }) => {
             const studentData = {
                 student_id: generatedId,
                 full_name: formData.full_name,
-                batch: `Batch ${formData.batch_number}`,
+                batch: formData.batch_number.toString(),
                 program: formData.program,
                 level: formData.level,
                 password: formData.password
@@ -413,7 +426,7 @@ const AdminDashboard = ({ user }) => {
                 full_name: editStudentData.full_name,
                 program: editStudentData.program,
                 level: editStudentData.level,
-                batch: `Batch ${editStudentData.batch_number}`
+                batch: editStudentData.batch_number.toString()
             };
             await updateStudent(editingStudent.id, updateData);
             toast.success('Student data updated successfully!');
@@ -522,6 +535,64 @@ const AdminDashboard = ({ user }) => {
     const handleLogout = () => {
         logout();
         window.location.reload();
+    };
+
+    const handleResetBatch = async () => {
+        if (!resetBatchNumber) {
+            toast.error('Please select a batch number');
+            return;
+        }
+
+        // Store batch number before closing modal
+        const batchToReset = resetBatchNumber;
+
+        // Close modal FIRST to avoid z-index conflict with confirmation dialog
+        setShowResetBatchModal(false);
+
+        // Small delay to ensure modal closes before showing confirmation
+        setTimeout(() => {
+            toast.confirm(
+                `⚠️ DANGER: Reset Batch ${batchToReset}?
+
+This will permanently delete:
+• All students in Batch ${batchToReset}
+• All their bookings
+• All their attendance records
+• All orphan attendance data
+• ALL schedules (all weeks)
+• Current week → Reset to Week 1
+
+This action CANNOT be undone!`,
+                async () => {
+                    try {
+                        setResetBatchLoading(true);
+
+                        // Call RPC function
+                        const { data, error } = await supabase.rpc('reset_batch', {
+                            batch_number_param: batchToReset
+                        });
+
+                        if (error) throw error;
+
+                        toast.success(`✅ ${data.message}`);
+
+                        setResetBatchNumber('1');
+
+                        // Reload data
+                        await loadStudents();
+                    } catch (err) {
+                        console.error('Error resetting batch:', err);
+                        toast.error('❌ Failed to reset batch: ' + err.message);
+                    } finally {
+                        setResetBatchLoading(false);
+                    }
+                },
+                () => {
+                    // If user cancels, reopen the modal
+                    setShowResetBatchModal(true);
+                }
+            );
+        }, 100);
     };
 
     const handleCleanEmptySchedules = async () => {
@@ -792,7 +863,7 @@ const AdminDashboard = ({ user }) => {
                                 </div>
                                 <div className="flex items-center gap-0.5">
                                     <p className="text-[8px] sm:text-[10px] lg:text-xs text-gray-500">
-                                        Batch {settings.batch} | {t('common.week')} {getCurrentWeek()}
+                                        Batch {settings.batch} | {t('common.week')} {currentWeek}
                                     </p>
                                     <button
                                         onClick={() => {
@@ -803,6 +874,21 @@ const AdminDashboard = ({ user }) => {
                                         title="Edit Info"
                                     >
                                         <Pencil size={8} className="sm:w-2.5 sm:h-2.5 text-gray-400 hover:text-[#F39C32]" />
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const newWeek = await incrementWeek();
+                                                toast.success(`Week incremented to ${newWeek}`);
+                                                await refreshWeek();
+                                            } catch (err) {
+                                                toast.error('Failed to increment week');
+                                            }
+                                        }}
+                                        className="ml-1 p-0.5 hover:bg-blue-100 rounded transition-colors group"
+                                        title="Next Week"
+                                    >
+                                        <ChevronRight size={10} className="sm:w-3 sm:h-3 text-blue-500 group-hover:text-blue-700" />
                                     </button>
                                 </div>
                             </div>
@@ -886,6 +972,24 @@ const AdminDashboard = ({ user }) => {
                                                     <div className="min-w-0">
                                                         <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">Bulk Operations</div>
                                                         <div className="text-[10px] sm:text-xs text-gray-500 truncate">Import & manage</div>
+                                                    </div>
+                                                </button>
+
+                                                <div className="border-t border-gray-200 my-1"></div>
+
+                                                <button
+                                                    onClick={() => {
+                                                        setShowResetBatchModal(true);
+                                                        setShowActionsMenu(false);
+                                                    }}
+                                                    className="w-full px-3 py-2 text-left hover:bg-red-50 transition-colors flex items-center gap-2.5 group"
+                                                >
+                                                    <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors flex-shrink-0">
+                                                        <Trash2 size={16} className="text-red-600" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="font-semibold text-gray-800 text-xs sm:text-sm truncate">Reset Batch</div>
+                                                        <div className="text-[10px] sm:text-xs text-gray-500 truncate">Delete batch data</div>
                                                     </div>
                                                 </button>
                                             </div>
@@ -1780,9 +1884,9 @@ const AdminDashboard = ({ user }) => {
                                         <p className="text-[10px] sm:text-xs text-blue-700 font-semibold">This Week</p>
                                     </div>
                                     <p className="text-xl sm:text-3xl font-bold text-blue-900 mb-0.5 sm:mb-1 animate-count-up">
-                                        {schedules.filter(s => s.week_number === getCurrentWeek()).reduce((sum, s) => sum + s.current_students, 0)}
+                                        {schedules.filter(s => s.week_number === currentWeek).reduce((sum, s) => sum + s.current_students, 0)}
                                     </p>
-                                    <p className="text-[10px] sm:text-xs text-blue-600 font-medium">W{getCurrentWeek()} bookings</p>
+                                    <p className="text-[10px] sm:text-xs text-blue-600 font-medium">W{currentWeek} bookings</p>
                                 </div>
                             </div>
 
@@ -1798,9 +1902,9 @@ const AdminDashboard = ({ user }) => {
                                         <p className="text-[10px] sm:text-xs text-orange-700 font-semibold">Next Week</p>
                                     </div>
                                     <p className="text-xl sm:text-3xl font-bold text-orange-900 mb-0.5 sm:mb-1 animate-count-up">
-                                        {schedules.filter(s => s.week_number === getCurrentWeek() + 1).reduce((sum, s) => sum + s.current_students, 0)}
+                                        {schedules.filter(s => s.week_number === currentWeek + 1).reduce((sum, s) => sum + s.current_students, 0)}
                                     </p>
-                                    <p className="text-[10px] sm:text-xs text-orange-600 font-medium">W{getCurrentWeek() + 1} bookings</p>
+                                    <p className="text-[10px] sm:text-xs text-orange-600 font-medium">W{currentWeek + 1} bookings</p>
                                 </div>
                             </div>
                         </div>
@@ -2080,6 +2184,123 @@ const AdminDashboard = ({ user }) => {
             {/* Admin Guide Modal */}
             {showAdminGuide && (
                 <AdminGuide onClose={() => setShowAdminGuide(false)} userId={user.id} />
+            )}
+
+            {/* Reset Batch Modal */}
+            {showResetBatchModal && createPortal(
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full">
+                        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-t-xl">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <Trash2 size={18} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-base font-bold">Reset Batch</h2>
+                                        <p className="text-red-100 text-xs">Delete all batch data</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowResetBatchModal(false)}
+                                    className="text-white/80 hover:text-white transition-colors"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="p-4 space-y-4">
+                            <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded-lg">
+                                <div className="flex items-start gap-2">
+                                    <div className="text-red-600 text-sm mt-0.5">⚠️</div>
+                                    <div>
+                                        <h3 className="font-bold text-red-800 text-sm mb-1">Danger Zone</h3>
+                                        <p className="text-xs text-red-700">
+                                            This will permanently delete ALL data from the selected batch. This action cannot be undone!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Select Batch to Reset
+                                </label>
+                                <select
+                                    value={resetBatchNumber}
+                                    onChange={(e) => setResetBatchNumber(e.target.value)}
+                                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm"
+                                    disabled={resetBatchLoading}
+                                >
+                                    <option value="1">Batch 1</option>
+                                    <option value="2">Batch 2</option>
+                                    <option value="3">Batch 3</option>
+                                    <option value="4">Batch 4</option>
+                                    <option value="5">Batch 5</option>
+                                </select>
+                            </div>
+
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                                <h4 className="font-semibold text-gray-800 mb-2 text-xs">What will be deleted:</h4>
+                                <ul className="space-y-1 text-xs text-gray-600">
+                                    <li className="flex items-center gap-2">
+                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                        All students in Batch {resetBatchNumber}
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                        All bookings from these students
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                        All attendance records
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                        All orphan attendance data
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                                        ALL schedules (all weeks)
+                                    </li>
+                                    <li className="flex items-center gap-2">
+                                        <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
+                                        Current week → Reset to Week 1
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowResetBatchModal(false)}
+                                    className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all text-sm"
+                                    disabled={resetBatchLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleResetBatch}
+                                    disabled={resetBatchLoading}
+                                    className="flex-1 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                                >
+                                    {resetBatchLoading ? (
+                                        <>
+                                            <RefreshCw size={14} className="animate-spin" />
+                                            Resetting...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Trash2 size={14} />
+                                            Reset Batch {resetBatchNumber}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
             )}
         </div>
     );

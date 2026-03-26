@@ -1,0 +1,55 @@
+name: Auto Increment Week
+
+# Otomatis increment current_week setiap Senin jam 00:01 WIB
+# Senin 00:01 WIB = Minggu 17:01 UTC
+
+on:
+  schedule:
+    # Setiap Minggu jam 17:01 UTC (= Senin 00:01 WIB)
+    # Cron format: minute hour day-of-month month day-of-week
+    # 0 = Sunday, 1 = Monday, dst.
+    - cron: '1 17 * * 0'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  increment-week:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Call Supabase RPC to increment week
+        run: |
+          echo "🚀 Calling Supabase API to increment week..."
+          
+          response=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -d "{\"api_key\": \"${{ secrets.SUPABASE_API_KEY }}\"}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/api_increment_week")
+          
+          echo "📊 Response: $response"
+          
+          # Check if successful
+          if echo "$response" | grep -q '"success":true'; then
+            echo "✅ Week incremented successfully!"
+            
+            # Extract old and new week from response
+            old_week=$(echo "$response" | grep -o '"old_week":[0-9]*' | grep -o '[0-9]*')
+            new_week=$(echo "$response" | grep -o '"new_week":[0-9]*' | grep -o '[0-9]*')
+            
+            echo "📅 Week changed from $old_week to $new_week"
+          else
+            echo "❌ Failed to increment week"
+            echo "Response: $response"
+            exit 1
+          fi
+      
+      - name: Send notification (optional)
+        if: success()
+        run: |
+          echo "✅ Auto-increment week completed successfully at $(date)"
+          # Tambahkan notifikasi ke Slack/Discord/Email jika perlu

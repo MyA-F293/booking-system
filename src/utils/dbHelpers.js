@@ -648,21 +648,77 @@ export const getScheduleStudents = async (scheduleId) => {
 // ========================================
 
 /**
- * Get current week number (ISO week - starts on Monday)
+ * Get current week number from database (batch-based, not ISO calendar)
+ * This is now async - use WeekContext instead for better performance
  */
-export const getCurrentWeek = () => {
-    const now = new Date()
+export const getCurrentWeek = async () => {
+    try {
+        const { data, error } = await supabase
+            .from('settings')
+            .select('current_week')
+            .eq('id', 1)
+            .single();
 
-    // ISO week calculation (week starts on Monday)
-    const dayOfWeek = now.getDay() || 7 // Convert Sunday (0) to 7
-    const thursday = new Date(now)
-    thursday.setDate(now.getDate() - dayOfWeek + 4) // Get Thursday of current week
+        if (error) {
+            console.error('❌ Error getting current week:', error);
+            return 1; // fallback
+        }
 
-    const yearStart = new Date(thursday.getFullYear(), 0, 1)
-    const weekNumber = Math.ceil((((thursday - yearStart) / 86400000) + 1) / 7)
+        console.log('📅 getCurrentWeek (database):', data.current_week);
+        return data.current_week;
+    } catch (err) {
+        console.error('❌ Exception getting current week:', err);
+        return 1; // fallback
+    }
+}
 
-    console.log('📅 getCurrentWeek (ISO):', weekNumber);
-    return weekNumber
+/**
+ * Increment current week by 1 (admin only)
+ */
+export const incrementWeek = async () => {
+    try {
+        const currentWeek = await getCurrentWeek();
+        const newWeek = currentWeek + 1;
+
+        const { error } = await supabase
+            .from('settings')
+            .update({
+                current_week: newWeek,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', 1);
+
+        if (error) throw error;
+
+        console.log('✅ Week incremented to:', newWeek);
+        return newWeek;
+    } catch (err) {
+        console.error('❌ Error incrementing week:', err);
+        throw err;
+    }
+}
+
+/**
+ * Set current week to specific number (admin only)
+ */
+export const setCurrentWeek = async (weekNumber) => {
+    try {
+        const { error } = await supabase
+            .from('settings')
+            .update({
+                current_week: weekNumber,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', 1);
+
+        if (error) throw error;
+
+        console.log('✅ Week set to:', weekNumber);
+        return weekNumber;
+    } catch (err) {
+        console.error('❌ Error setting week:', err);
+        throw err;
+    }
 }
 
 /**

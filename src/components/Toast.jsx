@@ -141,45 +141,106 @@ const ConfirmModal = ({ message, onConfirm, onCancel }) => {
         setTimeout(() => setIsVisible(true), 10);
     }, []);
 
+    // Parse message to extract structured content
+    const parseMessage = (msg) => {
+        // Check if message contains structured format (with bullet points)
+        if (msg.includes('•') || msg.includes('\n')) {
+            const lines = msg.split('\n').filter(line => line.trim());
+            const title = lines[0];
+            const items = lines.slice(1).map(line => line.trim());
+            return { title, items, isStructured: true };
+        }
+        return { title: msg, items: [], isStructured: false };
+    };
+
+    const { title, items, isStructured } = parseMessage(message);
+
     return (
         <div className={`
-            fixed inset-0 z-[70] flex items-start justify-center p-2 sm:p-3 overflow-y-auto
+            fixed inset-0 z-[70] flex items-center justify-center p-4 overflow-y-auto
             transition-all duration-300
-            ${isVisible ? 'bg-black/50 backdrop-blur-sm' : 'bg-transparent'}
+            ${isVisible ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent'}
         `}>
             <div className={`
-                bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-[260px] sm:max-w-sm w-full overflow-hidden mt-12 mb-4
+                bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden
                 transform transition-all duration-300
                 ${isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}
             `}>
-                {/* Header */}
-                <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] p-2.5 sm:p-4">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1 sm:p-1.5 bg-white/20 rounded-md sm:rounded-lg">
-                            <AlertTriangle className="text-white w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                {/* Header with Icon */}
+                <div className="bg-gradient-to-br from-red-500 via-red-600 to-red-700 p-5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center flex-shrink-0">
+                            <AlertTriangle className="text-white w-7 h-7" strokeWidth={2.5} />
                         </div>
-                        <h3 className="text-sm sm:text-lg font-bold text-white">Confirm</h3>
+                        <div>
+                            <h3 className="text-xl font-bold text-white">Confirmation Required</h3>
+                            <p className="text-red-100 text-sm mt-0.5">Please review before proceeding</p>
+                        </div>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="p-3 sm:p-4">
-                    <p className="text-gray-700 text-xs sm:text-sm leading-relaxed">
-                        {message}
-                    </p>
+                <div className="p-6">
+                    {isStructured ? (
+                        <>
+                            {/* Title */}
+                            <div className="mb-4">
+                                <p className="text-gray-800 font-semibold text-base leading-relaxed">
+                                    {title}
+                                </p>
+                            </div>
+
+                            {/* Items List */}
+                            <div className="bg-red-50 border-l-4 border-red-500 rounded-r-lg p-4 space-y-2.5">
+                                {items.map((item, index) => {
+                                    // Remove bullet point if exists
+                                    const cleanItem = item.replace(/^[•\-]\s*/, '').trim();
+
+                                    // Determine color based on content
+                                    let dotColor = 'bg-red-500';
+                                    if (cleanItem.toLowerCase().includes('schedule')) {
+                                        dotColor = 'bg-orange-500';
+                                    } else if (cleanItem.toLowerCase().includes('week')) {
+                                        dotColor = 'bg-blue-500';
+                                    }
+
+                                    return (
+                                        <div key={index} className="flex items-start gap-3">
+                                            <div className={`${dotColor} w-2 h-2 rounded-full mt-1.5 flex-shrink-0`}></div>
+                                            <p className="text-gray-700 text-sm leading-relaxed flex-1">
+                                                {cleanItem}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Warning Footer */}
+                            <div className="mt-4 bg-gray-100 rounded-lg p-3 flex items-center gap-2">
+                                <AlertTriangle className="text-red-600 w-5 h-5 flex-shrink-0" />
+                                <p className="text-xs text-gray-700 font-medium">
+                                    This action is permanent and cannot be undone
+                                </p>
+                            </div>
+                        </>
+                    ) : (
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                            {message}
+                        </p>
+                    )}
                 </div>
 
                 {/* Actions */}
-                <div className="px-3 pb-3 sm:px-4 sm:pb-4 flex gap-2 justify-end">
+                <div className="px-6 pb-6 flex gap-3">
                     <button
                         onClick={onCancel}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg border-2 border-gray-300 text-gray-600 font-semibold hover:bg-gray-50 transition-all text-[11px] sm:text-sm"
+                        className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all text-sm"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
-                        className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md sm:rounded-lg bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white font-semibold hover:from-[#183d6e] hover:to-[#1F4E8C] transition-all shadow-md hover:shadow-lg text-[11px] sm:text-sm"
+                        className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl text-sm"
                     >
                         Yes, Continue
                     </button>
