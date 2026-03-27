@@ -71,15 +71,9 @@ const AttendanceReportExcel = () => {
     // Get unique classes
     const uniqueClasses = [...new Set(students.map(s => s.class_name).filter(Boolean))];
 
-    // Get weeks range - EYSA starts from week 2 in 2026
-    // Dynamically determine max week from attendance data
-    const maxWeekInData = attendanceData.length > 0
-        ? Math.max(...attendanceData.map(r => r.week_number || 2))
-        : currentWeek;
-
-    // Show from week 2 to current week + 2 (or at least 8 weeks)
-    const endWeek = Math.max(maxWeekInData + 2, 9);
-    const weeks = Array.from({ length: endWeek - 1 }, (_, i) => i + 2); // Start from week 2
+    // Get weeks range - Batch system uses Week 1-8
+    // Show all 8 weeks for the batch
+    const weeks = Array.from({ length: 8 }, (_, i) => i + 1); // Week 1-8 for batch system
 
     // Build attendance matrix
     const buildAttendanceMatrix = () => {
