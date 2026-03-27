@@ -71,7 +71,7 @@ const BookingSystemDB = ({ user }) => {
         return classBadges[className] || { emoji: '📖', color: 'bg-gray-100 text-gray-700' };
     };
 
-    const [activeView, setActiveView] = useState('dashboard');
+    const [activeView, setActiveView] = useState('booking'); // Default to 'booking' (New tab) - students can only book here
     const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [editBatch, setEditBatch] = useState(1);
     const [showUserGuide, setShowUserGuide] = useState(false);
@@ -822,7 +822,7 @@ const BookingSystemDB = ({ user }) => {
                 <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg mb-4 sm:mb-6 overflow-hidden">
                     <div className="flex border-b border-gray-100">
                         {[
-                            { id: 'dashboard', icon: LayoutDashboard, label: t('dashboard.bookingDetails'), shortLabel: 'Booking' },
+                            // { id: 'dashboard', icon: LayoutDashboard, label: t('dashboard.bookingDetails'), shortLabel: 'Booking' }, // Hidden - students can only book via "New" tab
                             { id: 'booking', icon: PlusCircle, label: t('dashboard.createNewBooking'), shortLabel: 'New' },
                             { id: 'attendance', icon: ClipboardList, label: 'My Attendance', shortLabel: 'Attendance' },
                         ].map((tab) => (
