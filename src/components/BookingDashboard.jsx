@@ -517,12 +517,13 @@ const BookingDashboard = ({ user }) => {
                                                                     <>
                                                                         <button
                                                                             onClick={() => handleViewDetails(schedule)}
-                                                                            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1"
+                                                                            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1"
                                                                         >
                                                                             {t('dashboard.viewDetails')}
                                                                             <ChevronRight size={14} />
                                                                         </button>
-                                                                        <button
+                                                                        {/* Book Now button hidden - students can only book via "New" tab */}
+                                                                        {/* <button
                                                                             onClick={() => handleBookClass(schedule)}
                                                                             disabled={
                                                                                 isBooking ||
@@ -537,7 +538,7 @@ const BookingDashboard = ({ user }) => {
                                                                             }
                                                                         >
                                                                             {isBooking ? 'Booking...' : schedule.current_students >= 10 ? 'Full' : 'Book Now'}
-                                                                        </button>
+                                                                        </button> */}
                                                                     </>
                                                                 )}
                                                             </div>
