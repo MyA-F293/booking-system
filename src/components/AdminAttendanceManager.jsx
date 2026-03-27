@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Users, Clock, CheckCircle, XCircle, AlertCircle, Loader2, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from './Toast';
-import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, submitBatchAttendance, getAttendanceRecords, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getCurrentYear, submitBatchAttendance, getAttendanceRecords, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
 import Modal from './Modal';
 import { useModal } from '../hooks/useModal';
+import { useWeek } from '../contexts/WeekContext';
 
 // Class badges
 const classBadges = {
@@ -32,6 +33,7 @@ const dayConfig = {
 const AdminAttendanceManager = () => {
     const toast = useToast();
     const { isOpen, modalConfig, hideModal, showSuccess } = useModal();
+    const { currentWeek } = useWeek();
     const [schedules, setSchedules] = useState([]);
     const [filteredSchedules, setFilteredSchedules] = useState([]);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
@@ -42,10 +44,15 @@ const AdminAttendanceManager = () => {
 
     // Filter states
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedWeek, setSelectedWeek] = useState(getCurrentWeek());
+    const [selectedWeek, setSelectedWeek] = useState(currentWeek);
     const [expandedDays, setExpandedDays] = useState(new Set(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])); // Default expand weekdays
 
     const currentYear = getCurrentYear();
+
+    // Sync selectedWeek with currentWeek from database
+    useEffect(() => {
+        setSelectedWeek(currentWeek);
+    }, [currentWeek]);
 
     useEffect(() => {
         loadAllSchedules();
@@ -432,8 +439,8 @@ const AdminAttendanceManager = () => {
                                 onChange={(e) => setSelectedWeek(Number(e.target.value))}
                                 className="bg-white text-gray-800 border-0 rounded-md px-2 py-1 font-semibold focus:ring-2 focus:ring-white/50 cursor-pointer text-sm"
                             >
-                                {[...Array(10)].map((_, i) => {
-                                    const week = getCurrentWeek() - 2 + i;
+                                {[...Array(8)].map((_, i) => {
+                                    const week = i + 1; // Week 1-8 for batch system
                                     return <option key={week} value={week} className="bg-white text-gray-800">Week {week}</option>;
                                 })}
                             </select>
@@ -524,10 +531,10 @@ const AdminAttendanceManager = () => {
                                 There are no classes scheduled for Week {selectedWeek}, {currentYear}
                             </p>
                             <button
-                                onClick={() => setSelectedWeek(getCurrentWeek())}
+                                onClick={() => setSelectedWeek(currentWeek)}
                                 className="bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a15] text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg"
                             >
-                                Go to Current Week ({getCurrentWeek()})
+                                Go to Current Week ({currentWeek})
                             </button>
                         </div>
                     ) : filteredSchedules.length === 0 ? (
