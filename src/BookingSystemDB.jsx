@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
+import { useWeek } from './contexts/WeekContext';
 import { useToast } from './components/Toast';
 import useModalScrollLock from './hooks/useModalScrollLock';
 
@@ -20,7 +21,6 @@ import {
     createBooking,
     hasUserBookedPhase,
     getUserBookings,
-    getCurrentWeek,
     getCurrentYear,
     getDateForDayInWeek,
     formatDateShort,
@@ -28,6 +28,7 @@ import {
 } from './utils/dbHelpers';
 
 const BookingSystemDB = ({ user }) => {
+    const { currentWeek } = useWeek(); // Use database week from context
     console.log('🚀 BookingSystemDB component mounted');
     console.log('👤 Received user prop:', user);
     console.log('📦 User batch:', user?.batch);
@@ -133,7 +134,6 @@ const BookingSystemDB = ({ user }) => {
         { name: 'Intermediate', comingSoon: false }
     ];
 
-    const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
 
     console.log('📅 Current Week:', currentWeek, 'Year:', currentYear);

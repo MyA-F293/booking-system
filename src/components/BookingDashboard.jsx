@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, Users, User, Clock, RefreshCw, Loader2, BookOpen, X, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, getUserBookings, autoCopyBookingsToNextWeek, createBooking, hasUserBookedPhase, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
+import { useWeek } from '../contexts/WeekContext';
+import { getSchedules, getScheduleStudents, getCurrentYear, getUserBookings, autoCopyBookingsToNextWeek, createBooking, hasUserBookedPhase, getDateForDayInWeek, formatDateShort } from '../utils/dbHelpers';
 import { useRefreshCooldown } from '../utils/useDebounce';
 import { supabase } from '../supabaseClient';
 import { useToast } from './Toast';
@@ -44,6 +45,7 @@ const getClassBadge = (className) => {
 const BookingDashboard = ({ user }) => {
     const { t } = useLanguage();
     const toast = useToast();
+    const { currentWeek } = useWeek(); // Use database week from context
     const [schedules, setSchedules] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
@@ -54,7 +56,6 @@ const BookingDashboard = ({ user }) => {
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [bookedSchedule, setBookedSchedule] = useState(null);
 
-    const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
     const nextWeek = currentWeek + 1;
     const displayWeek = selectedWeekTab === 'current' ? currentWeek : nextWeek;

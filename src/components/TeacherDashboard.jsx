@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { LogOut, Users, Calendar, Clock, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw, Key, Eye, EyeOff } from 'lucide-react';
 import { useToast } from './Toast';
+import { useWeek } from '../contexts/WeekContext';
 import { logout, updateTeacherPassword } from '../utils/authHelpers';
-import { getSchedules, getScheduleStudents, getCurrentWeek, getCurrentYear, submitBatchAttendance } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getCurrentYear, submitBatchAttendance } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
 
 const TeacherDashboard = ({ user }) => {
     const toast = useToast();
+    const { currentWeek } = useWeek(); // Use database week from context
     const [schedules, setSchedules] = useState([]);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [students, setStudents] = useState([]);
@@ -27,7 +29,6 @@ const TeacherDashboard = ({ user }) => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordLoading, setPasswordLoading] = useState(false);
 
-    const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
 
     // Get current day and time period

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle, Search, AlertCircle } from 'lucide-react';
-import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentWeek, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
+import { useWeek } from '../contexts/WeekContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
 import useModalScrollLock from '../hooks/useModalScrollLock';
@@ -78,9 +79,9 @@ const getClassBadge = (className) => {
 const AdminBookingDashboard = () => {
     const { t } = useLanguage();
     const toast = useToast();
+    const { currentWeek } = useWeek(); // Use database week from context
 
-    // Define currentWeek and currentYear FIRST before using in state
-    const currentWeek = getCurrentWeek();
+    // Define currentYear
     const currentYear = getCurrentYear();
 
     const [schedules, setSchedules] = useState([]);

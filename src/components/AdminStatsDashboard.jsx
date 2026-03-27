@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import { Users, BookOpen, GraduationCap, Calendar, TrendingUp, Clock, RefreshCw, Loader2, FileSpreadsheet, FileText, CheckCircle2, AlertCircle, X, Search, UserCheck, UserX } from 'lucide-react';
 import { supabase } from '../supabaseClient';
-import { getCurrentWeek, getCurrentYear } from '../utils/dbHelpers';
+import { getCurrentYear } from '../utils/dbHelpers';
+import { useWeek } from '../contexts/WeekContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useToast } from './Toast';
 import useModalScrollLock from '../hooks/useModalScrollLock';
@@ -14,6 +15,7 @@ import html2canvas from 'html2canvas';
 const AdminStatsDashboard = () => {
     const { t, language } = useLanguage();
     const toast = useToast();
+    const { currentWeek } = useWeek(); // Use database week from context
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
     const [selectedWeek, setSelectedWeek] = useState('next'); // Default to 'next' week
@@ -38,7 +40,6 @@ const AdminStatsDashboard = () => {
     const [showStudentModal, setShowStudentModal] = useState(false);
     const [modalType, setModalType] = useState('booked'); // 'booked' or 'notBooked'
 
-    const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
     const nextWeek = currentWeek + 1;
     const displayWeek = selectedWeek === 'current' ? currentWeek : nextWeek;

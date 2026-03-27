@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Download, FileSpreadsheet, Search, Filter, Calendar, RefreshCw, Loader2 } from 'lucide-react';
 import { useToast } from './Toast';
+import { useWeek } from '../contexts/WeekContext';
 import * as XLSX from 'xlsx';
-import { getAttendanceRecords, getAllStudents, getCurrentWeek, getCurrentYear } from '../utils/dbHelpers';
+import { getAttendanceRecords, getAllStudents, getCurrentYear } from '../utils/dbHelpers';
 
 const AttendanceReportExcel = () => {
     const toast = useToast();
+    const { currentWeek } = useWeek(); // Use database week from context
     const [loading, setLoading] = useState(false);
     const [attendanceData, setAttendanceData] = useState([]);
     const [students, setStudents] = useState([]);
@@ -14,7 +16,6 @@ const AttendanceReportExcel = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [hoveredCell, setHoveredCell] = useState(null); // For tooltip
 
-    const currentWeek = getCurrentWeek();
     const currentYear = getCurrentYear();
 
     useEffect(() => {
