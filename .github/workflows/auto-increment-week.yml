@@ -25,6 +25,7 @@ jobs:
         run: |
           echo "🚀 Calling Supabase API to increment week..."
           
+          # Call API once and save response
           response=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
@@ -33,17 +34,18 @@ jobs:
           
           echo "📊 Response: $response"
           
-          # Check if successful
-          if echo "$response" | grep -q '"success":true'; then
+          # Parse JSON using jq (more reliable than grep)
+          success=$(echo "$response" | jq -r '.success // false')
+          
+          if [ "$success" = "true" ]; then
+            old_week=$(echo "$response" | jq -r '.old_week')
+            new_week=$(echo "$response" | jq -r '.new_week')
+            
             echo "✅ Week incremented successfully!"
-            
-            # Extract old and new week from response
-            old_week=$(echo "$response" | grep -o '"old_week":[0-9]*' | grep -o '[0-9]*')
-            new_week=$(echo "$response" | grep -o '"new_week":[0-9]*' | grep -o '[0-9]*')
-            
             echo "📅 Week changed from $old_week to $new_week"
           else
-            echo "❌ Failed to increment week"
+            error=$(echo "$response" | jq -r '.error // "Unknown error"')
+            echo "❌ Failed to increment week: $error"
             echo "Response: $response"
             exit 1
           fi
