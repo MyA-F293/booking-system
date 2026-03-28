@@ -240,8 +240,8 @@ const BulkOperations = ({ onClose }) => {
 
         if (type === 'import') {
             template = [
-                { student_id: 'EYSA26010001', full_name: 'Rosnawati', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' },
-                { student_id: 'EYSA26010002', full_name: 'Ahmad Rizki', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' }
+                { student_id: 'EYSA26010001', full_name: 'Rosnawati', batch: 2, program: 'English Campus & Career', level: 'Starter' },
+                { student_id: 'EYSA26010002', full_name: 'Ahmad Rizki', batch: 2, program: 'English Campus & Career', level: 'Starter' }
             ];
             filename = 'template_import_students.xlsx';
         } else if (type === 'assign') {
@@ -697,8 +697,6 @@ const BulkOperations = ({ onClose }) => {
                                     <div>• <strong>batch</strong> - Batch number (1, 2, 3...)</div>
                                     <div>• <strong>program</strong> - Program name</div>
                                     <div>• <strong>level</strong> - Level name</div>
-                                    <div>• <strong>email</strong> - Email (optional)</div>
-                                    <div>• <strong>phone</strong> - Phone number (optional)</div>
                                 </div>
                                 <div className="mt-3 p-3 bg-white rounded-lg border border-blue-200">
                                     <p className="text-xs text-gray-700"><strong>Default Password:</strong> student123</p>
