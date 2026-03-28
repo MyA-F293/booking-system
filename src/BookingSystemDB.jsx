@@ -130,8 +130,8 @@ const BookingSystemDB = ({ user }) => {
     const levels = [
         { name: 'Starter', comingSoon: false },
         { name: 'Upper Starter', comingSoon: false },
-        { name: 'Pre-Intermediate', comingSoon: false },
-        { name: 'Intermediate', comingSoon: false }
+        { name: 'Pre-Intermediate', comingSoon: true },
+        { name: 'Intermediate', comingSoon: true }
     ];
 
     const currentYear = getCurrentYear();
@@ -955,8 +955,8 @@ const BookingSystemDB = ({ user }) => {
                                                     }`}
                                             >
                                                 {level.comingSoon && (
-                                                    <span className="absolute -top-1 -right-1 text-[8px] font-bold text-amber-600 bg-amber-100 px-1 rounded">
-                                                        Soon
+                                                    <span className="absolute -top-1 -right-1 text-[9px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 rounded-full shadow-md">
+                                                        Coming Soon
                                                     </span>
                                                 )}
                                                 <span className={`text-xs sm:text-sm font-semibold ${level.comingSoon ? 'text-gray-400' : ''}`}>
