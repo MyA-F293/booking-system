@@ -79,7 +79,8 @@ const BulkOperations = ({ onClose }) => {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            const requiredFields = ['full_name', 'email', 'batch'];
+            // Updated required fields to match CSV format
+            const requiredFields = ['student_id', 'full_name', 'batch', 'program', 'level'];
             const missingFields = requiredFields.filter(field =>
                 !jsonData[0] || !jsonData[0].hasOwnProperty(field)
             );
@@ -91,10 +92,13 @@ const BulkOperations = ({ onClose }) => {
             }
 
             const students = jsonData.map(row => ({
+                student_id: row.student_id, // Use student_id from CSV
                 full_name: row.full_name,
-                email: row.email,
+                program: row.program,
+                level: row.level,
                 batch: parseInt(row.batch),
-                phone: row.phone || null,
+                email: row.email || null, // Optional
+                phone: row.phone || null, // Optional
                 role: 'student'
             }));
 
@@ -235,8 +239,8 @@ const BulkOperations = ({ onClose }) => {
 
         if (type === 'import') {
             template = [
-                { full_name: 'John Doe', email: 'john@example.com', batch: 1, phone: '081234567890' },
-                { full_name: 'Jane Smith', email: 'jane@example.com', batch: 1, phone: '081234567891' }
+                { student_id: 'EYSA26010027', full_name: 'Andi Naelah Marsya S', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' },
+                { student_id: 'EYSA26010028', full_name: 'Kayla Maghfirah', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' }
             ];
             filename = 'template_import_students.xlsx';
         } else if (type === 'assign') {
@@ -687,9 +691,12 @@ const BulkOperations = ({ onClose }) => {
                                     Required Columns
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">
+                                    <div>• <strong>student_id</strong> - Student ID (e.g., EYSA26010027)</div>
                                     <div>• <strong>full_name</strong> - Student's full name</div>
-                                    <div>• <strong>email</strong> - Unique email address</div>
                                     <div>• <strong>batch</strong> - Batch number (1, 2, 3...)</div>
+                                    <div>• <strong>program</strong> - Program name</div>
+                                    <div>• <strong>level</strong> - Level name</div>
+                                    <div>• <strong>email</strong> - Email (optional)</div>
                                     <div>• <strong>phone</strong> - Phone number (optional)</div>
                                 </div>
                             </div>
@@ -724,23 +731,25 @@ const BulkOperations = ({ onClose }) => {
                                         <table className="w-full text-xs sm:text-sm">
                                             <thead className="bg-gray-50 border-b border-gray-200">
                                                 <tr>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Student ID</th>
                                                     <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Full Name</th>
-                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Email</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Program</th>
+                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Level</th>
                                                     <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Batch</th>
-                                                    <th className="px-3 sm:px-4 py-2 text-left font-medium text-gray-700">Phone</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {importPreview.map((row, idx) => (
                                                     <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+                                                        <td className="px-3 sm:px-4 py-2 font-mono text-xs">{row.student_id}</td>
                                                         <td className="px-3 sm:px-4 py-2">{row.full_name}</td>
-                                                        <td className="px-3 sm:px-4 py-2 text-gray-600">{row.email}</td>
+                                                        <td className="px-3 sm:px-4 py-2 text-gray-600 text-xs">{row.program}</td>
+                                                        <td className="px-3 sm:px-4 py-2 text-gray-600 text-xs">{row.level}</td>
                                                         <td className="px-3 sm:px-4 py-2">
                                                             <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium">
                                                                 Batch {row.batch}
                                                             </span>
                                                         </td>
-                                                        <td className="px-3 sm:px-4 py-2 text-gray-600">{row.phone || '-'}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
