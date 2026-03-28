@@ -1396,8 +1396,6 @@ export const bulkCreateUsers = async (users) => {
                     batch: user.batch,
                     program: user.program,
                     level: user.level,
-                    email: user.email || null,
-                    phone: user.phone || null,
                     password: 'student123', // Default password
                     role: 'student',
                     is_active: true

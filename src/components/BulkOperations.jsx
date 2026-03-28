@@ -97,8 +97,6 @@ const BulkOperations = ({ onClose }) => {
                 batch: parseInt(row.batch),
                 program: row.program,
                 level: row.level,
-                email: row.email || null,
-                phone: row.phone || null,
                 password: 'student123', // Default password
                 role: 'student'
             }));
