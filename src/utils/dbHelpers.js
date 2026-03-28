@@ -1387,16 +1387,18 @@ export const bulkCreateUsers = async (users) => {
             }
 
             // Use student_id from CSV (no auto-generation)
-            // Create user with password from CSV or default EYSA2026
+            // Create user with default password student123
             const { data, error } = await supabase
                 .from('users')
                 .insert([{
                     student_id: user.student_id,
                     full_name: user.full_name,
+                    batch: user.batch,
                     program: user.program,
                     level: user.level,
-                    batch: user.batch,
-                    password: user.password || 'EYSA2026', // Use provided password or default
+                    email: user.email || null,
+                    phone: user.phone || null,
+                    password: 'student123', // Default password
                     role: 'student',
                     is_active: true
                 }])

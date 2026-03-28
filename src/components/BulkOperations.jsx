@@ -79,7 +79,7 @@ const BulkOperations = ({ onClose }) => {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            // Updated required fields to match Student Management form
+            // Required fields: student_id, full_name, batch, program, level
             const requiredFields = ['student_id', 'full_name', 'batch', 'program', 'level'];
             const missingFields = requiredFields.filter(field =>
                 !jsonData[0] || !jsonData[0].hasOwnProperty(field)
@@ -92,12 +92,14 @@ const BulkOperations = ({ onClose }) => {
             }
 
             const students = jsonData.map(row => ({
-                student_id: row.student_id, // Use student_id from CSV
+                student_id: row.student_id,
                 full_name: row.full_name,
+                batch: parseInt(row.batch),
                 program: row.program,
                 level: row.level,
-                batch: parseInt(row.batch),
-                password: row.password || 'EYSA2026', // Default password if not provided
+                email: row.email || null,
+                phone: row.phone || null,
+                password: 'student123', // Default password
                 role: 'student'
             }));
 
@@ -238,8 +240,8 @@ const BulkOperations = ({ onClose }) => {
 
         if (type === 'import') {
             template = [
-                { student_id: 'EYSA26010027', full_name: 'Andi Naelah Marsya S', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' },
-                { student_id: 'EYSA26010028', full_name: 'Kayla Maghfirah', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' }
+                { student_id: 'EYSA26010001', full_name: 'Rosnawati', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' },
+                { student_id: 'EYSA26010002', full_name: 'Ahmad Rizki', batch: 2, program: 'English Campus & Career', level: 'Starter', email: '', phone: '' }
             ];
             filename = 'template_import_students.xlsx';
         } else if (type === 'assign') {
@@ -690,13 +692,16 @@ const BulkOperations = ({ onClose }) => {
                                     Required Columns
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-700">
-                                    <div>• <strong>student_id</strong> - Student ID (e.g., EYSA26010027)</div>
+                                    <div>• <strong>student_id</strong> - Student ID (e.g., EYSA26010001)</div>
                                     <div>• <strong>full_name</strong> - Student's full name</div>
                                     <div>• <strong>batch</strong> - Batch number (1, 2, 3...)</div>
                                     <div>• <strong>program</strong> - Program name</div>
                                     <div>• <strong>level</strong> - Level name</div>
                                     <div>• <strong>email</strong> - Email (optional)</div>
                                     <div>• <strong>phone</strong> - Phone number (optional)</div>
+                                </div>
+                                <div className="mt-3 p-3 bg-white rounded-lg border border-blue-200">
+                                    <p className="text-xs text-gray-700"><strong>Default Password:</strong> student123</p>
                                 </div>
                             </div>
 
