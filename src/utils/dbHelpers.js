@@ -648,10 +648,26 @@ export const getScheduleStudents = async (scheduleId) => {
 // ========================================
 
 /**
- * Get current week number from database (batch-based, not ISO calendar)
- * This is now async - use WeekContext instead for better performance
+ * Get current week number (SYNC version for backward compatibility)
+ * Returns ISO week number as fallback
+ * For database-based week, use useWeek() hook instead
  */
-export const getCurrentWeek = async () => {
+export const getCurrentWeek = () => {
+    // Return ISO week as fallback for components that need sync version
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const diff = now - start;
+    const oneWeek = 1000 * 60 * 60 * 24 * 7;
+    const weekNumber = Math.ceil(diff / oneWeek);
+    return weekNumber;
+}
+
+/**
+ * Get current week from database (ASYNC version)
+ * Use this when you need database-based week
+ * Or better: use useWeek() hook in components
+ */
+export const getCurrentWeekFromDB = async () => {
     try {
         const { data, error } = await supabase
             .from('settings')
@@ -661,23 +677,24 @@ export const getCurrentWeek = async () => {
 
         if (error) {
             console.error('❌ Error getting current week:', error);
-            return 1; // fallback
+            return getCurrentWeek(); // fallback to ISO week
         }
 
-        console.log('📅 getCurrentWeek (database):', data.current_week);
+        console.log('📅 getCurrentWeekFromDB:', data.current_week);
         return data.current_week;
     } catch (err) {
         console.error('❌ Exception getting current week:', err);
-        return 1; // fallback
+        return getCurrentWeek(); // fallback to ISO week
     }
 }
 
 /**
  * Increment current week by 1 (admin only)
+ * DEPRECATED: Use useWeek() hook instead
  */
 export const incrementWeek = async () => {
     try {
-        const currentWeek = await getCurrentWeek();
+        const currentWeek = await getCurrentWeekFromDB();
         const newWeek = currentWeek + 1;
 
         const { error } = await supabase
@@ -1357,47 +1374,31 @@ export const bulkCreateUsers = async (users) => {
 
     for (const user of users) {
         try {
-            // Check if email already exists
+            // Check if student_id already exists
             const { data: existing } = await supabase
                 .from('users')
                 .select('id')
-                .eq('email', user.email)
+                .eq('student_id', user.student_id)
                 .single();
 
             if (existing) {
-                failed.push({ ...user, error: 'Email already exists' });
+                failed.push({ ...user, error: 'Student ID already exists' });
                 continue;
             }
 
-            // Generate student ID
-            const year = new Date().getFullYear().toString().slice(-2);
-            const batchPadded = user.batch.toString().padStart(2, '0');
-
-            // Get last student ID for this batch
-            const { data: lastStudent } = await supabase
-                .from('users')
-                .select('student_id')
-                .like('student_id', `EYSA${year}${batchPadded}%`)
-                .order('student_id', { ascending: false })
-                .limit(1)
-                .single();
-
-            let sequence = 1;
-            if (lastStudent && lastStudent.student_id) {
-                const lastSequence = parseInt(lastStudent.student_id.slice(-3));
-                sequence = lastSequence + 1;
-            }
-
-            const student_id = `EYSA${year}${batchPadded}${sequence.toString().padStart(3, '0')}`;
-
-            // Create user
+            // Use student_id from CSV (no auto-generation)
+            // Create user with password from CSV or default EYSA2026
             const { data, error } = await supabase
                 .from('users')
                 .insert([{
-                    ...user,
-                    student_id,
-                    password: 'student123', // Default password
-                    role: 'student'
+                    student_id: user.student_id,
+                    full_name: user.full_name,
+                    program: user.program,
+                    level: user.level,
+                    batch: user.batch,
+                    password: user.password || 'EYSA2026', // Use provided password or default
+                    role: 'student',
+                    is_active: true
                 }])
                 .select()
                 .single();

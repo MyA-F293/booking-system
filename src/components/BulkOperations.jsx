@@ -79,7 +79,7 @@ const BulkOperations = ({ onClose }) => {
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-            // Updated required fields to match CSV format
+            // Updated required fields to match Student Management form
             const requiredFields = ['student_id', 'full_name', 'batch', 'program', 'level'];
             const missingFields = requiredFields.filter(field =>
                 !jsonData[0] || !jsonData[0].hasOwnProperty(field)
@@ -97,8 +97,7 @@ const BulkOperations = ({ onClose }) => {
                 program: row.program,
                 level: row.level,
                 batch: parseInt(row.batch),
-                email: row.email || null, // Optional
-                phone: row.phone || null, // Optional
+                password: row.password || 'EYSA2026', // Default password if not provided
                 role: 'student'
             }));
 

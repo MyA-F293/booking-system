@@ -13,10 +13,16 @@ export const useWeek = () => {
 
 export const WeekProvider = ({ children }) => {
     const [currentWeek, setCurrentWeek] = useState(1);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [initialized, setInitialized] = useState(false);
 
     // Fetch current week from database
     const fetchCurrentWeek = async () => {
+        // Don't fetch if already initialized
+        if (initialized) return;
+
+        setLoading(true);
         try {
             const { data, error } = await supabase
                 .from('settings')
@@ -26,15 +32,33 @@ export const WeekProvider = ({ children }) => {
 
             if (error) {
                 console.error('❌ Error fetching current week:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    code: error.code,
+                    details: error.details,
+                    hint: error.hint
+                });
+                setError(error);
                 setCurrentWeek(1); // fallback
+                setInitialized(true);
                 return;
             }
 
-            console.log('📅 Current week from database:', data.current_week);
-            setCurrentWeek(data.current_week);
+            if (data && data.current_week) {
+                console.log('📅 Current week from database:', data.current_week);
+                setCurrentWeek(data.current_week);
+                setError(null);
+                setInitialized(true);
+            } else {
+                console.warn('⚠️ No data returned from settings table');
+                setCurrentWeek(1);
+                setInitialized(true);
+            }
         } catch (err) {
             console.error('❌ Exception fetching current week:', err);
+            setError(err);
             setCurrentWeek(1); // fallback
+            setInitialized(true);
         } finally {
             setLoading(false);
         }
@@ -87,21 +111,43 @@ export const WeekProvider = ({ children }) => {
 
     // Refresh current week from database
     const refreshWeek = async () => {
+        setInitialized(false);
         await fetchCurrentWeek();
     };
 
+    // DON'T auto-fetch on mount - let components call fetchCurrentWeek when needed
+    // This prevents blocking the app initialization
     useEffect(() => {
-        fetchCurrentWeek();
-    }, []);
+        console.log('🔵 WeekProvider useEffect: Running...');
+
+        // Only fetch if we have a valid Supabase connection
+        const timer = setTimeout(() => {
+            console.log('🔵 WeekProvider useEffect: Calling fetchCurrentWeek after delay');
+            fetchCurrentWeek();
+        }, 100); // Small delay to let app initialize first
+
+        return () => {
+            console.log('🔵 WeekProvider useEffect: Cleanup');
+            clearTimeout(timer);
+        };
+    }, []); // Empty dependency array - only run once on mount
+
+    console.log('🔵 WeekProvider: Rendering with state', { currentWeek, loading, initialized });
 
     const value = {
         currentWeek,
         loading,
+        error,
+        initialized,
         incrementWeek,
         setWeek,
-        refreshWeek
+        refreshWeek,
+        fetchCurrentWeek
     };
 
+    // Always render children, even if there's an error
+    // This prevents the entire app from crashing
+    console.log('🔵 WeekProvider: Returning children');
     return (
         <WeekContext.Provider value={value}>
             {children}

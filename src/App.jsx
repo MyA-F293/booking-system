@@ -5,7 +5,6 @@ import { getCurrentUser, isTeacherRemembered } from './utils/authHelpers';
 import { autoCopyBookingsToNextWeek } from './utils/dbHelpers';
 import { initVersionCheck, stopVersionCheck } from './utils/versionCheck';
 import lazyWithRetry from './utils/lazyWithRetry';
-import { WeekProvider } from './contexts/WeekContext';
 import academicHutAnimation from '../public/Academic Hut banner.json';
 import studentLoadingAnimation from '../public/Loading 40 _ Paperplane.json';
 import adminLoadingAnimation from '../public/admin_Loading 40 _ Paperplane .json';
@@ -144,62 +143,49 @@ function App() {
     );
   }
 
-  // Not logged in
-  if (!user) {
-    console.log('🔒 App: No user, showing login');
-    return (
-      <WeekProvider>
+  // Wrap entire app content (WeekProvider already in main.jsx)
+  return (
+    <>
+      {/* Not logged in */}
+      {!user && (
         <div className="animate-fadeIn">
           <Login onLoginSuccess={handleLoginSuccess} />
           <Suspense fallback={<LoadingFallback userRole="student" />}>
             <InstallPWA />
           </Suspense>
         </div>
-      </WeekProvider>
-    );
-  }
+      )}
 
-  // Teacher
-  if (user.role === 'teacher') {
-    console.log('👨‍🏫 App: User is teacher, showing teacher dashboard');
-    return (
-      <WeekProvider>
+      {/* Teacher */}
+      {user && user.role === 'teacher' && (
         <div className="animate-fadeIn">
           <Suspense fallback={<LoadingFallback userRole="teacher" />}>
             <TeacherDashboard user={user} />
             <InstallPWA />
           </Suspense>
         </div>
-      </WeekProvider>
-    );
-  }
+      )}
 
-  // Admin
-  if (user.role === 'admin') {
-    console.log('👑 App: User is admin, showing dashboard');
-    return (
-      <WeekProvider>
+      {/* Admin */}
+      {user && user.role === 'admin' && (
         <div className="animate-fadeIn">
           <Suspense fallback={<LoadingFallback userRole="admin" />}>
             <AdminDashboard user={user} />
             <InstallPWA />
           </Suspense>
         </div>
-      </WeekProvider>
-    );
-  }
+      )}
 
-  // Student
-  console.log('👨‍🎓 App: User is student, showing booking system');
-  return (
-    <WeekProvider>
-      <div className="animate-fadeIn">
-        <Suspense fallback={<LoadingFallback userRole="student" />}>
-          <BookingSystemDB user={user} />
-          <InstallPWA />
-        </Suspense>
-      </div>
-    </WeekProvider>
+      {/* Student */}
+      {user && user.role === 'student' && (
+        <div className="animate-fadeIn">
+          <Suspense fallback={<LoadingFallback userRole="student" />}>
+            <BookingSystemDB user={user} />
+            <InstallPWA />
+          </Suspense>
+        </div>
+      )}
+    </>
   );
 }
 

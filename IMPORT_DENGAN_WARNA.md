@@ -1,239 +1,107 @@
-# Import Data dengan Warna Cell (Styling)
+# ✅ BULK IMPORT STUDENTS - FIXED & READY
 
-## 🎨 Untuk Spreadsheet yang Pakai Warna
+## 🎯 What Was Fixed
 
-Jika spreadsheet Anda menggunakan **warna cell** untuk menandakan status:
-- 🟢 **Hijau** = Present (Hadir)
-- 🟡 **Kuning** = Late (Terlambat)
-- 🔴 **Merah** = Absent (Tidak Hadir)
+### 1. Student ID Handling
+- ✅ Now uses Student ID from CSV (no auto-generation)
+- ✅ Format: EYSA26010027, EYSA26010028, etc.
+- ✅ Checks for duplicate Student IDs before import
 
-Gunakan cara ini:
+### 2. Required Columns (Simplified)
+Only 5 columns needed (matching Student Management form):
+- `student_id` - From your CSV
+- `full_name` - Student name
+- `batch` - Batch number (e.g., 2)
+- `program` - Must be exact: "English Campus & Career" or "English for Teens"
+- `level` - Must be exact: "Starter", "Upper Starter", "Pre-Intermediate", "Intermediate", "Belum Tes"
 
----
+### 3. Removed Fields
+- ❌ Email - Not required
+- ❌ Phone - Not required
 
-## ✅ Cara Termudah: Google Apps Script (Baca Warna)
+### 4. Default Password
+- All imported students get password: `EYSA2026`
 
-### Langkah 1: Buka Apps Script
+## 📋 How to Use
 
-1. Buka **Google Sheets** Anda
-2. Klik **Extensions** → **Apps Script**
-3. Akan terbuka tab baru dengan editor code
-
-### Langkah 2: Copy Script
-
-1. **Hapus** semua code yang ada di editor (biasanya ada function myFunction() kosong)
-2. **Copy** semua code dari file `tools/google-apps-script-color.js`
-3. **Paste** ke editor Apps Script
-4. Klik **Save** (ikon disket) atau Ctrl+S
-
-### Langkah 3: Edit Konfigurasi
-
-Cari bagian `CONFIG` di script (sekitar baris 30-40):
-
-```javascript
-const CONFIG = {
-    teacherName: 'Unknown Teacher',
-    className: 'Unknown Class',
-    program: 'Campus & Career',
-    day: 'monday',
-    timeSlot: 'afternoon',
-    year: 2024,      // 🔴 GANTI INI! (2024 atau 2025?)
-    startWeek: 1,    // 🔴 Week 1 di sheet = week berapa di sistem?
-    
-    columns: {
-      no: 1,         // Kolom A = NO
-      name: 2,       // Kolom B = NAME
-      level: 3,      // Kolom C = LEVEL
-      firstWeek: 4   // Kolom D = WEEK 1 L1
-    }
-};
+### Step 1: Prepare CSV File
+Your CSV should look like this:
+```
+student_id,full_name,batch,program,level
+EYSA26010027,Andi Naelah Marsya S,2,English Campus & Career,Starter
+EYSA26010028,Kayla Maghfirah,2,English Campus & Career,Starter
+EYSA26010029,Budi Santoso,2,English for Teens,Upper Starter
 ```
 
-**Yang WAJIB diganti:**
-- `year`: Tahun data (2024 atau 2025?)
-- `startWeek`: Week 1 di spreadsheet = week berapa di sistem Anda?
+### Step 2: Open Bulk Operations
+1. Login as Admin
+2. Go to Admin Dashboard
+3. Click "Bulk Operations" button
+4. Select "Import Students" tab
 
-**Opsional (jika struktur kolom berbeda):**
-- `columns.no`: Kolom nomor urut
-- `columns.name`: Kolom nama siswa
-- `columns.level`: Kolom level/program
-- `columns.firstWeek`: Kolom pertama untuk WEEK 1 L1
+### Step 3: Download Template (Optional)
+- Click "Download Template" to get the correct format
+- Template shows exact column names and format
 
-### Langkah 4: Jalankan Script
+### Step 4: Upload Your CSV
+1. Click "Choose File" or drag & drop
+2. Preview will show first 5 rows
+3. Verify data looks correct
 
-1. Pilih function **`convertAttendanceByColor`** di dropdown (atas)
-2. Klik **Run** (tombol play ▶️)
-3. **Pertama kali** akan minta permission:
-   - Klik **Review permissions**
-   - Pilih akun Google Anda
-   - Klik **Advanced** → **Go to [Project Name] (unsafe)**
-   - Klik **Allow**
-4. Tunggu beberapa detik
-5. Akan muncul popup **"✅ Konversi selesai!"** dengan summary
+### Step 5: Import
+1. Click "Import Students" button
+2. Wait for processing
+3. See success/failed count
 
-### Langkah 5: Cek Hasil
+## ✅ What Happens During Import
 
-1. Kembali ke Google Sheets
-2. Akan ada **sheet baru** bernama **"Import Format"**
-3. Review data:
-   - Cek apakah nama siswa benar
-   - Cek apakah status (present/late/absent) sesuai dengan warna
-   - Cek apakah jumlah records masuk akal
+1. **Validation**: Checks if Student ID already exists
+2. **Creation**: Creates user with:
+   - Student ID from CSV
+   - Full name from CSV
+   - Batch from CSV
+   - Program from CSV
+   - Level from CSV
+   - Password: EYSA2026 (default)
+   - Role: student
+   - Status: active
 
-### Langkah 6: Download CSV
+3. **Result**: Shows how many succeeded and failed
 
-1. Klik sheet **"Import Format"**
-2. **File** → **Download** → **Comma Separated Values (.csv)**
-3. Simpan sebagai `attendance-import.csv`
+## 🚨 Common Issues
 
-### Langkah 7: Import ke Supabase
+### "Student ID already exists"
+- This Student ID is already in the database
+- Check if student was already imported
+- Use different Student ID
 
-1. Buka **Supabase Dashboard**
-2. Pilih project Anda
-3. **Table Editor** → **attendance**
-4. Klik **Insert** → **Import data from CSV**
-5. Upload file `attendance-import.csv`
-6. Klik **Import**
-7. Tunggu sampai selesai
+### "Missing required columns"
+- Make sure CSV has all 5 columns
+- Column names must match exactly (case-sensitive)
 
-### Langkah 8: Verifikasi
+### "Invalid program or level"
+- Program must be: "English Campus & Career" or "English for Teens"
+- Level must be: "Starter", "Upper Starter", "Pre-Intermediate", "Intermediate", or "Belum Tes"
 
-1. Login ke sistem sebagai **Admin**
-2. Buka **Attendance Report**
-3. Filter by week dan class
-4. Pastikan data muncul dengan benar
+## 📊 Example CSV Data
 
----
-
-## 🎨 Deteksi Warna
-
-Script akan mendeteksi warna-warna ini:
-
-### Hijau (Present):
-- `#00ff00`, `#00ff01`
-- `#34a853` (Google green)
-- `#93c47d` (Light green)
-- `#6aa84f` (Dark green)
-
-### Kuning (Late):
-- `#ffff00`, `#ffff01`
-- `#fbbc04` (Google yellow)
-- `#ffd966` (Light yellow)
-- `#f1c232` (Dark yellow)
-
-### Merah (Absent):
-- `#ff0000`, `#ff0001`
-- `#ea4335` (Google red)
-- `#e06666` (Light red)
-- `#cc0000` (Dark red)
-
-**Jika warna Anda berbeda**, edit bagian `parseStatusByColor` di script.
-
----
-
-## 🧪 Test Warna Cell
-
-Jika tidak yakin apakah warna terdeteksi:
-
-1. Di Google Sheets, **pilih cell** yang ingin di-test
-2. Kembali ke **Apps Script**
-3. Pilih function **`testColorDetection`**
-4. Klik **Run**
-5. Akan muncul popup dengan info warna cell tersebut
-
-Contoh output:
-```
-Cell Info:
-
-Value: ✓
-Background: #00ff00
-
-Pilih cell yang ingin di-test, lalu run function ini.
+```csv
+student_id,full_name,batch,program,level
+EYSA26010027,Andi Naelah Marsya S,2,English Campus & Career,Starter
+EYSA26010028,Kayla Maghfirah,2,English Campus & Career,Starter
+EYSA26010029,Budi Santoso,2,English for Teens,Upper Starter
+EYSA26010030,Siti Aminah,2,English Campus & Career,Pre-Intermediate
 ```
 
----
+## 🎉 Ready to Import!
 
-## 📊 Summary Output
+The system is now ready to import your students with their existing Student IDs from CSV.
 
-Setelah konversi selesai, Anda akan melihat summary:
-
-```
-✅ Konversi selesai!
-
-📊 Summary:
-- Total students: 30
-- Total records: 720
-- Present: 450
-- Late: 120
-- Absent: 150
-- Skipped cells: 0
-
-📥 Sheet "Import Format" sudah dibuat.
-Download sebagai CSV dan import ke Supabase.
-```
-
-**Perhatikan:**
-- `Skipped cells`: Jumlah cell yang tidak terdeteksi (warna tidak jelas atau kosong)
-- Jika skipped cells banyak, cek warna di spreadsheet atau edit script
+**Default Login for All Imported Students:**
+- Student ID: (from CSV)
+- Password: EYSA2026
 
 ---
 
-## ⚠️ Troubleshooting
-
-### Warna tidak terdeteksi
-
-**Solusi 1:** Cek kode warna
-1. Pilih cell dengan warna yang tidak terdeteksi
-2. Run function `testColorDetection`
-3. Catat kode warna (misal: `#abc123`)
-4. Tambahkan ke script di bagian `parseStatusByColor`:
-   ```javascript
-   if (bgLower === '#abc123') {
-     return 'present'; // atau 'late' / 'absent'
-   }
-   ```
-
-**Solusi 2:** Standardisasi warna
-1. Di Google Sheets, pilih semua cell hijau
-2. Format → Fill color → Pilih warna hijau standar (#00ff00)
-3. Ulangi untuk kuning dan merah
-4. Run script lagi
-
-### Script error: "Cannot read property..."
-
-Kemungkinan struktur kolom berbeda. Edit `CONFIG.columns`:
-```javascript
-columns: {
-  no: 1,         // Kolom A
-  name: 2,       // Kolom B
-  level: 3,      // Kolom C
-  firstWeek: 4   // Kolom D (WEEK 1 L1)
-}
-```
-
-### Data tidak muncul di report
-
-- Cek `year` di CONFIG (harus sesuai dengan filter di report)
-- Cek `startWeek` (week 1 di sheet = week berapa di sistem?)
-- Cek status (present/late/absent harus lowercase)
-
----
-
-## 🎯 Tips
-
-1. **Backup spreadsheet** sebelum run script
-2. **Test dengan sample kecil** dulu (5-10 siswa)
-3. **Review output** sebelum import ke Supabase
-4. **Standardisasi warna** untuk hasil lebih akurat
-5. **Catat konfigurasi** (year, startWeek) untuk referensi
-
----
-
-## 📞 Butuh Bantuan?
-
-Jika ada masalah:
-1. Run function `testColorDetection` untuk cek warna
-2. Cek log di Apps Script (View → Logs)
-3. Screenshot error dan tanya saya
-
-Good luck! 🚀
+**Last Updated:** March 28, 2026
+**Status:** ✅ READY TO USE

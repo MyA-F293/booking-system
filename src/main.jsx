@@ -6,6 +6,7 @@ import { LanguageProvider } from './contexts/LanguageContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './components/Toast'
 import { SettingsProvider } from './contexts/SettingsContext'
+import { WeekProvider } from './contexts/WeekContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import { registerServiceWorker } from './utils/pwaHelpers'
 
@@ -17,29 +18,7 @@ console.log('🚀 App Starting...', {
   reactVersion: React.version
 });
 
-// Register Service Worker for PWA
-if (import.meta.env.PROD) {
-  registerServiceWorker();
-}
-
-// Global error handler
-window.addEventListener('error', (event) => {
-  console.error('🔴 Global Error:', {
-    message: event.message,
-    filename: event.filename,
-    lineno: event.lineno,
-    colno: event.colno,
-    error: event.error
-  });
-});
-
-// Unhandled promise rejection handler
-window.addEventListener('unhandledrejection', (event) => {
-  console.error('🔴 Unhandled Promise Rejection:', {
-    reason: event.reason,
-    promise: event.promise
-  });
-});
+console.log('🔵 main.jsx: About to render React tree...');
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
@@ -47,12 +26,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <ThemeProvider>
         <LanguageProvider>
           <SettingsProvider>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <WeekProvider>
+              <ToastProvider>
+                <App />
+              </ToastProvider>
+            </WeekProvider>
           </SettingsProvider>
         </LanguageProvider>
       </ThemeProvider>
     </ErrorBoundary>
   </React.StrictMode>,
 )
+
+console.log('🔵 main.jsx: React tree rendered');

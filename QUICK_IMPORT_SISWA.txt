@@ -1,0 +1,82 @@
+╔══════════════════════════════════════════════════════════════╗
+║          QUICK GUIDE: IMPORT SISWA BULK DARI CSV             ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 STEP 1: CEK STUDENT ID TERAKHIR
+───────────────────────────────────────────────────────────────
+Run di Supabase SQL Editor:
+
+    SELECT student_id, name FROM users 
+    WHERE role = 'student' 
+    ORDER BY student_id DESC LIMIT 5;
+
+Hasil: EYSA2615 (contoh)
+Student ID baru dimulai dari: EYSA2616
+
+───────────────────────────────────────────────────────────────
+
+📝 STEP 2: SIAPKAN DATA CSV
+───────────────────────────────────────────────────────────────
+Format CSV:
+    Name                    | Batch | Programs                  | Level
+    Rizky Ramadani          | 2     | English Campus & Career   | Starter
+    Esl Suanda Sapira       | 2     | English Campus & Career   | Starter
+
+Convert ke SQL VALUES:
+    ('Rizky Ramadani', 'English Campus & Career', 'Starter', 2),
+    ('Esl Suanda Sapira', 'English Campus & Career', 'Starter', 2),
+
+───────────────────────────────────────────────────────────────
+
+🚀 STEP 3: RUN SQL SCRIPT
+───────────────────────────────────────────────────────────────
+1. Buka file: database/BULK_IMPORT_STUDENTS_SIMPLE.sql
+2. Ganti angka 2615 dengan Student ID terakhir (dari STEP 1)
+3. Paste data CSV ke VALUES section
+4. Run di Supabase SQL Editor
+5. Run STEP 3 (INSERT INTO public.users)
+
+───────────────────────────────────────────────────────────────
+
+✅ STEP 4: VERIFY
+───────────────────────────────────────────────────────────────
+Run query:
+
+    SELECT student_id, name, program, level, batch
+    FROM users
+    WHERE role = 'student' AND batch = 2
+    ORDER BY student_id DESC;
+
+Expected: EYSA2616, EYSA2617, EYSA2618, dst.
+
+───────────────────────────────────────────────────────────────
+
+🔑 INFO PENTING
+───────────────────────────────────────────────────────────────
+✓ Student ID: Auto-generate (EYSA2616, EYSA2617, dst.)
+✓ Password default: EYSA2026 (semua siswa)
+✓ Siswa bisa ganti password nanti di dashboard
+✓ Batch: Sesuai CSV (contoh: 2)
+
+───────────────────────────────────────────────────────────────
+
+📁 FILES
+───────────────────────────────────────────────────────────────
+✓ database/BULK_IMPORT_STUDENTS_SIMPLE.sql  (SQL script)
+✓ CARA_IMPORT_SISWA_BULK.md                 (Panduan lengkap)
+✓ QUICK_IMPORT_SISWA.txt                    (Quick reference)
+
+───────────────────────────────────────────────────────────────
+
+⚠️ TROUBLESHOOTING
+───────────────────────────────────────────────────────────────
+Error "duplicate key"?
+→ Cek Student ID terakhir lagi, ubah starting number
+
+Siswa tidak muncul di Admin Dashboard?
+→ Run STEP 3 (INSERT INTO public.users)
+
+Error "permission denied"?
+→ Login sebagai admin/owner di Supabase
+
+╚══════════════════════════════════════════════════════════════╝

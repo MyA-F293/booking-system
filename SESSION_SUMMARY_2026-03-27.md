@@ -231,6 +231,33 @@ Sistem week sudah berhasil diubah dari ISO calendar ke database-based, dengan fi
 
 ---
 
+---
+
+## 🔧 Issue Fixed (Query #19)
+
+### Error: Settings Table Empty
+**Error Message**: "Error getting current week: PGRST116 - The result contains 0 rows"
+
+**Cause**: 
+- Tabel `settings` sudah dibuat
+- Tapi belum ada data (row dengan id=1 belum di-insert)
+
+**Solution**:
+Run SQL untuk insert default data:
+```sql
+INSERT INTO public.settings (id, current_week)
+VALUES (1, 1)
+ON CONFLICT (id) DO NOTHING;
+```
+
+**Files Created**:
+- `database/FIX_SETTINGS_TABLE_EMPTY.sql` - Quick fix SQL
+- `FIX_SETTINGS_EMPTY_ERROR.md` - Fix guide
+
+**Status**: FIXED ✅
+
+---
+
 **Session Date**: 27 Maret 2026
 **Duration**: ~2 hours
 **Status**: COMPLETE ✅
