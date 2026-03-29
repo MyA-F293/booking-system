@@ -1,0 +1,109 @@
+═══════════════════════════════════════════════════════════════
+  QUICK START: CONVERT MARKDOWN KE WORD
+═══════════════════════════════════════════════════════════════
+
+📋 CARA PALING MUDAH (WINDOWS):
+
+1. Double-click file: CONVERT_TO_WORD.bat
+2. Tunggu proses selesai
+3. File Word akan otomatis dibuat
+4. Buka dan print!
+
+═══════════════════════════════════════════════════════════════
+
+📋 CARA MANUAL (SEMUA OS):
+
+1. Buka Command Prompt / Terminal
+2. Masuk ke folder booking-system:
+   
+   cd booking-system
+
+3. Install library (hanya sekali):
+   
+   pip install python-docx
+
+4. Jalankan script:
+   
+   python convert_md_to_word.py
+
+5. File Word akan dibuat: TESTING_MANUAL_LENGKAP_COMBINED.docx
+
+═══════════════════════════════════════════════════════════════
+
+📋 CARA ONLINE (TANPA INSTALL):
+
+1. Buka: https://www.markdowntoword.com/
+2. Upload: TESTING_MANUAL_LENGKAP_COMBINED.md
+3. Download file Word
+4. Buka dan print!
+
+═══════════════════════════════════════════════════════════════
+
+✅ HASIL:
+
+- File Word dengan styling otomatis
+- Heading berwarna dan bold
+- Table rapi dengan border
+- Code block dengan background
+- Checkbox dengan symbol
+- Emoji dihapus (professional)
+- Siap print langsung!
+
+═══════════════════════════════════════════════════════════════
+
+🖨️ PRINT SETTINGS (RECOMMENDED):
+
+- Paper: A4
+- Orientation: Portrait
+- Margins: Normal (1 inch)
+- Color: Black & White (hemat tinta)
+- Quality: High
+
+═══════════════════════════════════════════════════════════════
+
+📄 FILE YANG DIBUAT:
+
+Input:  TESTING_MANUAL_LENGKAP_COMBINED.md (Markdown)
+Output: TESTING_MANUAL_LENGKAP_COMBINED.docx (Word)
+
+Size: ~500KB - 1MB
+Pages: ~80-100 halaman
+Format: Microsoft Word 2007+ (.docx)
+
+═══════════════════════════════════════════════════════════════
+
+🐛 TROUBLESHOOTING:
+
+Error: "python: command not found"
+→ Install Python dari https://www.python.org/
+
+Error: "No module named 'docx'"
+→ Jalankan: pip install python-docx
+
+Error: "File not found"
+→ Pastikan Anda di folder booking-system
+
+File Word corrupt
+→ Hapus file .docx dan convert lagi
+
+═══════════════════════════════════════════════════════════════
+
+💡 TIPS:
+
+1. Untuk hemat kertas: Print 2 pages per sheet
+2. Untuk digital: Export ke PDF dari Word
+3. Untuk edit: Buka di Word dan edit seperlunya
+4. Untuk share: PDF lebih universal
+
+═══════════════════════════════════════════════════════════════
+
+📞 NEED HELP?
+
+Baca file lengkap: CARA_CONVERT_MD_KE_WORD.md
+
+═══════════════════════════════════════════════════════════════
+
+SELAMAT MENCOBA! 🚀
+
+Created: 28 Maret 2026
+Version: 1.0

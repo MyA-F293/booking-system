@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Calendar, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText, ChevronRight } from 'lucide-react';
-import { logout, getAllStudents, createStudentAccount, generateStudentId, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
+import { logout, getAllStudents, createStudentAccount, generateStudentId, getLatestBatch, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher } from './utils/dbHelpers';
 import { supabase } from './supabaseClient';
 import useModalScrollLock from './hooks/useModalScrollLock';
@@ -428,11 +428,20 @@ const AdminDashboard = ({ user }) => {
                 level: editStudentData.level,
                 batch: editStudentData.batch_number.toString()
             };
-            await updateStudent(editingStudent.id, updateData);
+
+            console.log('📝 Updating student with data:', updateData);
+            const updatedStudent = await updateStudent(editingStudent.id, updateData);
+            console.log('✅ Student updated:', updatedStudent);
+
             toast.success('Student data updated successfully!');
             setShowEditStudentModal(false);
             setEditingStudent(null);
+
+            // Force reload students to ensure fresh data
             await loadStudents();
+
+            // Force re-render by updating a dummy state
+            setStudentSearchQuery(prev => prev);
         } catch (err) {
             console.error('Error updating student:', err);
             toast.error('Failed to update student: ' + err.message);
@@ -1110,7 +1119,17 @@ This action CANNOT be undone!`,
                                         <span className="sm:hidden">PDF</span>
                                     </button>
                                     <button
-                                        onClick={() => setShowCreateForm(!showCreateForm)}
+                                        onClick={async () => {
+                                            if (!showCreateForm) {
+                                                // Auto-load latest batch when opening form
+                                                const latestBatch = await getLatestBatch();
+                                                setFormData({
+                                                    ...formData,
+                                                    batch_number: latestBatch
+                                                });
+                                            }
+                                            setShowCreateForm(!showCreateForm);
+                                        }}
                                         className="bg-green-600 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1.5 sm:gap-2 font-semibold text-xs sm:text-base"
                                     >
                                         <UserPlus size={14} className="sm:w-[18px] sm:h-[18px]" />

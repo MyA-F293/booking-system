@@ -75,6 +75,34 @@ export const isLoggedIn = () => {
 }
 
 /**
+ * Get the latest batch number from existing students
+ */
+export const getLatestBatch = async () => {
+    console.log('🔍 Getting latest batch number...');
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('batch')
+        .eq('role', 'student')
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+    if (error) {
+        console.error('❌ Error getting latest batch:', error);
+        return 1; // Default batch
+    }
+
+    if (data && data.length > 0) {
+        const latestBatch = parseInt(data[0].batch);
+        console.log('✅ Latest batch found:', latestBatch);
+        return latestBatch;
+    }
+
+    console.log('ℹ️ No students found, returning default batch 1');
+    return 1; // Default batch
+}
+
+/**
  * Generate Student ID
  * Format: EYSA-YY-BA-SEQ (Example: EYSA26010001)
  */
@@ -83,26 +111,47 @@ export const generateStudentId = async (batchNumber) => {
 
     const year = new Date().getFullYear().toString().slice(-2); // 26 for 2026
     const batchPadded = batchNumber.toString().padStart(2, '0'); // 01, 02, etc
+    const prefix = `EYSA${year}${batchPadded}`;
 
-    // Get last student in this batch
-    const { data } = await supabase
+    console.log('🔍 Searching for students with prefix:', prefix);
+
+    // IMPROVED: Get ALL students with this prefix first (no role filter initially)
+    const { data: allData, error: allError } = await supabase
         .from('users')
-        .select('student_id')
-        .like('student_id', `EYSA${year}${batchPadded}%`)
+        .select('student_id, role')
+        .like('student_id', `${prefix}%`)
         .order('student_id', { ascending: false })
-        .limit(1)
+
+    console.log('📊 All matching records:', allData);
+    console.log('📊 Total records found:', allData?.length || 0);
+
+    if (allError) {
+        console.error('❌ Error querying students:', allError);
+    }
+
+    // Filter students with role='student' in JavaScript
+    const studentData = allData?.filter(user => user.role === 'student') || [];
+    console.log('👥 Filtered students only:', studentData);
+    console.log('👥 Total students found:', studentData.length);
 
     let sequence = 1;
 
-    if (data && data.length > 0) {
+    if (studentData && studentData.length > 0) {
         // Extract sequence from last ID
-        const lastId = data[0].student_id;
+        const lastId = studentData[0].student_id;
+        console.log('📌 Last student ID found:', lastId);
+
         const lastSeq = parseInt(lastId.slice(-4));
+        console.log('🔢 Last sequence number:', lastSeq);
+
         sequence = lastSeq + 1;
+        console.log('➕ New sequence number:', sequence);
+    } else {
+        console.log('ℹ️ No existing students found for this batch, starting from 0001');
     }
 
     const seqPadded = sequence.toString().padStart(4, '0');
-    const studentId = `EYSA${year}${batchPadded}${seqPadded}`;
+    const studentId = `${prefix}${seqPadded}`;
 
     console.log('✅ Generated student ID:', studentId);
     return studentId;
