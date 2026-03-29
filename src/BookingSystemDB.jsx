@@ -95,7 +95,8 @@ const BookingSystemDB = ({ user }) => {
     const [userId, setUserId] = useState(user?.id || null);
 
     // Booking state
-    const [selectedProgram, setSelectedProgram] = useState('');
+    // Auto-load program from user data (students can't change their assigned program)
+    const [selectedProgram, setSelectedProgram] = useState(user?.program || '');
     const [selectedLevel, setSelectedLevel] = useState('');
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [selectedPhase, setSelectedPhase] = useState('');
@@ -173,7 +174,7 @@ const BookingSystemDB = ({ user }) => {
         }
     };
 
-    // Pastikan user ada
+    // Pastikan user ada dan auto-load program
     useEffect(() => {
         if (!user) {
             console.error('❌ No user prop received!');
@@ -181,6 +182,14 @@ const BookingSystemDB = ({ user }) => {
             return;
         }
         console.log('✅ User initialized:', user);
+
+        // Auto-load user's assigned program
+        if (user.program) {
+            console.log('📚 Auto-loading user program:', user.program);
+            setSelectedProgram(user.program);
+        } else {
+            console.warn('⚠️ User has no assigned program!');
+        }
     }, [user]);
 
     // Check if user should see guide (first time login per user)
@@ -348,12 +357,13 @@ const BookingSystemDB = ({ user }) => {
         return currentWeek + 1; // Book for NEXT week
     };
 
-    const handleProgramSelect = (program) => {
-        if (program.comingSoon) return;
-        console.log('📚 Program selected:', program.name);
-        setSelectedProgram(program.name);
-        setSelectedLevel('');
-    };
+    // Program is auto-loaded from user data - students cannot change it
+    // const handleProgramSelect = (program) => {
+    //     if (program.comingSoon) return;
+    //     console.log('📚 Program selected:', program.name);
+    //     setSelectedProgram(program.name);
+    //     setSelectedLevel('');
+    // };
 
     const handleLevelSelect = (level) => {
         if (level.comingSoon) return;
@@ -429,7 +439,25 @@ const BookingSystemDB = ({ user }) => {
             return;
         }
 
-        // Validation: Harvard Class is only for English for Teens
+        // Validation 1: Ensure user has an assigned program
+        if (!currentUser?.program) {
+            toast.error('You do not have an assigned program. Please contact admin.');
+            return;
+        }
+
+        // Validation 2: Ensure selected program matches user's assigned program
+        if (selectedProgram !== currentUser.program) {
+            console.error('❌ Program mismatch!', {
+                selectedProgram,
+                userProgram: currentUser.program
+            });
+            toast.error(`You can only book classes for your assigned program: ${currentUser.program}`);
+            // Reset to user's program
+            setSelectedProgram(currentUser.program);
+            return;
+        }
+
+        // Validation 3: Harvard Class is only for English for Teens
         const isTeensUser = currentUser?.program?.toLowerCase().includes('teens');
         if (classItem.name === 'Harvard Class' && !isTeensUser) {
             toast.error('Harvard Class is exclusively for English for Teens program students!');
@@ -898,35 +926,35 @@ const BookingSystemDB = ({ user }) => {
                             </div>
                         )}
 
-                        {/* Program Selection - Clean */}
+                        {/* Program Display - Show assigned program (not selectable) */}
                         <div className="mb-6">
                             <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                <span className="text-[#1F4E8C]">1.</span> {t('booking.selectProgram')}
+                                <span className="text-[#1F4E8C]">1.</span> Your Program
                             </h2>
-                            <div className="grid grid-cols-2 gap-3">
-                                {programs.map((program) => (
-                                    <button
-                                        key={program.name}
-                                        onClick={() => handleProgramSelect(program)}
-                                        disabled={program.comingSoon}
-                                        className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${!program.comingSoon ? 'active:scale-[0.98]' : ''} ${program.comingSoon
-                                            ? 'bg-gray-50 border-gray-200 cursor-not-allowed'
-                                            : selectedProgram === program.name
-                                                ? 'bg-[#1F4E8C] text-white border-[#1F4E8C] shadow-lg'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-[#1F4E8C]'
-                                            }`}
-                                    >
-                                        {program.comingSoon && (
-                                            <span className="absolute top-2 right-2 text-[9px] sm:text-[10px] font-bold text-amber-600 bg-amber-100 px-1.5 py-0.5 rounded">
-                                                Soon
-                                            </span>
-                                        )}
-                                        <span className={`text-sm sm:text-base font-semibold ${program.comingSoon ? 'text-gray-400' : ''}`}>
-                                            {program.name === 'Campus & Career' ? t('program.campusCareer') : t('program.englishTeens')}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
+                            {currentUser?.program ? (
+                                <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-4 rounded-xl border-2 border-[#1F4E8C] shadow-lg">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">Assigned Program</p>
+                                            <p className="text-lg font-bold">
+                                                {currentUser.program === 'Campus & Career' ? t('program.campusCareer') :
+                                                    currentUser.program === 'English for Teens' ? t('program.englishTeens') :
+                                                        currentUser.program}
+                                            </p>
+                                        </div>
+                                        <div className="bg-white/20 p-2 rounded-lg">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-xl">
+                                    <p className="font-semibold">⚠️ No program assigned</p>
+                                    <p className="text-sm mt-1">Please contact admin to assign your program.</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Level Selection - Clean */}
