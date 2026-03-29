@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient'
+import { supabaseAdmin } from '../supabaseAdmin'
 
 /**
  * Login user (Admin or Student)
@@ -216,7 +217,8 @@ export const updateStudent = async (studentId, studentData) => {
         throw new Error('Only admin can update students');
     }
 
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS
+    const { data, error } = await supabaseAdmin
         .from('users')
         .update(studentData)
         .eq('id', studentId)
