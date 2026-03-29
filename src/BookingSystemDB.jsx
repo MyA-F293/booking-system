@@ -340,16 +340,13 @@ const BookingSystemDB = ({ user }) => {
 
     // Check if today is Thursday (4), Friday (5), or Saturday (6) before 22:00
     const canBook = () => {
-        // DEVELOPMENT MODE: Allow booking any day
-        return true;
-
-        // PRODUCTION CODE (commented out):
-        // const now = new Date();
-        // const dayOfWeek = now.getDay(); // 0=Sunday, 4=Thursday, 5=Friday, 6=Saturday
-        // const hour = now.getHours();
-        // const isBookingDay = (dayOfWeek >= 4 && dayOfWeek <= 6);
-        // const isBeforeCutoff = hour < 22;
-        // return isBookingDay && isBeforeCutoff;
+        // PRODUCTION MODE: Only allow booking Thursday-Saturday before 22:00
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0=Sunday, 4=Thursday, 5=Friday, 6=Saturday
+        const hour = now.getHours();
+        const isBookingDay = (dayOfWeek >= 4 && dayOfWeek <= 6);
+        const isBeforeCutoff = hour < 22;
+        return isBookingDay && isBeforeCutoff;
     };
 
     // Booking for NEXT week (not current week)
@@ -454,13 +451,6 @@ const BookingSystemDB = ({ user }) => {
             toast.error(`You can only book classes for your assigned program: ${currentUser.program}`);
             // Reset to user's program
             setSelectedProgram(currentUser.program);
-            return;
-        }
-
-        // Validation 3: Harvard Class is only for English for Teens
-        const isTeensUser = currentUser?.program?.toLowerCase().includes('teens');
-        if (classItem.name === 'Harvard Class' && !isTeensUser) {
-            toast.error('Harvard Class is exclusively for English for Teens program students!');
             return;
         }
 
@@ -1370,8 +1360,7 @@ const BookingSystemDB = ({ user }) => {
                                             // Harvard Class is only for TEENS batch or English for Teens program
                                             const isTeensUser = currentUser?.batch === 'TEENS' ||
                                                 currentUser?.program?.toLowerCase().includes('teens');
-                                            const isHarvardRestricted = classItem.name === 'Harvard Class' && !isTeensUser;
-                                            const isDisabled = !canClick || isHarvardRestricted;
+                                            const isDisabled = !canClick;
 
                                             return (
                                                 <button
@@ -1393,11 +1382,7 @@ const BookingSystemDB = ({ user }) => {
                                                     {/* Class name */}
                                                     <div className={`font-bold text-xs sm:text-lg mb-1 sm:mb-2 ${isOccupied ? 'text-gray-500' : isFull ? 'text-red-800' : 'text-[#1F4E8C]'}`}>
                                                         {classItem.name}
-                                                        {classItem.name === 'Harvard Class' && (
-                                                            <span className="ml-1.5 sm:ml-2 text-[8px] sm:text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold border border-red-200">
-                                                                🎓 Teens Only
-                                                            </span>
-                                                        )}
+                                                        {/* Harvard Class badge removed */}
                                                     </div>
 
                                                     {/* Teacher */}

@@ -157,14 +157,7 @@ const BookingDashboard = ({ user }) => {
         try {
             setIsBooking(true);
 
-            // Validation 1: Harvard Class is only for English for Teens
-            const isTeensUser = user?.program?.toLowerCase().includes('teens');
-            if (schedule.class?.name === 'Harvard Class' && !isTeensUser) {
-                toast.error('Harvard Class is exclusively for English for Teens program students!');
-                return;
-            }
-
-            // Validation 2: Check if already booked this phase
+            // Validation 1: Check if already booked this phase
             const alreadyBookedPhase = await hasUserBookedPhase(
                 userId,
                 schedule.phase,
@@ -454,11 +447,7 @@ const BookingDashboard = ({ user }) => {
                                                                                     ✓ Your Booking
                                                                                 </span>
                                                                             )}
-                                                                            {schedule.class?.name === 'Harvard Class' && (
-                                                                                <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full text-[9px] font-semibold border border-red-200">
-                                                                                    🎓 Teens Only
-                                                                                </span>
-                                                                            )}
+                                                                            {/* Harvard Class badge removed */}
                                                                         </div>
                                                                         <p className="text-[10px] text-gray-500 mt-0.5">
                                                                             {schedule.program} • {schedule.level}

@@ -750,8 +750,8 @@ export const getCurrentYear = () => {
 /**
  * Get the date for a specific day in a given week
  * @param {string} dayName - Day name (monday, tuesday, etc.)
- * @param {number} weekNumber - ISO week number
- * @param {number} year - Year
+ * @param {number} weekNumber - Week number (1-8, not ISO week)
+ * @param {number} year - Year (for fallback only)
  * @returns {Date} - Date object for that day
  */
 export const getDateForDayInWeek = (dayName, weekNumber, year) => {
@@ -767,17 +767,18 @@ export const getDateForDayInWeek = (dayName, weekNumber, year) => {
 
     const dayIndex = dayMap[dayName.toLowerCase()] || 1;
 
-    // Get January 4th of the year (always in week 1 per ISO)
-    const jan4 = new Date(year, 0, 4);
-    const jan4DayOfWeek = jan4.getDay() || 7; // Convert Sunday (0) to 7
+    // FIXED: Use actual week start date from batch
+    // Week 1 starts on March 30, 2026 (Monday)
+    // Today (March 29) is Week 0 (preparation week)
+    const week1StartDate = new Date(2026, 2, 30); // March 30, 2026 (Monday)
 
-    // Get Monday of week 1
-    const week1Monday = new Date(jan4);
-    week1Monday.setDate(jan4.getDate() - jan4DayOfWeek + 1);
+    // Calculate the Monday of the target week
+    const targetWeekMonday = new Date(week1StartDate);
+    targetWeekMonday.setDate(week1StartDate.getDate() + (weekNumber - 1) * 7);
 
-    // Calculate the target date
-    const targetDate = new Date(week1Monday);
-    targetDate.setDate(week1Monday.getDate() + (weekNumber - 1) * 7 + (dayIndex - 1));
+    // Calculate the target date by adding days from Monday
+    const targetDate = new Date(targetWeekMonday);
+    targetDate.setDate(targetWeekMonday.getDate() + (dayIndex - 1));
 
     return targetDate;
 }

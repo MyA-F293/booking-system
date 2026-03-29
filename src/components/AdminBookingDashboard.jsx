@@ -29,31 +29,23 @@ const getDateForDay = (day, weekNumber, year) => {
         thursday: 4,
         friday: 5,
         saturday: 6,
-        sunday: 0
+        sunday: 7
     };
 
-    // Get January 4th of the year (always in week 1 per ISO)
-    const jan4 = new Date(year, 0, 4);
-    // Get the Monday of week 1
-    const dayOfWeek = jan4.getDay() || 7;
-    const week1Monday = new Date(jan4);
-    week1Monday.setDate(jan4.getDate() - dayOfWeek + 1);
+    // FIXED: Use actual week start date from batch
+    // Week 1 starts on March 30, 2026 (Monday)
+    const week1StartDate = new Date(2026, 2, 30); // March 30, 2026 (Monday)
 
     // Calculate the Monday of the target week
-    const targetMonday = new Date(week1Monday);
-    targetMonday.setDate(week1Monday.getDate() + (weekNumber - 1) * 7);
+    const targetWeekMonday = new Date(week1StartDate);
+    targetWeekMonday.setDate(week1StartDate.getDate() + (weekNumber - 1) * 7);
 
-    // Calculate the target day
-    const targetDay = new Date(targetMonday);
-    const targetDayIndex = dayIndex[day.toLowerCase()];
-    if (targetDayIndex === 0) {
-        // Sunday is 6 days after Monday
-        targetDay.setDate(targetMonday.getDate() + 6);
-    } else {
-        targetDay.setDate(targetMonday.getDate() + targetDayIndex - 1);
-    }
+    // Calculate the target date by adding days from Monday
+    const targetDate = new Date(targetWeekMonday);
+    const targetDayIndex = dayIndex[day.toLowerCase()] || 1;
+    targetDate.setDate(targetWeekMonday.getDate() + (targetDayIndex - 1));
 
-    return targetDay;
+    return targetDate;
 };
 
 // Format date to display (e.g., "13 Jan")
