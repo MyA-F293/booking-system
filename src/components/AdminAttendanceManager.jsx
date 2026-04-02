@@ -291,6 +291,38 @@ const AdminAttendanceManager = () => {
             return;
         }
 
+        // VALIDATION: Check day-phase match
+        const validateDayPhase = (day, phase) => {
+            const earlyWeek = ['monday', 'tuesday'];
+            const lateWeek = ['thursday', 'friday'];
+
+            if (earlyWeek.includes(day.toLowerCase()) && phase !== 'phase1') {
+                return {
+                    valid: false,
+                    message: `⚠️ ${day.charAt(0).toUpperCase() + day.slice(1)} should be Phase 1, but this schedule is ${phase}!\n\nPlease select the correct schedule or contact admin to fix the schedule.`
+                };
+            }
+            if (lateWeek.includes(day.toLowerCase()) && phase !== 'phase2') {
+                return {
+                    valid: false,
+                    message: `⚠️ ${day.charAt(0).toUpperCase() + day.slice(1)} should be Phase 2, but this schedule is ${phase}!\n\nPlease select the correct schedule or contact admin to fix the schedule.`
+                };
+            }
+            return { valid: true };
+        };
+
+        const validation = validateDayPhase(selectedSchedule.day, selectedSchedule.phase);
+        if (!validation.valid) {
+            toast.error(validation.message, { duration: 10000 });
+            console.error('❌ Phase validation failed:', {
+                day: selectedSchedule.day,
+                phase: selectedSchedule.phase,
+                class: selectedSchedule.class?.name,
+                time_slot: selectedSchedule.time_slot
+            });
+            return;
+        }
+
         const markedAttendance = Object.values(attendance).filter(status => status !== null);
         if (markedAttendance.length === 0) {
             toast.error('Please mark attendance for at least one student');
@@ -618,6 +650,17 @@ const AdminAttendanceManager = () => {
 
                                                         {/* Card Body */}
                                                         <div className="p-4 space-y-2">
+                                                            {/* Phase Badge */}
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${schedule.phase === 'phase1' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                                                                    schedule.phase === 'phase2' ? 'bg-purple-100 text-purple-700 border border-purple-300' :
+                                                                        'bg-green-100 text-green-700 border border-green-300'
+                                                                    }`}>
+                                                                    {schedule.phase === 'phase1' ? '📘 Phase 1' :
+                                                                        schedule.phase === 'phase2' ? '📗 Phase 2' :
+                                                                            '📙 Recap'}
+                                                                </span>
+                                                            </div>
                                                             <div className="flex items-center gap-2 text-xs text-gray-600">
                                                                 <Calendar size={14} className="text-[#E67E22] flex-shrink-0" />
                                                                 <span className="truncate">{getScheduleDate(schedule)}</span>

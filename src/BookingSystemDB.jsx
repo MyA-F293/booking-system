@@ -1360,7 +1360,8 @@ const BookingSystemDB = ({ user }) => {
                                             // Harvard Class is only for TEENS batch or English for Teens program
                                             const isTeensUser = currentUser?.batch === 'TEENS' ||
                                                 currentUser?.program?.toLowerCase().includes('teens');
-                                            const isDisabled = !canClick;
+                                            const isHarvardRestricted = classItem.name === 'Harvard Class' && !isTeensUser;
+                                            const isDisabled = !canClick || isHarvardRestricted;
 
                                             return (
                                                 <button

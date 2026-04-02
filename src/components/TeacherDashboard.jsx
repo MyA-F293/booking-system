@@ -193,6 +193,38 @@ const TeacherDashboard = ({ user }) => {
             return;
         }
 
+        // VALIDATION: Check day-phase match
+        const validateDayPhase = (day, phase) => {
+            const earlyWeek = ['monday', 'tuesday'];
+            const lateWeek = ['thursday', 'friday'];
+
+            if (earlyWeek.includes(day.toLowerCase()) && phase !== 'phase1') {
+                return {
+                    valid: false,
+                    message: `⚠️ ${day.charAt(0).toUpperCase() + day.slice(1)} should be Phase 1, but this schedule is ${phase}!\n\nPlease contact admin to fix the schedule.`
+                };
+            }
+            if (lateWeek.includes(day.toLowerCase()) && phase !== 'phase2') {
+                return {
+                    valid: false,
+                    message: `⚠️ ${day.charAt(0).toUpperCase() + day.slice(1)} should be Phase 2, but this schedule is ${phase}!\n\nPlease contact admin to fix the schedule.`
+                };
+            }
+            return { valid: true };
+        };
+
+        const validation = validateDayPhase(selectedSchedule.day, selectedSchedule.phase);
+        if (!validation.valid) {
+            toast.error(validation.message, { duration: 10000 });
+            console.error('❌ Phase validation failed:', {
+                day: selectedSchedule.day,
+                phase: selectedSchedule.phase,
+                class: selectedSchedule.class?.name,
+                time_slot: selectedSchedule.time_slot
+            });
+            return;
+        }
+
         // Check if any attendance has been marked
         const markedAttendance = Object.values(attendance).filter(status => status !== null);
         if (markedAttendance.length === 0) {
@@ -472,6 +504,17 @@ const TeacherDashboard = ({ user }) => {
                                         : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
+                                    {/* Phase Badge */}
+                                    <div className="mb-2">
+                                        <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${schedule.phase === 'phase1' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                                            schedule.phase === 'phase2' ? 'bg-purple-100 text-purple-700 border border-purple-300' :
+                                                'bg-green-100 text-green-700 border border-green-300'
+                                            }`}>
+                                            {schedule.phase === 'phase1' ? '📘 Phase 1' :
+                                                schedule.phase === 'phase2' ? '📗 Phase 2' :
+                                                    '📙 Recap'}
+                                        </span>
+                                    </div>
                                     <div className="font-semibold text-gray-800">{schedule.class?.name}</div>
                                     <div className="text-sm text-gray-600 mt-1">
                                         {schedule.program} • {schedule.level}
