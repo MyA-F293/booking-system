@@ -97,7 +97,8 @@ const BookingSystemDB = ({ user }) => {
     // Booking state
     // Auto-load program from user data (students can't change their assigned program)
     const [selectedProgram, setSelectedProgram] = useState(user?.program || '');
-    const [selectedLevel, setSelectedLevel] = useState('');
+    // Auto-load level from user data (students can't change their assigned level)
+    const [selectedLevel, setSelectedLevel] = useState(user?.level || '');
     const [showBookingModal, setShowBookingModal] = useState(false);
     const [selectedPhase, setSelectedPhase] = useState('');
     const [selectedDay, setSelectedDay] = useState('');
@@ -451,6 +452,18 @@ const BookingSystemDB = ({ user }) => {
             toast.error(`You can only book classes for your assigned program: ${currentUser.program}`);
             // Reset to user's program
             setSelectedProgram(currentUser.program);
+            return;
+        }
+
+        // Validation 3: Ensure selected level matches user's assigned level
+        if (selectedLevel !== currentUser.level) {
+            console.error('❌ Level mismatch!', {
+                selectedLevel,
+                userLevel: currentUser.level
+            });
+            toast.error(`You can only book classes for your assigned level: ${currentUser.level}`);
+            // Reset to user's level
+            setSelectedLevel(currentUser.level);
             return;
         }
 
@@ -947,43 +960,65 @@ const BookingSystemDB = ({ user }) => {
                             )}
                         </div>
 
-                        {/* Level Selection - Clean */}
-                        {selectedProgram && (
+                        {/* Level Display - Show assigned level (not selectable) */}
+                        {selectedProgram && currentUser?.level && (
                             <div className="mb-6">
                                 <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <span className="text-[#F39C32]">2.</span> {t('booking.selectLevel')}
+                                    <span className="text-[#F39C32]">2.</span> Your Level
                                 </h2>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                                    {levels.map((level) => {
-                                        const levelKey = level.name
-                                            .toLowerCase()
-                                            .replace(/\s+/g, '')
-                                            .replace('pre-', 'pre');
-
-                                        return (
-                                            <button
-                                                key={level.name}
-                                                onClick={() => handleLevelSelect(level)}
-                                                disabled={level.comingSoon}
-                                                className={`relative p-3 rounded-xl border-2 transition-all duration-200 ${!level.comingSoon ? 'active:scale-[0.98]' : ''} ${level.comingSoon
-                                                    ? 'bg-gray-50 border-gray-200 cursor-not-allowed'
-                                                    : selectedLevel === level.name
-                                                        ? 'bg-[#F39C32] text-white border-[#F39C32] shadow-lg'
-                                                        : 'bg-white text-gray-700 border-gray-200 hover:border-[#F39C32]'
-                                                    }`}
-                                            >
-                                                {level.comingSoon && (
-                                                    <span className="absolute -top-1 -right-1 text-[9px] font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-0.5 rounded-full shadow-md">
-                                                        Coming Soon
-                                                    </span>
-                                                )}
-                                                <span className={`text-xs sm:text-sm font-semibold ${level.comingSoon ? 'text-gray-400' : ''}`}>
-                                                    {t(`level.${levelKey}`)}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
+                                <div className="bg-gradient-to-r from-[#F39C32] to-[#e88a1f] text-white p-4 rounded-xl border-2 border-[#F39C32] shadow-lg">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-orange-100 text-xs mb-1">Assigned Level</p>
+                                            <p className="text-lg font-bold">
+                                                {currentUser.level}
+                                            </p>
+                                        </div>
+                                        <div className="bg-white/20 p-2 rounded-lg">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Warning if no level assigned */}
+                        {selectedProgram && !currentUser?.level && (
+                            <div className="mb-6">
+                                <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                    <span className="text-[#F39C32]">2.</span> Your Level
+                                </h2>
+                                <div className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-xl">
+                                    <p className="font-semibold">⚠️ No level assigned</p>
+                                    <p className="text-sm mt-1">Please contact admin to assign your level.</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Quick Book Button - Opens modal directly */}
+                        {selectedProgram && currentUser?.level && (
+                            <div className="mb-6">
+                                <button
+                                    onClick={() => {
+                                        if (!canBook()) {
+                                            toast.warning(t('booking.bookingDayRestriction'));
+                                            return;
+                                        }
+                                        setShowBookingModal(true);
+                                        setSelectedPhase('');
+                                        setSelectedDay('');
+                                        setSelectedTime('');
+                                    }}
+                                    disabled={!canBook()}
+                                    className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${canBook()
+                                            ? 'bg-gradient-to-r from-[#F39C32] to-[#e88a1f] text-white hover:shadow-xl active:scale-[0.98]'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        }`}
+                                >
+                                    {canBook() ? '📚 Book a Class' : '🔒 Booking Closed'}
+                                </button>
                             </div>
                         )}
 
