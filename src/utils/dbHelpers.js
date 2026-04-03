@@ -265,10 +265,12 @@ export const getClasses = async () => {
  */
 export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
     console.log('📡 dbHelpers: getOrCreateSchedule called with:', scheduleData, 'retry:', retryCount);
+    console.log('🔍 DEBUG: Full schedule data:', JSON.stringify(scheduleData, null, 2));
 
     const { class_id, program, level, phase, day, time_slot, week_number, year, batch } = scheduleData
 
     // Check if schedule already exists
+    console.log('🔍 DEBUG: Building query to check existing schedule...');
     let query = supabase
         .from('schedules')
         .select('*')
@@ -282,19 +284,26 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
 
     // Add day filter if provided
     if (day) {
+        console.log('🔍 DEBUG: Adding day filter:', day);
         query = query.eq('day', day)
     }
 
     // Add batch filter if provided
     if (batch) {
+        console.log('🔍 DEBUG: Adding batch filter:', batch);
         query = query.eq('batch', batch)
     }
 
+    console.log('🔍 DEBUG: Executing query to find existing schedule...');
     let { data, error } = await query.maybeSingle()
+
+    console.log('🔍 DEBUG: Query result:', { found: !!data, error: error?.message });
 
     // Jika belum ada, buat baru
     if (!data) {
-        console.log('📝 Creating new schedule...');
+        console.log('📝 Schedule not found, creating new schedule...');
+        console.log('🔍 DEBUG: INSERT data:', JSON.stringify(scheduleData, null, 2));
+
         const { data: newData, error: createError } = await supabase
             .from('schedules')
             .insert([scheduleData])
@@ -302,27 +311,32 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
             .single()
 
         if (createError) {
+            console.error('❌ Error creating schedule:', createError);
+            console.error('🔍 DEBUG: Error code:', createError.code);
+            console.error('🔍 DEBUG: Error message:', createError.message);
+            console.error('🔍 DEBUG: Error details:', createError.details);
+            console.error('🔍 DEBUG: Error hint:', createError.hint);
+
             // ✅ Handle duplicate key error (race condition)
             if (createError.code === '23505' && retryCount < 3) {
-                console.log('⚠️ Duplicate key detected, retrying to fetch existing schedule...');
+                console.log('⚠️ Duplicate key detected (code 23505), retrying to fetch existing schedule...');
                 // Wait a bit and retry fetching
                 await new Promise(resolve => setTimeout(resolve, 100 * (retryCount + 1)));
                 return getOrCreateSchedule(scheduleData, retryCount + 1);
             }
 
-            // ✅ Handle trigger error (duplicate schedule detected by trigger)
-            // This happens when multiple users try to book simultaneously
-            if (createError.message?.includes('Duplicate schedule') && retryCount < 3) {
-                console.log('⚠️ Duplicate schedule detected by trigger, retrying to fetch existing schedule...');
-                // Wait a bit and retry fetching
-                await new Promise(resolve => setTimeout(resolve, 150 * (retryCount + 1)));
-                return getOrCreateSchedule(scheduleData, retryCount + 1);
+            // 🔍 DEBUG: Check if error is from trigger
+            if (createError.message && createError.message.includes('Duplicate schedule detected')) {
+                console.error('🚨 DEBUG: TRIGGER ERROR DETECTED!');
+                console.error('🚨 This error comes from prevent_duplicate_schedule trigger');
+                console.error('🚨 Trigger is blocking the INSERT even though schedule should be allowed');
+                console.error('🚨 SOLUTION: Disable the trigger in Supabase');
             }
 
-            console.error('❌ Error creating schedule:', createError);
             throw createError;
         }
         console.log('✅ Schedule created:', newData);
+        console.log('🔍 DEBUG: New schedule ID:', newData?.id);
         return newData
     }
 
@@ -332,6 +346,7 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
     }
 
     console.log('✅ Schedule found:', data);
+    console.log('🔍 DEBUG: Existing schedule ID:', data?.id);
     return data
 }
 
