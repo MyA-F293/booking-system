@@ -262,6 +262,8 @@ export const getClasses = async () => {
 
 /**
  * Get or create schedule
+ * NEW APPROACH: Try INSERT first, handle duplicate gracefully
+ * This eliminates race condition from "check then insert" pattern
  */
 export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
     console.log('📡 dbHelpers: getOrCreateSchedule called with:', scheduleData, 'retry:', retryCount);
@@ -269,85 +271,74 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
 
     const { class_id, program, level, phase, day, time_slot, week_number, year, batch } = scheduleData
 
-    // Check if schedule already exists
-    console.log('🔍 DEBUG: Building query to check existing schedule...');
-    let query = supabase
+    // 🆕 NEW APPROACH: Try INSERT first (optimistic)
+    console.log('📝 Attempting INSERT first (optimistic approach)...');
+    const { data: newData, error: createError } = await supabase
         .from('schedules')
-        .select('*')
-        .eq('class_id', class_id)
-        .eq('program', program)
-        .eq('level', level)
-        .eq('phase', phase)
-        .eq('time_slot', time_slot)
-        .eq('week_number', week_number)
-        .eq('year', year)
+        .insert([scheduleData])
+        .select()
+        .single()
 
-    // Add day filter if provided
-    if (day) {
-        console.log('🔍 DEBUG: Adding day filter:', day);
-        query = query.eq('day', day)
+    // ✅ INSERT succeeded - schedule created
+    if (newData && !createError) {
+        console.log('✅ Schedule created successfully:', newData.id);
+        return newData;
     }
 
-    // Add batch filter if provided
-    if (batch) {
-        console.log('🔍 DEBUG: Adding batch filter:', batch);
-        query = query.eq('batch', batch)
-    }
+    // ⚠️ INSERT failed - check if it's duplicate error
+    if (createError) {
+        console.log('⚠️ INSERT failed:', createError.message);
+        console.log('🔍 Error code:', createError.code);
 
-    console.log('🔍 DEBUG: Executing query to find existing schedule...');
-    let { data, error } = await query.maybeSingle()
+        // Handle duplicate key error (23505) OR trigger error
+        const isDuplicateError = createError.code === '23505' ||
+            createError.message?.includes('Duplicate schedule detected') ||
+            createError.message?.includes('already exists');
 
-    console.log('🔍 DEBUG: Query result:', { found: !!data, error: error?.message });
+        if (isDuplicateError) {
+            console.log('✅ Duplicate detected - schedule already exists, fetching it...');
 
-    // Jika belum ada, buat baru
-    if (!data) {
-        console.log('📝 Schedule not found, creating new schedule...');
-        console.log('🔍 DEBUG: INSERT data:', JSON.stringify(scheduleData, null, 2));
+            // Build query to fetch existing schedule
+            let query = supabase
+                .from('schedules')
+                .select('*')
+                .eq('class_id', class_id)
+                .eq('program', program)
+                .eq('level', level)
+                .eq('phase', phase)
+                .eq('time_slot', time_slot)
+                .eq('week_number', week_number)
+                .eq('year', year);
 
-        const { data: newData, error: createError } = await supabase
-            .from('schedules')
-            .insert([scheduleData])
-            .select()
-            .single()
+            if (day) query = query.eq('day', day);
+            if (batch) query = query.eq('batch', batch);
 
-        if (createError) {
-            console.error('❌ Error creating schedule:', createError);
-            console.error('🔍 DEBUG: Error code:', createError.code);
-            console.error('🔍 DEBUG: Error message:', createError.message);
-            console.error('🔍 DEBUG: Error details:', createError.details);
-            console.error('🔍 DEBUG: Error hint:', createError.hint);
+            const { data: existingData, error: fetchError } = await query.maybeSingle();
 
-            // ✅ Handle duplicate key error (race condition)
-            if (createError.code === '23505' && retryCount < 3) {
-                console.log('⚠️ Duplicate key detected (code 23505), retrying to fetch existing schedule...');
-                // Wait a bit and retry fetching
-                await new Promise(resolve => setTimeout(resolve, 100 * (retryCount + 1)));
+            if (existingData) {
+                console.log('✅ Found existing schedule:', existingData.id);
+                return existingData;
+            }
+
+            // Schedule not found yet - might still be committing
+            if (retryCount < 5) {
+                const waitTime = 50 * Math.pow(2, retryCount); // Exponential backoff: 50, 100, 200, 400, 800ms
+                console.log(`⏳ Schedule not found yet, waiting ${waitTime}ms before retry ${retryCount + 1}/5...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
                 return getOrCreateSchedule(scheduleData, retryCount + 1);
             }
 
-            // 🔍 DEBUG: Check if error is from trigger
-            if (createError.message && createError.message.includes('Duplicate schedule detected')) {
-                console.error('🚨 DEBUG: TRIGGER ERROR DETECTED!');
-                console.error('🚨 This error comes from prevent_duplicate_schedule trigger');
-                console.error('🚨 Trigger is blocking the INSERT even though schedule should be allowed');
-                console.error('🚨 SOLUTION: Disable the trigger in Supabase');
-            }
-
-            throw createError;
+            console.error('❌ Failed to fetch schedule after 5 retries');
+            throw new Error('Schedule exists but could not be retrieved after multiple attempts');
         }
-        console.log('✅ Schedule created:', newData);
-        console.log('🔍 DEBUG: New schedule ID:', newData?.id);
-        return newData
+
+        // Other errors - throw
+        console.error('❌ Unexpected error creating schedule:', createError);
+        throw createError;
     }
 
-    if (error) {
-        console.error('❌ Error fetching schedule:', error);
-        throw error;
-    }
-
-    console.log('✅ Schedule found:', data);
-    console.log('🔍 DEBUG: Existing schedule ID:', data?.id);
-    return data
+    // Should not reach here, but just in case
+    throw new Error('Unexpected state in getOrCreateSchedule');
 }
 
 /**
