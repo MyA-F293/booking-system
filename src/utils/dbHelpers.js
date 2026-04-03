@@ -309,6 +309,16 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
                 await new Promise(resolve => setTimeout(resolve, 100 * (retryCount + 1)));
                 return getOrCreateSchedule(scheduleData, retryCount + 1);
             }
+
+            // ✅ Handle trigger error (duplicate schedule detected by trigger)
+            // This happens when multiple users try to book simultaneously
+            if (createError.message?.includes('Duplicate schedule') && retryCount < 3) {
+                console.log('⚠️ Duplicate schedule detected by trigger, retrying to fetch existing schedule...');
+                // Wait a bit and retry fetching
+                await new Promise(resolve => setTimeout(resolve, 150 * (retryCount + 1)));
+                return getOrCreateSchedule(scheduleData, retryCount + 1);
+            }
+
             console.error('❌ Error creating schedule:', createError);
             throw createError;
         }
