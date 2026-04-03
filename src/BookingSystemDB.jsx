@@ -31,11 +31,12 @@ import {
 
 const BookingSystemDB = ({ user }) => {
     const { currentWeek } = useWeek(); // Use database week from context
-    const { isTestingMode } = useBookingMode(); // Use booking mode from context
+    const { isTestingMode, forceClose } = useBookingMode(); // Use booking mode from context
     console.log('🚀 BookingSystemDB component mounted');
     console.log('👤 Received user prop:', user);
     console.log('📦 User batch:', user?.batch);
     console.log('🔧 Booking Mode:', isTestingMode ? 'TESTING' : 'PRODUCTION');
+    console.log('🔒 Force Close:', forceClose);
 
     const { t } = useLanguage();
     const { settings, updateSettings } = useSettings();
@@ -384,6 +385,11 @@ const BookingSystemDB = ({ user }) => {
 
     // Check if today is Thursday (4), Friday (5), or Saturday (6) before 22:00
     const canBook = () => {
+        // If force close is enabled, always return false (booking closed)
+        if (forceClose) {
+            return false;
+        }
+
         // If testing mode is enabled, allow booking anytime
         if (isTestingMode) {
             return true;

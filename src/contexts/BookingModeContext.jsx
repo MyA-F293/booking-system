@@ -17,14 +17,29 @@ export const BookingModeProvider = ({ children }) => {
         return saved || 'production';
     });
 
+    // Force close booking (overrides all other rules)
+    const [forceClose, setForceClose] = useState(() => {
+        const saved = localStorage.getItem('eysa_force_close_booking');
+        return saved === 'true';
+    });
+
     // Save to localStorage whenever it changes
     useEffect(() => {
         localStorage.setItem('eysa_booking_mode', bookingMode);
         console.log('📋 Booking Mode changed to:', bookingMode);
     }, [bookingMode]);
 
+    useEffect(() => {
+        localStorage.setItem('eysa_force_close_booking', forceClose.toString());
+        console.log('🔒 Force Close Booking:', forceClose);
+    }, [forceClose]);
+
     const toggleBookingMode = () => {
         setBookingMode(prev => prev === 'production' ? 'testing' : 'production');
+    };
+
+    const toggleForceClose = () => {
+        setForceClose(prev => !prev);
     };
 
     const isTestingMode = bookingMode === 'testing';
@@ -36,7 +51,10 @@ export const BookingModeProvider = ({ children }) => {
             setBookingMode,
             toggleBookingMode,
             isTestingMode,
-            isProductionMode
+            isProductionMode,
+            forceClose,
+            setForceClose,
+            toggleForceClose
         }}>
             {children}
         </BookingModeContext.Provider>

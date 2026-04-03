@@ -73,7 +73,7 @@ const AdminBookingDashboard = () => {
     const { t } = useLanguage();
     const toast = useToast();
     const { currentWeek } = useWeek(); // Use database week from context
-    const { bookingMode, toggleBookingMode, isTestingMode, isProductionMode } = useBookingMode();
+    const { bookingMode, toggleBookingMode, isTestingMode, isProductionMode, forceClose, toggleForceClose } = useBookingMode();
 
     // Define currentYear
     const currentYear = getCurrentYear();
@@ -1058,6 +1058,31 @@ const AdminBookingDashboard = () => {
 
                         {/* Right - Week Toggle & Actions */}
                         <div className="flex items-center gap-2 sm:gap-3">
+                            {/* Force Close Booking Toggle */}
+                            <button
+                                onClick={() => {
+                                    toggleForceClose();
+                                    toast.success(`Booking ${forceClose ? 'OPENED' : 'FORCE CLOSED'}`);
+                                }}
+                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 shadow-md ${forceClose
+                                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                                    : 'bg-gray-400 hover:bg-gray-500 text-white'
+                                    }`}
+                                title={forceClose ? 'Booking is FORCE CLOSED. Click to open.' : 'Booking follows normal rules. Click to FORCE CLOSE.'}
+                            >
+                                {forceClose ? (
+                                    <>
+                                        <X size={14} />
+                                        <span className="hidden sm:inline">Closed</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Clock size={14} />
+                                        <span className="hidden sm:inline">Auto</span>
+                                    </>
+                                )}
+                            </button>
+
                             {/* Booking Mode Toggle */}
                             <button
                                 onClick={() => {
