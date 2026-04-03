@@ -266,13 +266,29 @@ export const getClasses = async () => {
  * This eliminates race condition from "check then insert" pattern
  */
 export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
-    console.log('📡 dbHelpers: getOrCreateSchedule called with:', scheduleData, 'retry:', retryCount);
-    console.log('🔍 DEBUG: Full schedule data:', JSON.stringify(scheduleData, null, 2));
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('📡 getOrCreateSchedule CALLED');
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('🔢 Retry count:', retryCount);
+    console.log('📦 Schedule data:', JSON.stringify(scheduleData, null, 2));
+    console.log('───────────────────────────────────────────────────────────');
 
     const { class_id, program, level, phase, day, time_slot, week_number, year, batch } = scheduleData
 
     // 🆕 NEW APPROACH: Try INSERT first (optimistic)
-    console.log('📝 Attempting INSERT first (optimistic approach)...');
+    console.log('🚀 STEP 1: Attempting INSERT (optimistic approach)...');
+    console.log('📝 INSERT data breakdown:');
+    console.log('   - class_id:', class_id);
+    console.log('   - program:', program);
+    console.log('   - level:', level);
+    console.log('   - phase:', phase);
+    console.log('   - day:', day);
+    console.log('   - time_slot:', time_slot);
+    console.log('   - week_number:', week_number);
+    console.log('   - year:', year);
+    console.log('   - batch:', batch);
+    console.log('───────────────────────────────────────────────────────────');
+
     const { data: newData, error: createError } = await supabase
         .from('schedules')
         .insert([scheduleData])
@@ -281,14 +297,24 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
 
     // ✅ INSERT succeeded - schedule created
     if (newData && !createError) {
-        console.log('✅ Schedule created successfully:', newData.id);
+        console.log('✅✅✅ SUCCESS: Schedule created!');
+        console.log('🆔 New schedule ID:', newData.id);
+        console.log('📊 Schedule details:', JSON.stringify(newData, null, 2));
+        console.log('═══════════════════════════════════════════════════════════');
         return newData;
     }
 
     // ⚠️ INSERT failed - check if it's duplicate error
     if (createError) {
-        console.log('⚠️ INSERT failed:', createError.message);
-        console.log('🔍 Error code:', createError.code);
+        console.log('❌❌❌ INSERT FAILED!');
+        console.log('═══════════════════════════════════════════════════════════');
+        console.log('🔴 ERROR DETAILS:');
+        console.log('   - Message:', createError.message);
+        console.log('   - Code:', createError.code);
+        console.log('   - Details:', createError.details);
+        console.log('   - Hint:', createError.hint);
+        console.log('   - Full error:', JSON.stringify(createError, null, 2));
+        console.log('───────────────────────────────────────────────────────────');
 
         // Handle duplicate key error (23505) OR trigger error
         const isDuplicateError = createError.code === '23505' ||
@@ -296,9 +322,11 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
             createError.message?.includes('already exists');
 
         if (isDuplicateError) {
-            console.log('✅ Duplicate detected - schedule already exists, fetching it...');
+            console.log('🔄 STEP 2: Duplicate detected - fetching existing schedule...');
+            console.log('───────────────────────────────────────────────────────────');
 
             // Build query to fetch existing schedule
+            console.log('🔍 Building SELECT query with EXACT same filters:');
             let query = supabase
                 .from('schedules')
                 .select('*')
@@ -310,13 +338,51 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
                 .eq('week_number', week_number)
                 .eq('year', year);
 
-            if (day) query = query.eq('day', day);
-            if (batch) query = query.eq('batch', batch);
+            console.log('   - class_id:', class_id);
+            console.log('   - program:', program);
+            console.log('   - level:', level);
+            console.log('   - phase:', phase);
+            console.log('   - time_slot:', time_slot);
+            console.log('   - week_number:', week_number);
+            console.log('   - year:', year);
+
+            if (day) {
+                console.log('   - day:', day);
+                query = query.eq('day', day);
+            }
+            if (batch) {
+                console.log('   - batch:', batch);
+                query = query.eq('batch', batch);
+            }
+
+            console.log('───────────────────────────────────────────────────────────');
+            console.log('🔍 Executing SELECT query...');
 
             const { data: existingData, error: fetchError } = await query.maybeSingle();
 
+            console.log('📊 SELECT RESULT:');
+            console.log('   - Found:', !!existingData);
+            console.log('   - Error:', fetchError?.message || 'none');
             if (existingData) {
-                console.log('✅ Found existing schedule:', existingData.id);
+                console.log('   - Schedule ID:', existingData.id);
+                console.log('   - Program:', existingData.program);
+                console.log('   - Level:', existingData.level);
+                console.log('   - Batch:', existingData.batch);
+                console.log('   - Full data:', JSON.stringify(existingData, null, 2));
+            } else {
+                console.log('   - ⚠️ NO SCHEDULE FOUND!');
+                console.log('   - This means: INSERT failed but SELECT also failed');
+                console.log('   - Possible causes:');
+                console.log('     1. Race condition - schedule being created by another request');
+                console.log('     2. Trigger/constraint blocking INSERT but schedule does not exist');
+                console.log('     3. Database transaction not committed yet');
+            }
+            console.log('───────────────────────────────────────────────────────────');
+
+            if (existingData) {
+                console.log('✅✅✅ SUCCESS: Found existing schedule!');
+                console.log('🆔 Schedule ID:', existingData.id);
+                console.log('═══════════════════════════════════════════════════════════');
                 return existingData;
             }
 
