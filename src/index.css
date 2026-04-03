@@ -98,6 +98,33 @@ body {
     }
 }
 
+/* Animated gradient background */
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.bg-size-200 {
+    background-size: 200% 200%;
+}
+
+.bg-pos-100 {
+    background-position: 100% 50%;
+}
+
+.group:hover .bg-size-200 {
+    animation: gradient-shift 3s ease infinite;
+}
+
 .animate-bounce-gentle {
     animation: bounce-gentle 2s ease-in-out infinite;
 }

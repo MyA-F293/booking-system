@@ -1,0 +1,113 @@
+============================================
+🎯 JALANKAN INI SEKARANG DI SUPABASE
+============================================
+
+STEP 1: CHECK MASALAHNYA
+------------------------
+SELECT 
+    '📊 CURRENT STATE' as info,
+    (SELECT COUNT(*) FROM schedules 
+     WHERE day = 'sunday' AND time_slot = 'evening' 
+     AND week_number = 2 AND year = 2026) as total_schedules,
+    
+    (SELECT COUNT(*) FROM schedules 
+     WHERE day = 'sunday' AND time_slot = 'evening' 
+     AND week_number = 2 AND year = 2026 
+     AND current_students = 0) as empty_schedules,
+    
+    (SELECT COUNT(*) FROM pg_trigger 
+     WHERE tgrelid = 'schedules'::regclass 
+     AND tgenabled = 'O' 
+     AND tgname LIKE '%duplicate%') as active_triggers,
+    
+    (SELECT COUNT(*) FROM pg_constraint 
+     WHERE conrelid = 'schedules'::regclass 
+     AND contype = 'u') as unique_constraints;
+
+
+STEP 2: LIHAT DETAIL OXFORD
+----------------------------
+SELECT 
+    '🎯 OXFORD SCHEDULES' as info,
+    id,
+    program,
+    level,
+    batch,
+    current_students,
+    created_at
+FROM schedules
+WHERE class_id = (SELECT id FROM classes WHERE name = 'Oxford Class')
+  AND day = 'sunday'
+  AND time_slot = 'evening'
+  AND week_number = 2
+  AND year = 2026
+ORDER BY created_at;
+
+
+STEP 3: CHECK TRIGGER STATUS
+-----------------------------
+SELECT 
+    '🔧 TRIGGERS' as info,
+    tgname as trigger_name,
+    CASE 
+        WHEN tgenabled = 'O' THEN '✅ ENABLED (ACTIVE)'
+        WHEN tgenabled = 'D' THEN '❌ DISABLED'
+    END as status
+FROM pg_trigger
+WHERE tgrelid = 'schedules'::regclass
+  AND tgname LIKE '%duplicate%';
+
+
+STEP 4: CHECK CONSTRAINTS
+--------------------------
+SELECT 
+    '🔒 CONSTRAINTS' as info,
+    conname as constraint_name,
+    pg_get_constraintdef(oid) as definition
+FROM pg_constraint
+WHERE conrelid = 'schedules'::regclass
+  AND contype = 'u'
+ORDER BY conname;
+
+
+============================================
+🔧 QUICK FIX (Pilih salah satu)
+============================================
+
+FIX A: Jika ada EMPTY schedules
+--------------------------------
+DELETE FROM schedules
+WHERE day = 'sunday'
+  AND time_slot = 'evening'
+  AND week_number = 2
+  AND year = 2026
+  AND current_students = 0;
+
+
+FIX B: Jika trigger ENABLED
+----------------------------
+DROP TRIGGER IF EXISTS prevent_duplicate_schedule ON schedules;
+
+
+FIX C: Jika ada constraint yang salah
+--------------------------------------
+-- Check dulu constraint name dari STEP 4
+-- Lalu drop yang bukan schedules_unique_booking
+
+ALTER TABLE schedules 
+DROP CONSTRAINT IF EXISTS schedules_class_id_day_time_slot_phase_week_number_key;
+
+ALTER TABLE schedules 
+DROP CONSTRAINT IF EXISTS unique_schedule_per_week;
+
+
+============================================
+✅ VERIFY FIX
+============================================
+-- Run STEP 1 lagi, harusnya:
+-- - empty_schedules = 0
+-- - active_triggers = 0
+-- - unique_constraints = 1 (hanya schedules_unique_booking)
+
+-- Lalu test booking Oxford lagi di browser!
+

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useLanguage } from './contexts/LanguageContext';
 import { useSettings } from './contexts/SettingsContext';
 import { useWeek } from './contexts/WeekContext';
+import { useBookingMode } from './contexts/BookingModeContext';
 import { useToast } from './components/Toast';
 import useModalScrollLock from './hooks/useModalScrollLock';
 
@@ -24,14 +25,17 @@ import {
     getCurrentYear,
     getDateForDayInWeek,
     formatDateShort,
-    getAttendanceRecords
+    getAttendanceRecords,
+    checkRoomConflict
 } from './utils/dbHelpers';
 
 const BookingSystemDB = ({ user }) => {
     const { currentWeek } = useWeek(); // Use database week from context
+    const { isTestingMode } = useBookingMode(); // Use booking mode from context
     console.log('🚀 BookingSystemDB component mounted');
     console.log('👤 Received user prop:', user);
     console.log('📦 User batch:', user?.batch);
+    console.log('🔧 Booking Mode:', isTestingMode ? 'TESTING' : 'PRODUCTION');
 
     const { t } = useLanguage();
     const { settings, updateSettings } = useSettings();
@@ -115,6 +119,9 @@ const BookingSystemDB = ({ user }) => {
 
     // Track classes occupied by other programs (for room exclusivity)
     const [occupiedClasses, setOccupiedClasses] = useState([]);
+
+    // Track room conflicts (for UX warning)
+    const [roomConflicts, setRoomConflicts] = useState({});
 
     // Success modal state
     const [showBookingSuccessModal, setShowBookingSuccessModal] = useState(false);
@@ -339,8 +346,49 @@ const BookingSystemDB = ({ user }) => {
         }
     }, [userId]);
 
+    // Check room conflicts when day/time/phase changes
+    useEffect(() => {
+        const checkAllRoomConflicts = async () => {
+            if (!selectedDay || !selectedTime || !selectedPhase || !selectedProgram || !selectedLevel) {
+                setRoomConflicts({});
+                return;
+            }
+
+            const bookingWeek = getBookingWeek();
+            const conflicts = {};
+
+            // Check each class for room conflict
+            for (const classItem of classes) {
+                const conflict = await checkRoomConflict(
+                    classItem.id,
+                    selectedDay,
+                    selectedTime,
+                    selectedPhase,
+                    bookingWeek,
+                    currentYear,
+                    selectedProgram,
+                    selectedLevel
+                );
+
+                if (conflict) {
+                    conflicts[classItem.id] = conflict;
+                }
+            }
+
+            console.log('🔍 Room conflicts detected:', conflicts);
+            setRoomConflicts(conflicts);
+        };
+
+        checkAllRoomConflicts();
+    }, [selectedDay, selectedTime, selectedPhase, selectedProgram, selectedLevel, classes, currentYear]);
+
     // Check if today is Thursday (4), Friday (5), or Saturday (6) before 22:00
     const canBook = () => {
+        // If testing mode is enabled, allow booking anytime
+        if (isTestingMode) {
+            return true;
+        }
+
         // PRODUCTION MODE: Only allow booking Thursday-Saturday before 22:00
         const now = new Date();
         const dayOfWeek = now.getDay(); // 0=Sunday, 4=Thursday, 5=Friday, 6=Saturday
@@ -366,10 +414,11 @@ const BookingSystemDB = ({ user }) => {
     const handleLevelSelect = (level) => {
         if (level.comingSoon) return;
         console.log('📊 Level selected:', level.name);
-        if (!canBook()) {
-            toast.warning(t('booking.bookingDayRestriction'));
-            return;
-        }
+        // 🧪 TESTING MODE: Skip time restriction check
+        // if (!canBook()) {
+        //     toast.warning(t('booking.bookingDayRestriction'));
+        //     return;
+        // }
         setSelectedLevel(level.name);
         setShowBookingModal(true);
         setSelectedPhase('');
@@ -921,83 +970,116 @@ const BookingSystemDB = ({ user }) => {
                             </div>
                         </div>
 
-                        {/* Welcome - Simple Text */}
+                        {/* Welcome Section - Abstract Shape Design */}
                         {currentUser && (
-                            <div className="mb-6">
-                                <p className="text-gray-500 text-sm">{t('common.welcome')}</p>
-                                <p className="text-xl sm:text-2xl font-bold text-[#1F4E8C]">{currentUser.full_name}</p>
+                            <div className="mb-4 relative overflow-hidden bg-gradient-to-br from-white via-blue-50/30 to-gray-50 rounded-3xl p-5 border border-gray-100 shadow-sm">
+                                {/* Abstract decorative shapes */}
+                                <div className="absolute -top-8 -right-8 w-24 h-24 bg-gradient-to-br from-[#1F4E8C]/10 to-transparent rounded-full blur-2xl"></div>
+                                <div className="absolute -bottom-6 -left-6 w-20 h-20 bg-gradient-to-tr from-[#F39C32]/10 to-transparent rounded-full blur-xl"></div>
+
+                                <div className="relative z-10 flex items-center gap-3">
+                                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1F4E8C] to-[#2a5fa3] flex items-center justify-center text-white font-bold text-xl shadow-lg transform rotate-3">
+                                        {currentUser.full_name?.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <p className="text-gray-500 text-xs font-medium">{t('common.welcome')}</p>
+                                        <p className="text-xl font-bold text-gray-800">{currentUser.full_name}</p>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
-                        {/* Program Display - Show assigned program (not selectable) */}
-                        <div className="mb-6">
-                            <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                <span className="text-[#1F4E8C]">1.</span> Your Program
-                            </h2>
-                            {currentUser?.program ? (
-                                <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-4 rounded-xl border-2 border-[#1F4E8C] shadow-lg">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">Assigned Program</p>
-                                            <p className="text-lg font-bold">
-                                                {currentUser.program === 'Campus & Career' ? t('program.campusCareer') :
-                                                    currentUser.program === 'English for Teens' ? t('program.englishTeens') :
-                                                        currentUser.program}
-                                            </p>
-                                        </div>
-                                        <div className="bg-white/20 p-2 rounded-lg">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        {/* Program & Level Grid - 60/40 Split on Desktop */}
+                        <div className="mb-4 grid grid-cols-1 md:grid-cols-5 gap-4">
+                            {/* Program Card - Takes 3 columns (60%) on desktop */}
+                            <div className="md:col-span-3">
+                                {currentUser?.program ? (
+                                    <div className="h-full relative overflow-hidden bg-gradient-to-br from-[#1F4E8C] via-[#2a5fa3] to-[#1F4E8C] rounded-3xl p-6 shadow-lg hover:scale-[1.02] transition-transform duration-300">
+                                        {/* Icon */}
+                                        <div className="mb-4 w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                                             </svg>
                                         </div>
+
+                                        {/* Title */}
+                                        <h3 className="text-white text-2xl font-bold mb-2">
+                                            {currentUser.program === 'Campus & Career' ? 'English Campus & Career' :
+                                                currentUser.program === 'English for Teens' ? 'English for Teens' :
+                                                    currentUser.program}
+                                        </h3>
+
+                                        {/* Description */}
+                                        <p className="text-blue-100 text-sm">
+                                            Your assigned program for this semester
+                                        </p>
+
+                                        {/* Decorative shapes - Multiple abstract elements */}
+                                        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl"></div>
+                                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-2xl translate-y-1/2 -translate-x-1/3 transform rotate-45"></div>
+                                        <div className="absolute top-1/2 right-8 w-16 h-16 bg-white/5 rounded-full blur-2xl"></div>
+                                        <div className="absolute top-4 left-4 w-3 h-3 bg-white/20 rounded-sm transform rotate-45"></div>
+                                        <div className="absolute bottom-4 right-4 w-2 h-2 bg-white/30 rounded-full"></div>
+                                    </div>
+                                ) : (
+                                    <div className="h-full bg-red-50 border-2 border-red-200 rounded-3xl p-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mb-4 transform rotate-3">
+                                            <span className="text-red-600 text-2xl">⚠️</span>
+                                        </div>
+                                        <h3 className="font-bold text-red-700 text-xl mb-2">No program assigned</h3>
+                                        <p className="text-sm text-red-600">Please contact admin to assign your program.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Level Card - Takes 2 columns (40%) on desktop */}
+                            {selectedProgram && currentUser?.level && (
+                                <div className="md:col-span-2">
+                                    <div className="h-full relative overflow-hidden bg-gradient-to-br from-[#F39C32] via-[#e88a1f] to-[#F39C32] rounded-3xl p-6 shadow-lg hover:scale-[1.02] transition-transform duration-300">
+                                        {/* Icon */}
+                                        <div className="mb-4 w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                                            <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                                            </svg>
+                                        </div>
+
+                                        {/* Title */}
+                                        <h3 className="text-white text-2xl font-bold mb-2">
+                                            {currentUser.level}
+                                        </h3>
+
+                                        {/* Description */}
+                                        <p className="text-orange-100 text-sm">
+                                            Your current level
+                                        </p>
+
+                                        {/* Decorative shapes - Different pattern from Program card */}
+                                        <div className="absolute -top-8 -left-8 w-36 h-36 bg-white/10 rounded-full blur-3xl"></div>
+                                        <div className="absolute bottom-0 right-0 w-28 h-28 bg-white/5 rounded-2xl translate-y-1/3 translate-x-1/3 transform rotate-12"></div>
+                                        <div className="absolute top-1/2 left-6 w-20 h-20 bg-white/5 rounded-full blur-2xl"></div>
+                                        <div className="absolute top-4 right-4 w-3 h-3 bg-white/20 rounded-full"></div>
+                                        <div className="absolute bottom-4 left-4 w-2 h-2 bg-white/30 rounded-sm transform rotate-45"></div>
                                     </div>
                                 </div>
-                            ) : (
-                                <div className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-xl">
-                                    <p className="font-semibold">⚠️ No program assigned</p>
-                                    <p className="text-sm mt-1">Please contact admin to assign your program.</p>
+                            )}
+
+                            {/* Warning if no level assigned */}
+                            {selectedProgram && !currentUser?.level && (
+                                <div className="md:col-span-2">
+                                    <div className="h-full bg-red-50 border-2 border-red-200 rounded-3xl p-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mb-4 transform rotate-3">
+                                            <span className="text-red-600 text-2xl">⚠️</span>
+                                        </div>
+                                        <h3 className="font-bold text-red-700 text-xl mb-2">No level assigned</h3>
+                                        <p className="text-sm text-red-600">Please contact admin to assign your level.</p>
+                                    </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* Level Display - Show assigned level (not selectable) */}
-                        {selectedProgram && currentUser?.level && (
-                            <div className="mb-6">
-                                <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <span className="text-[#F39C32]">2.</span> Your Level
-                                </h2>
-                                <div className="bg-gradient-to-r from-[#F39C32] to-[#e88a1f] text-white p-4 rounded-xl border-2 border-[#F39C32] shadow-lg">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="text-orange-100 text-xs mb-1">Assigned Level</p>
-                                            <p className="text-lg font-bold">
-                                                {currentUser.level}
-                                            </p>
-                                        </div>
-                                        <div className="bg-white/20 p-2 rounded-lg">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Warning if no level assigned */}
-                        {selectedProgram && !currentUser?.level && (
-                            <div className="mb-6">
-                                <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                    <span className="text-[#F39C32]">2.</span> Your Level
-                                </h2>
-                                <div className="bg-red-50 border-2 border-red-200 text-red-700 p-4 rounded-xl">
-                                    <p className="font-semibold">⚠️ No level assigned</p>
-                                    <p className="text-sm mt-1">Please contact admin to assign your level.</p>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Quick Book Button - Opens modal directly */}
+                        {/* Book a Class Button - Large Horizontal Card */}
                         {selectedProgram && currentUser?.level && (
                             <div className="mb-6">
                                 <button
@@ -1012,12 +1094,51 @@ const BookingSystemDB = ({ user }) => {
                                         setSelectedTime('');
                                     }}
                                     disabled={!canBook()}
-                                    className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg ${canBook()
-                                            ? 'bg-gradient-to-r from-[#F39C32] to-[#e88a1f] text-white hover:shadow-xl active:scale-[0.98]'
-                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    className={`group relative w-full overflow-hidden rounded-3xl transition-all duration-300 ${canBook()
+                                        ? 'shadow-lg hover:shadow-2xl active:scale-[0.98]'
+                                        : 'cursor-not-allowed'
                                         }`}
                                 >
-                                    {canBook() ? '📚 Book a Class' : '🔒 Booking Closed'}
+                                    {canBook() ? (
+                                        <div className="relative bg-gradient-to-r from-[#F39C32] via-[#e88a1f] to-[#F39C32] p-6">
+                                            {/* Decorative shapes */}
+                                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
+
+                                            <div className="relative z-10 flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    {/* Icon */}
+                                                    <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                                                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                                        </svg>
+                                                    </div>
+
+                                                    {/* Text */}
+                                                    <div className="text-left">
+                                                        <h3 className="text-white text-2xl font-bold mb-1">Book a Class</h3>
+                                                        <p className="text-orange-100 text-sm">Choose your schedule for this week</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Arrow */}
+                                                <svg className="w-6 h-6 text-white group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-gray-200 p-6 flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 rounded-2xl bg-gray-300 flex items-center justify-center">
+                                                    <span className="text-3xl">🔒</span>
+                                                </div>
+                                                <div className="text-left">
+                                                    <h3 className="text-gray-500 text-2xl font-bold mb-1">Booking Closed</h3>
+                                                    <p className="text-gray-400 text-sm">Available Thursday - Saturday</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </button>
                             </div>
                         )}
@@ -1380,23 +1501,25 @@ const BookingSystemDB = ({ user }) => {
                                             const isActive = status.status === 'active';
                                             const isOccupied = status.status === 'occupied';
 
+                                            // Check for room conflict
+                                            const roomConflict = roomConflicts[classItem.id];
+                                            const hasRoomConflict = !!roomConflict;
+
                                             const teacherIndex = classes.findIndex(c => c.id === classItem.id);
                                             const teacher = teachers[teacherIndex % teachers.length];
 
-                                            const stickyNoteClass = isOccupied
-                                                ? 'bg-gray-100 border-gray-400'
-                                                : isFull
-                                                    ? 'bg-red-50 border-red-300'
-                                                    : isActive
-                                                        ? 'bg-green-50 border-green-300'
-                                                        : 'bg-yellow-50 border-yellow-300';
+                                            const stickyNoteClass = hasRoomConflict
+                                                ? 'bg-orange-50 border-orange-400'
+                                                : isOccupied
+                                                    ? 'bg-gray-100 border-gray-400'
+                                                    : isFull
+                                                        ? 'bg-red-50 border-red-300'
+                                                        : isActive
+                                                            ? 'bg-green-50 border-green-300'
+                                                            : 'bg-yellow-50 border-yellow-300';
 
-                                            // Check if Harvard Class and user is not Teens
-                                            // Harvard Class is only for TEENS batch or English for Teens program
-                                            const isTeensUser = currentUser?.batch === 'TEENS' ||
-                                                currentUser?.program?.toLowerCase().includes('teens');
-                                            const isHarvardRestricted = classItem.name === 'Harvard Class' && !isTeensUser;
-                                            const isDisabled = !canClick || isHarvardRestricted;
+                                            // Harvard Class restriction REMOVED - now available for all programs
+                                            const isDisabled = !canClick || hasRoomConflict;
 
                                             return (
                                                 <button
@@ -1410,16 +1533,38 @@ const BookingSystemDB = ({ user }) => {
                                                         ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer hover:shadow-xl'}
                                                     `}
                                                     style={{ minHeight: '100px' }}
-                                                    title={isHarvardRestricted ? 'Harvard Class is only for English for Teens students' : ''}
                                                 >
                                                     {/* Status indicator */}
-                                                    <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-2 h-2 sm:w-3 sm:h-3 rounded-full ${isOccupied ? 'bg-gray-500' : isFull ? 'bg-red-500' : isActive ? 'bg-green-500 animate-pulse' : 'bg-yellow-400'}`} />
+                                                    <div className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-2 h-2 sm:w-3 sm:h-3 rounded-full ${hasRoomConflict ? 'bg-orange-500' : isOccupied ? 'bg-gray-500' : isFull ? 'bg-red-500' : isActive ? 'bg-green-500 animate-pulse' : 'bg-yellow-400'}`} />
 
                                                     {/* Class name */}
-                                                    <div className={`font-bold text-xs sm:text-lg mb-1 sm:mb-2 ${isOccupied ? 'text-gray-500' : isFull ? 'text-red-800' : 'text-[#1F4E8C]'}`}>
+                                                    <div className={`font-bold text-xs sm:text-lg mb-1 sm:mb-2 ${hasRoomConflict ? 'text-orange-800' : isOccupied ? 'text-gray-500' : isFull ? 'text-red-800' : 'text-[#1F4E8C]'}`}>
                                                         {classItem.name}
                                                         {/* Harvard Class badge removed */}
                                                     </div>
+
+                                                    {/* Room Conflict Warning */}
+                                                    {hasRoomConflict && (
+                                                        <div className="mb-2 p-2 bg-orange-100 border border-orange-300 rounded-lg">
+                                                            <div className="flex items-start gap-1.5">
+                                                                <span className="text-orange-600 text-xs">⚠️</span>
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-[8px] sm:text-xs font-bold text-orange-900">
+                                                                        Room Occupied
+                                                                    </p>
+                                                                    <p className="text-[7px] sm:text-[10px] text-orange-800 mt-0.5">
+                                                                        {roomConflict.existingProgram}
+                                                                    </p>
+                                                                    <p className="text-[7px] sm:text-[10px] text-orange-700">
+                                                                        {roomConflict.existingLevel} ({roomConflict.studentCount} students)
+                                                                    </p>
+                                                                    <p className="text-[6px] sm:text-[9px] text-orange-600 mt-1">
+                                                                        Choose different time/day
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     {/* Teacher */}
                                                     <div className="flex items-center gap-1 text-[10px] sm:text-sm text-gray-600 mb-1 sm:mb-2">
@@ -1427,8 +1572,8 @@ const BookingSystemDB = ({ user }) => {
                                                         <span className="truncate">{teacher?.name || 'TBA'}</span>
                                                     </div>
 
-                                                    {/* Student count - hide for occupied */}
-                                                    {!isOccupied && (
+                                                    {/* Student count - hide for occupied or room conflict */}
+                                                    {!isOccupied && !hasRoomConflict && (
                                                         <div className={`text-[10px] sm:text-sm font-semibold ${isFull ? 'text-red-700' : isActive ? 'text-green-700' : 'text-gray-600'}`}>
                                                             <Users size={10} className="sm:w-3 sm:h-3 inline mr-0.5 sm:mr-1" />
                                                             {status.count}/10
@@ -1436,14 +1581,16 @@ const BookingSystemDB = ({ user }) => {
                                                     )}
 
                                                     {/* Status label */}
-                                                    <div className={`mt-1 sm:mt-2 text-[8px] sm:text-xs font-bold uppercase tracking-wide ${isOccupied ? 'text-gray-600' : isFull ? 'text-red-600' : isActive ? 'text-green-600' : 'text-yellow-600'}`}>
-                                                        {isOccupied
-                                                            ? `⚫ ${t('booking.occupied') || 'TERPAKAI'}`
-                                                            : isFull
-                                                                ? `🔴 ${t('booking.full') || 'PENUH'}`
-                                                                : isActive
-                                                                    ? `🟢 ${t('booking.available') || 'TERSEDIA'}`
-                                                                    : `🟡 ${t('booking.waitingMore') || 'MENUNGGU'}`}
+                                                    <div className={`mt-1 sm:mt-2 text-[8px] sm:text-xs font-bold uppercase tracking-wide ${hasRoomConflict ? 'text-orange-600' : isOccupied ? 'text-gray-600' : isFull ? 'text-red-600' : isActive ? 'text-green-600' : 'text-yellow-600'}`}>
+                                                        {hasRoomConflict
+                                                            ? `🟠 ROOM OCCUPIED`
+                                                            : isOccupied
+                                                                ? `⚫ ${t('booking.occupied') || 'TERPAKAI'}`
+                                                                : isFull
+                                                                    ? `🔴 ${t('booking.full') || 'PENUH'}`
+                                                                    : isActive
+                                                                        ? `🟢 ${t('booking.available') || 'TERSEDIA'}`
+                                                                        : `🟡 ${t('booking.waitingMore') || 'MENUNGGU'}`}
                                                     </div>
 
                                                     {/* Show which program is using this class */}

@@ -275,6 +275,69 @@ export const getOrCreateSchedule = async (scheduleData, retryCount = 0) => {
 
     const { class_id, program, level, phase, day, time_slot, week_number, year, batch } = scheduleData
 
+    // 🔍 DEBUG: Check for potential conflicts BEFORE INSERT
+    console.log('🔍 PRE-INSERT CHECK: Looking for potential conflicts...');
+    console.log('───────────────────────────────────────────────────────────');
+
+    // Check 1: Exact match (should use this if exists)
+    const { data: exactMatch, error: exactError } = await supabase
+        .from('schedules')
+        .select('*')
+        .eq('class_id', class_id)
+        .eq('program', program)
+        .eq('level', level)
+        .eq('phase', phase)
+        .eq('day', day)
+        .eq('time_slot', time_slot)
+        .eq('week_number', week_number)
+        .eq('year', year)
+        .eq('batch', batch)
+        .maybeSingle();
+
+    console.log('🔍 CHECK 1 - Exact match (class/program/level/phase/day/time/week/batch):');
+    console.log('   Result:', exactMatch ? '✅ FOUND' : '❌ NOT FOUND');
+    if (exactMatch) {
+        console.log('   Schedule ID:', exactMatch.id);
+        console.log('   Current students:', exactMatch.current_students);
+        console.log('   ⚠️ Should use this schedule instead of creating new one!');
+    }
+
+    // Check 2: Same class/day/time/week but different program/level (potential trigger block)
+    const { data: similarSchedules, error: similarError } = await supabase
+        .from('schedules')
+        .select('*')
+        .eq('class_id', class_id)
+        .eq('day', day)
+        .eq('time_slot', time_slot)
+        .eq('phase', phase)
+        .eq('week_number', week_number)
+        .eq('year', year);
+
+    console.log('🔍 CHECK 2 - Similar schedules (same class/day/time/week, ANY program/level):');
+    console.log('   Found:', similarSchedules?.length || 0, 'schedules');
+    if (similarSchedules && similarSchedules.length > 0) {
+        console.log('   📋 EXISTING SCHEDULES:');
+        similarSchedules.forEach((s, i) => {
+            console.log(`   ${i + 1}. ID: ${s.id}`);
+            console.log(`      Program: ${s.program}`);
+            console.log(`      Level: ${s.level}`);
+            console.log(`      Batch: ${s.batch}`);
+            console.log(`      Students: ${s.current_students}/${s.max_students}`);
+            console.log(`      Match: ${s.program === program && s.level === level && s.batch === batch ? '✅ EXACT' : '⚠️ DIFFERENT'}`);
+        });
+
+        // Check if any are empty (might block INSERT)
+        const emptySchedules = similarSchedules.filter(s => s.current_students === 0);
+        if (emptySchedules.length > 0) {
+            console.log('   🚨 WARNING: Found', emptySchedules.length, 'EMPTY schedules!');
+            console.log('   These might block INSERT due to trigger/constraint!');
+            emptySchedules.forEach((s, i) => {
+                console.log(`   Empty ${i + 1}: ${s.program} / ${s.level} / Batch ${s.batch}`);
+            });
+        }
+    }
+    console.log('───────────────────────────────────────────────────────────');
+
     // 🆕 NEW APPROACH: Try INSERT first (optimistic)
     console.log('🚀 STEP 1: Attempting INSERT (optimistic approach)...');
     console.log('📝 INSERT data breakdown:');
@@ -447,6 +510,65 @@ export const getSchedules = async (filters = {}) => {
     console.log('✅ dbHelpers: getSchedules success, found:', data?.length || 0);
     return data || []
 }
+
+/**
+ * Check if a room has a conflict (already occupied by different program/level)
+ * Returns conflict details if room is occupied, null otherwise
+ * 
+ * @param {string} classId - Class/room ID
+ * @param {string} day - Day of the week
+ * @param {string} timeSlot - Time slot (morning/afternoon/evening)
+ * @param {string} phase - Phase (phase1/phase2/recap)
+ * @param {number} weekNumber - Week number
+ * @param {number} year - Year
+ * @param {string} currentProgram - Current user's program
+ * @param {string} currentLevel - Current user's level
+ * @returns {Object|null} Conflict details or null
+ */
+export const checkRoomConflict = async (classId, day, timeSlot, phase, weekNumber, year, currentProgram, currentLevel) => {
+    try {
+        console.log('🔍 Checking room conflict:', { classId, day, timeSlot, phase, weekNumber, year, currentProgram, currentLevel });
+
+        const { data, error } = await supabase
+            .from('schedules')
+            .select('id, program, level, current_students, batch')
+            .eq('class_id', classId)
+            .eq('day', day)
+            .eq('time_slot', timeSlot)
+            .eq('phase', phase)
+            .eq('week_number', weekNumber)
+            .eq('year', year)
+            .limit(1);
+
+        if (error) {
+            console.error('❌ Error checking room conflict:', error);
+            return null;
+        }
+
+        // If schedule exists with different program or level = ROOM CONFLICT
+        if (data && data.length > 0) {
+            const existingSchedule = data[0];
+
+            // Check if it's a different program OR different level
+            if (existingSchedule.program !== currentProgram || existingSchedule.level !== currentLevel) {
+                console.log('⚠️ ROOM CONFLICT DETECTED:', existingSchedule);
+                return {
+                    hasConflict: true,
+                    existingProgram: existingSchedule.program,
+                    existingLevel: existingSchedule.level,
+                    studentCount: existingSchedule.current_students,
+                    batch: existingSchedule.batch
+                };
+            }
+        }
+
+        console.log('✅ No room conflict');
+        return null;
+    } catch (error) {
+        console.error('❌ Exception in checkRoomConflict:', error);
+        return null;
+    }
+};
 
 /**
  * Check which classes are already booked by OTHER programs at the same day/time

@@ -7,6 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContext'
 import { ToastProvider } from './components/Toast'
 import { SettingsProvider } from './contexts/SettingsContext'
 import { WeekProvider } from './contexts/WeekContext'
+import { BookingModeProvider } from './contexts/BookingModeContext'
 import ErrorBoundary from './components/ErrorBoundary'
 import { registerServiceWorker } from './utils/pwaHelpers'
 
@@ -27,9 +28,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <LanguageProvider>
           <SettingsProvider>
             <WeekProvider>
-              <ToastProvider>
-                <App />
-              </ToastProvider>
+              <BookingModeProvider>
+                <ToastProvider>
+                  <App />
+                </ToastProvider>
+              </BookingModeProvider>
             </WeekProvider>
           </SettingsProvider>
         </LanguageProvider>

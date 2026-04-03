@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, Users, Clock, Trash2, UserPlus, RefreshCw, ArrowRight, Loader2, BookOpen, X, GraduationCap, Edit3, MessageCircle, Search, AlertCircle } from 'lucide-react';
-import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentYear, getTeachers, assignTeacherToSchedule } from '../utils/dbHelpers';
+import { getSchedules, getScheduleStudents, getAllStudents, createBooking, getCurrentYear, getTeachers, assignTeacherToSchedule, checkRoomConflict } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
 import { useWeek } from '../contexts/WeekContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useBookingMode } from '../contexts/BookingModeContext';
 import { useToast } from './Toast';
 import useModalScrollLock from '../hooks/useModalScrollLock';
 
@@ -72,6 +73,7 @@ const AdminBookingDashboard = () => {
     const { t } = useLanguage();
     const toast = useToast();
     const { currentWeek } = useWeek(); // Use database week from context
+    const { bookingMode, toggleBookingMode, isTestingMode, isProductionMode } = useBookingMode();
 
     // Define currentYear
     const currentYear = getCurrentYear();
@@ -135,6 +137,9 @@ const AdminBookingDashboard = () => {
     // Duplicate warning
     const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
     const [duplicateScheduleInfo, setDuplicateScheduleInfo] = useState(null);
+
+    // Room conflict warning for admin form
+    const [adminRoomConflict, setAdminRoomConflict] = useState(null);
 
     // Lock body scroll when any modal is open
     useModalScrollLock(
@@ -386,6 +391,58 @@ const AdminBookingDashboard = () => {
         loadData();
         loadAllClasses();
     }, [selectedWeekTab]);
+
+    // Check room conflict when admin form fields change
+    useEffect(() => {
+        const checkAdminRoomConflict = async () => {
+            // Only check if all required fields are filled
+            if (
+                scheduleForm.class_id &&
+                scheduleForm.day &&
+                scheduleForm.time_slot &&
+                scheduleForm.phase &&
+                scheduleForm.week_number &&
+                scheduleForm.year &&
+                scheduleForm.program &&
+                scheduleForm.level
+            ) {
+                console.log('🔍 Admin: Checking room conflict for form:', scheduleForm);
+
+                const conflict = await checkRoomConflict(
+                    scheduleForm.class_id,
+                    scheduleForm.day,
+                    scheduleForm.time_slot,
+                    scheduleForm.phase,
+                    parseInt(scheduleForm.week_number),
+                    parseInt(scheduleForm.year),
+                    scheduleForm.program,
+                    scheduleForm.level
+                );
+
+                if (conflict) {
+                    console.log('⚠️ Admin: Room conflict detected:', conflict);
+                    setAdminRoomConflict(conflict);
+                } else {
+                    console.log('✅ Admin: No room conflict');
+                    setAdminRoomConflict(null);
+                }
+            } else {
+                // Reset conflict if form is incomplete
+                setAdminRoomConflict(null);
+            }
+        };
+
+        checkAdminRoomConflict();
+    }, [
+        scheduleForm.class_id,
+        scheduleForm.day,
+        scheduleForm.time_slot,
+        scheduleForm.phase,
+        scheduleForm.week_number,
+        scheduleForm.year,
+        scheduleForm.program,
+        scheduleForm.level
+    ]);
 
     // Load all classes for dropdown
     const loadAllClasses = async () => {
@@ -1001,6 +1058,31 @@ const AdminBookingDashboard = () => {
 
                         {/* Right - Week Toggle & Actions */}
                         <div className="flex items-center gap-2 sm:gap-3">
+                            {/* Booking Mode Toggle */}
+                            <button
+                                onClick={() => {
+                                    toggleBookingMode();
+                                    toast.success(`Booking mode changed to ${isTestingMode ? 'PRODUCTION' : 'TESTING'}`);
+                                }}
+                                className={`px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 shadow-md ${isTestingMode
+                                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                                    : 'bg-green-600 hover:bg-green-700 text-white'
+                                    }`}
+                                title={`Current: ${bookingMode.toUpperCase()} mode. Click to switch to ${isTestingMode ? 'PRODUCTION' : 'TESTING'} mode`}
+                            >
+                                {isTestingMode ? (
+                                    <>
+                                        <AlertCircle size={14} />
+                                        <span className="hidden sm:inline">Testing</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Clock size={14} />
+                                        <span className="hidden sm:inline">Production</span>
+                                    </>
+                                )}
+                            </button>
+
                             {/* Create Schedule Button */}
                             <button
                                 onClick={handleCreateSchedule}
@@ -1895,111 +1977,180 @@ const AdminBookingDashboard = () => {
 
                         {/* Modal Body */}
                         <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
-                            <div className="space-y-4">
-                                {/* Class Selection */}
+                            <div className="space-y-6">
+                                {/* Class Selection - Button Style */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <BookOpen size={16} className="text-[#F39C32]" />
                                         Class <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={scheduleForm.class_id}
-                                        onChange={(e) => setScheduleForm({ ...scheduleForm, class_id: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
-                                    >
-                                        <option value="">Select a class</option>
+                                    <div className="grid grid-cols-2 gap-2">
                                         {allClasses.map(cls => (
-                                            <option key={cls.id} value={cls.id}>{cls.name}</option>
+                                            <button
+                                                key={cls.id}
+                                                type="button"
+                                                onClick={() => setScheduleForm({ ...scheduleForm, class_id: cls.id })}
+                                                className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${scheduleForm.class_id === cls.id
+                                                    ? 'border-[#F39C32] bg-orange-50 text-[#F39C32] shadow-md'
+                                                    : 'border-gray-200 bg-white text-gray-700 hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                    }`}
+                                            >
+                                                {classBadges[cls.name]?.emoji || '📖'} {cls.name}
+                                            </button>
                                         ))}
-                                    </select>
+                                    </div>
                                 </div>
 
-                                {/* Day Selection */}
+                                {/* Day Selection - Button Style */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <Calendar size={16} className="text-[#F39C32]" />
                                         Day <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={scheduleForm.day}
-                                        onChange={(e) => setScheduleForm({ ...scheduleForm, day: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
-                                    >
-                                        <option value="">Select a day</option>
-                                        <option value="monday">Monday</option>
-                                        <option value="tuesday">Tuesday</option>
-                                        <option value="wednesday">Wednesday</option>
-                                        <option value="thursday">Thursday</option>
-                                        <option value="friday">Friday</option>
-                                        <option value="saturday">Saturday</option>
-                                        <option value="sunday">Sunday</option>
-                                    </select>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                                            <button
+                                                key={day}
+                                                type="button"
+                                                onClick={() => setScheduleForm({ ...scheduleForm, day })}
+                                                className={`p-3 rounded-xl border-2 transition-all text-xs font-medium ${scheduleForm.day === day
+                                                    ? 'border-[#F39C32] bg-orange-50 text-[#F39C32] shadow-md'
+                                                    : 'border-gray-200 bg-white text-gray-700 hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                    }`}
+                                            >
+                                                {day.charAt(0).toUpperCase() + day.slice(1, 3)}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
-                                {/* Time Slot Selection */}
+                                {/* Time Slot Selection - Button Style */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <Clock size={16} className="text-[#F39C32]" />
                                         Time Slot <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={scheduleForm.time_slot}
-                                        onChange={(e) => setScheduleForm({ ...scheduleForm, time_slot: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
-                                    >
-                                        <option value="">Select time slot</option>
-                                        <option value="afternoon">Afternoon (16:00 - 17:30)</option>
-                                        <option value="evening">Evening (19:00 - 20:30)</option>
-                                    </select>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setScheduleForm({ ...scheduleForm, time_slot: 'afternoon' })}
+                                            className={`p-4 rounded-xl border-2 transition-all ${scheduleForm.time_slot === 'afternoon'
+                                                ? 'border-[#F39C32] bg-orange-50 shadow-md'
+                                                : 'border-gray-200 bg-white hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-2xl">☀️</span>
+                                                <span className={`font-bold text-sm ${scheduleForm.time_slot === 'afternoon' ? 'text-[#F39C32]' : 'text-gray-700'}`}>
+                                                    Afternoon
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-gray-500">16:00 - 17:30</p>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setScheduleForm({ ...scheduleForm, time_slot: 'evening' })}
+                                            className={`p-4 rounded-xl border-2 transition-all ${scheduleForm.time_slot === 'evening'
+                                                ? 'border-[#F39C32] bg-orange-50 shadow-md'
+                                                : 'border-gray-200 bg-white hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-2xl">🌙</span>
+                                                <span className={`font-bold text-sm ${scheduleForm.time_slot === 'evening' ? 'text-[#F39C32]' : 'text-gray-700'}`}>
+                                                    Evening
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-gray-500">19:00 - 20:30</p>
+                                        </button>
+                                    </div>
                                 </div>
 
-                                {/* Phase Selection */}
+                                {/* Phase Selection - Button Style */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <GraduationCap size={16} className="text-[#F39C32]" />
                                         Phase <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={scheduleForm.phase}
-                                        onChange={(e) => setScheduleForm({ ...scheduleForm, phase: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
-                                    >
-                                        <option value="">Select phase</option>
-                                        <option value="phase1">Phase 1</option>
-                                        <option value="phase2">Phase 2</option>
-                                        <option value="recap">Recap</option>
-                                    </select>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[
+                                            { value: 'phase1', label: 'Phase 1', emoji: '1️⃣' },
+                                            { value: 'phase2', label: 'Phase 2', emoji: '2️⃣' },
+                                            { value: 'recap', label: 'Recap', emoji: '🔄' }
+                                        ].map(phase => (
+                                            <button
+                                                key={phase.value}
+                                                type="button"
+                                                onClick={() => setScheduleForm({ ...scheduleForm, phase: phase.value })}
+                                                className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${scheduleForm.phase === phase.value
+                                                    ? 'border-[#F39C32] bg-orange-50 text-[#F39C32] shadow-md'
+                                                    : 'border-gray-200 bg-white text-gray-700 hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                    }`}
+                                            >
+                                                {phase.emoji} {phase.label}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
-                                {/* Program Selection */}
+                                {/* Program Selection - Button Style */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <Users size={16} className="text-[#F39C32]" />
                                         Program <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={scheduleForm.program}
-                                        onChange={(e) => setScheduleForm({ ...scheduleForm, program: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
-                                    >
-                                        <option value="">Select program</option>
-                                        <option value="English Campus & Career">English Campus & Career</option>
-                                        <option value="English for Teens">English for Teens</option>
-                                        <option value="Private">Private</option>
-                                    </select>
+                                    <div className="space-y-2">
+                                        {[
+                                            { value: 'English Campus & Career', label: 'English Campus & Career', emoji: '🎓', color: 'blue' },
+                                            { value: 'English for Teens', label: 'English for Teens', emoji: '👨‍🎓', color: 'purple' },
+                                            { value: 'Private', label: 'Private', emoji: '👤', color: 'green' }
+                                        ].map(program => (
+                                            <button
+                                                key={program.value}
+                                                type="button"
+                                                onClick={() => setScheduleForm({ ...scheduleForm, program: program.value })}
+                                                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${scheduleForm.program === program.value
+                                                    ? 'border-[#F39C32] bg-orange-50 shadow-md'
+                                                    : 'border-gray-200 bg-white hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-2xl">{program.emoji}</span>
+                                                    <span className={`font-bold text-sm ${scheduleForm.program === program.value ? 'text-[#F39C32]' : 'text-gray-700'}`}>
+                                                        {program.label}
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
-                                {/* Level Selection */}
+                                {/* Level Selection - Button Style */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <GraduationCap size={16} className="text-[#F39C32]" />
                                         Level <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={scheduleForm.level}
-                                        onChange={(e) => setScheduleForm({ ...scheduleForm, level: e.target.value })}
-                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
-                                    >
-                                        <option value="">Select level</option>
-                                        <option value="Starter">Starter</option>
-                                        <option value="Upper Starter">Upper Starter</option>
-                                        <option value="Pre-Intermediate">Pre-Intermediate</option>
-                                        <option value="Intermediate">Intermediate</option>
-                                    </select>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {[
+                                            { value: 'Starter', emoji: '🌱' },
+                                            { value: 'Upper Starter', emoji: '🌿' },
+                                            { value: 'Pre-Intermediate', emoji: '🌳' },
+                                            { value: 'Intermediate', emoji: '🌲' }
+                                        ].map(level => (
+                                            <button
+                                                key={level.value}
+                                                type="button"
+                                                onClick={() => setScheduleForm({ ...scheduleForm, level: level.value })}
+                                                className={`p-3 rounded-xl border-2 transition-all text-sm font-medium ${scheduleForm.level === level.value
+                                                    ? 'border-[#F39C32] bg-orange-50 text-[#F39C32] shadow-md'
+                                                    : 'border-gray-200 bg-white text-gray-700 hover:border-[#F39C32]/50 hover:bg-orange-50/30'
+                                                    }`}
+                                            >
+                                                {level.emoji} {level.value}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* ==================== STUDENT ASSIGNMENT SECTION ==================== */}
@@ -2009,9 +2160,21 @@ const AdminBookingDashboard = () => {
                                             <label className="block text-xs font-semibold text-gray-700">
                                                 Assign Students (Optional)
                                             </label>
-                                            <span className="text-[10px] text-gray-500">
-                                                {selectedStudentsForSchedule.length} selected
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {studentSearchQuery && (
+                                                    <span className="text-[10px] text-[#F39C32] font-medium">
+                                                        {allStudents.filter(s => {
+                                                            const programMatch = studentFilterProgram === 'all' || s.program === studentFilterProgram;
+                                                            const searchMatch = s.full_name.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                                                                s.student_id.toLowerCase().includes(studentSearchQuery.toLowerCase());
+                                                            return programMatch && searchMatch;
+                                                        }).length} found
+                                                    </span>
+                                                )}
+                                                <span className="text-[10px] text-gray-500">
+                                                    {selectedStudentsForSchedule.length} selected
+                                                </span>
+                                            </div>
                                         </div>
 
                                         {/* Program Filter Buttons */}
@@ -2058,10 +2221,41 @@ const AdminBookingDashboard = () => {
                                             </button>
                                         </div>
 
+                                        {/* Search Box */}
+                                        <div className="relative mb-2">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                                            <input
+                                                type="text"
+                                                placeholder="Search by name or student ID..."
+                                                value={studentSearchQuery}
+                                                onChange={(e) => setStudentSearchQuery(e.target.value)}
+                                                className="w-full pl-9 pr-9 py-2 text-xs border border-gray-200 rounded-lg focus:border-[#F39C32] focus:ring-2 focus:ring-[#F39C32]/20 transition-all"
+                                            />
+                                            {studentSearchQuery && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setStudentSearchQuery('')}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded hover:bg-gray-100"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            )}
+                                        </div>
+
                                         {/* Student List with Checkboxes */}
                                         <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-1 bg-gray-50">
                                             {allStudents
-                                                .filter(s => studentFilterProgram === 'all' || s.program === studentFilterProgram)
+                                                .filter(s => {
+                                                    // Filter by program
+                                                    const programMatch = studentFilterProgram === 'all' || s.program === studentFilterProgram;
+
+                                                    // Filter by search query (name or student ID)
+                                                    const searchMatch = !studentSearchQuery ||
+                                                        s.full_name.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                                                        s.student_id.toLowerCase().includes(studentSearchQuery.toLowerCase());
+
+                                                    return programMatch && searchMatch;
+                                                })
                                                 .sort((a, b) => a.full_name.localeCompare(b.full_name))
                                                 .map(student => (
                                                     <label
@@ -2092,11 +2286,28 @@ const AdminBookingDashboard = () => {
                                                 ))}
 
                                             {/* Empty State */}
-                                            {allStudents.filter(s => studentFilterProgram === 'all' || s.program === studentFilterProgram).length === 0 && (
-                                                <div className="text-center py-4 text-xs text-gray-400">
-                                                    No students found for this program
-                                                </div>
-                                            )}
+                                            {allStudents.filter(s => {
+                                                const programMatch = studentFilterProgram === 'all' || s.program === studentFilterProgram;
+                                                const searchMatch = !studentSearchQuery ||
+                                                    s.full_name.toLowerCase().includes(studentSearchQuery.toLowerCase()) ||
+                                                    s.student_id.toLowerCase().includes(studentSearchQuery.toLowerCase());
+                                                return programMatch && searchMatch;
+                                            }).length === 0 && (
+                                                    <div className="text-center py-6 text-xs text-gray-400">
+                                                        {studentSearchQuery ? (
+                                                            <div className="space-y-1">
+                                                                <Search className="mx-auto mb-2 text-gray-300" size={24} />
+                                                                <p className="font-medium">No students found</p>
+                                                                <p className="text-[10px]">Try a different search term</p>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="space-y-1">
+                                                                <Users className="mx-auto mb-2 text-gray-300" size={24} />
+                                                                <p>No students found for this program</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                         </div>
 
                                         {/* Info Text */}
@@ -2139,6 +2350,109 @@ const AdminBookingDashboard = () => {
                                     </div>
                                 </div>
 
+                                {/* Room Conflict Warning */}
+                                {adminRoomConflict && (
+                                    <div className="relative overflow-hidden bg-gradient-to-br from-orange-50 via-orange-50 to-amber-50 border-2 border-orange-300 rounded-2xl shadow-lg">
+                                        {/* Animated background pattern */}
+                                        <div className="absolute inset-0 opacity-5">
+                                            <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-amber-400 animate-pulse"></div>
+                                        </div>
+
+                                        <div className="relative p-5">
+                                            {/* Header with icon */}
+                                            <div className="flex items-start gap-4 mb-4">
+                                                <div className="flex-shrink-0">
+                                                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg animate-bounce">
+                                                        <AlertCircle className="w-7 h-7 text-white" />
+                                                    </div>
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="text-lg font-bold text-orange-900 mb-1 flex items-center gap-2">
+                                                        Room Conflict Detected!
+                                                        <span className="inline-block px-2 py-0.5 bg-orange-200 text-orange-800 text-xs font-semibold rounded-full">
+                                                            Cannot Create
+                                                        </span>
+                                                    </h4>
+                                                    <p className="text-sm text-orange-700">
+                                                        This room is already occupied by another schedule
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Existing Schedule Info Card */}
+                                            <div className="bg-white rounded-xl p-4 shadow-md border border-orange-200 mb-4">
+                                                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200">
+                                                    <Users className="w-4 h-4 text-orange-600" />
+                                                    <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                                                        Existing Schedule Details
+                                                    </span>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3">
+                                                        <p className="text-xs text-gray-500 mb-1 font-medium">Program</p>
+                                                        <p className="text-sm font-bold text-gray-900 truncate">
+                                                            {adminRoomConflict.existingProgram}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3">
+                                                        <p className="text-xs text-gray-500 mb-1 font-medium">Level</p>
+                                                        <p className="text-sm font-bold text-gray-900 truncate">
+                                                            {adminRoomConflict.existingLevel}
+                                                        </p>
+                                                    </div>
+
+                                                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3">
+                                                        <p className="text-xs text-blue-600 mb-1 font-medium">Students Enrolled</p>
+                                                        <p className="text-sm font-bold text-blue-900">
+                                                            {adminRoomConflict.studentCount} / 10
+                                                        </p>
+                                                    </div>
+
+                                                    {adminRoomConflict.batch && (
+                                                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3">
+                                                            <p className="text-xs text-purple-600 mb-1 font-medium">Batch</p>
+                                                            <p className="text-sm font-bold text-purple-900">
+                                                                Batch {adminRoomConflict.batch}
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Solution Suggestion */}
+                                            <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-xl p-4 border border-amber-300">
+                                                <div className="flex gap-3">
+                                                    <div className="flex-shrink-0 text-2xl">💡</div>
+                                                    <div>
+                                                        <p className="text-sm font-bold text-amber-900 mb-2">
+                                                            Why can't I create this schedule?
+                                                        </p>
+                                                        <p className="text-xs text-amber-800 leading-relaxed mb-2">
+                                                            One physical room cannot be used by two different schedules at the same time, even if they have different programs or levels.
+                                                        </p>
+                                                        <div className="flex flex-wrap gap-2 mt-3">
+                                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-lg text-xs font-semibold text-amber-900 shadow-sm">
+                                                                <Clock className="w-3 h-3" />
+                                                                Choose different time
+                                                            </span>
+                                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-lg text-xs font-semibold text-amber-900 shadow-sm">
+                                                                <Calendar className="w-3 h-3" />
+                                                                Choose different day
+                                                            </span>
+                                                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white rounded-lg text-xs font-semibold text-amber-900 shadow-sm">
+                                                                <BookOpen className="w-3 h-3" />
+                                                                Choose different room
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Info Box */}
                                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
                                     <div className="flex gap-3">
@@ -2153,7 +2467,7 @@ const AdminBookingDashboard = () => {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3">
+                        < div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3" >
                             <button
                                 onClick={() => {
                                     setShowScheduleModal(false);
@@ -2166,79 +2480,93 @@ const AdminBookingDashboard = () => {
                             </button>
                             <button
                                 onClick={handleSaveSchedule}
-                                disabled={loading}
-                                className="flex-1 px-6 py-3 bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a0f] text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none flex items-center justify-center gap-2"
+                                disabled={loading || adminRoomConflict}
+                                className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg ${adminRoomConflict
+                                    ? 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-600 cursor-not-allowed'
+                                    : loading
+                                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-wait'
+                                        : 'bg-gradient-to-r from-[#F39C32] to-[#e08a1f] hover:from-[#e08a1f] hover:to-[#d07a0f] text-white hover:shadow-xl transform hover:scale-[1.02]'
+                                    }`}
+                                title={adminRoomConflict ? 'Cannot create schedule - room conflict detected. Please choose different room, day, or time.' : ''}
                             >
                                 {loading ? (
                                     <>
                                         <Loader2 size={20} className="animate-spin" />
-                                        Saving...
+                                        <span>Saving...</span>
+                                    </>
+                                ) : adminRoomConflict ? (
+                                    <>
+                                        <AlertCircle size={20} className="animate-pulse" />
+                                        <span>Room Conflict - Cannot Create</span>
                                     </>
                                 ) : (
                                     <>
-                                        {scheduleFormMode === 'create' ? 'Create Schedule' : 'Update Schedule'}
+                                        <Calendar size={20} />
+                                        <span>{scheduleFormMode === 'create' ? 'Create Schedule' : 'Update Schedule'}</span>
                                     </>
                                 )}
                             </button>
                         </div>
-                    </div>
-                </div>,
+                    </div >
+                </div >,
                 document.body
             )}
             {/* ==================== DUPLICATE WARNING MODAL ==================== */}
-            {showDuplicateWarning && createPortal(
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-                    <div className="bg-white rounded-xl max-w-md w-full shadow-2xl overflow-hidden">
-                        {/* Header */}
-                        <div className="bg-red-500 px-4 py-3 flex items-center gap-2">
-                            <AlertCircle size={20} className="text-white" />
-                            <h3 className="text-base font-bold text-white">Duplicate Schedule Detected!</h3>
-                        </div>
-
-                        {/* Body */}
-                        <div className="p-4">
-                            <p className="text-sm text-gray-700 mb-3">
-                                ⚠️ A schedule already exists with these details:
-                            </p>
-                            <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-xs border border-gray-200">
-                                <div className="flex justify-between">
-                                    <span className="font-semibold text-gray-600">Class:</span>
-                                    <span className="text-gray-800">{duplicateScheduleInfo?.className}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold text-gray-600">Day:</span>
-                                    <span className="text-gray-800 capitalize">{duplicateScheduleInfo?.day}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold text-gray-600">Time:</span>
-                                    <span className="text-gray-800 capitalize">{duplicateScheduleInfo?.timeSlot}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="font-semibold text-gray-600">Phase:</span>
-                                    <span className="text-gray-800 capitalize">{duplicateScheduleInfo?.phase}</span>
-                                </div>
+            {
+                showDuplicateWarning && createPortal(
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-xl max-w-md w-full shadow-2xl overflow-hidden">
+                            {/* Header */}
+                            <div className="bg-red-500 px-4 py-3 flex items-center gap-2">
+                                <AlertCircle size={20} className="text-white" />
+                                <h3 className="text-base font-bold text-white">Duplicate Schedule Detected!</h3>
                             </div>
-                            <p className="text-xs text-gray-500 mt-3 bg-yellow-50 border border-yellow-200 rounded p-2">
-                                💡 Please choose a different day, time slot, or phase to avoid conflicts.
-                            </p>
-                        </div>
 
-                        {/* Footer */}
-                        <div className="bg-gray-50 p-3 border-t flex gap-2">
-                            <button
-                                onClick={() => {
-                                    setShowDuplicateWarning(false);
-                                    setDuplicateScheduleInfo(null);
-                                }}
-                                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold text-sm transition-all"
-                            >
-                                OK, Got It
-                            </button>
+                            {/* Body */}
+                            <div className="p-4">
+                                <p className="text-sm text-gray-700 mb-3">
+                                    ⚠️ A schedule already exists with these details:
+                                </p>
+                                <div className="bg-gray-50 rounded-lg p-3 space-y-1.5 text-xs border border-gray-200">
+                                    <div className="flex justify-between">
+                                        <span className="font-semibold text-gray-600">Class:</span>
+                                        <span className="text-gray-800">{duplicateScheduleInfo?.className}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-semibold text-gray-600">Day:</span>
+                                        <span className="text-gray-800 capitalize">{duplicateScheduleInfo?.day}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-semibold text-gray-600">Time:</span>
+                                        <span className="text-gray-800 capitalize">{duplicateScheduleInfo?.timeSlot}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="font-semibold text-gray-600">Phase:</span>
+                                        <span className="text-gray-800 capitalize">{duplicateScheduleInfo?.phase}</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-3 bg-yellow-50 border border-yellow-200 rounded p-2">
+                                    💡 Please choose a different day, time slot, or phase to avoid conflicts.
+                                </p>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="bg-gray-50 p-3 border-t flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        setShowDuplicateWarning(false);
+                                        setDuplicateScheduleInfo(null);
+                                    }}
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg font-semibold text-sm transition-all"
+                                >
+                                    OK, Got It
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </div>,
-                document.body
-            )}
+                    </div>,
+                    document.body
+                )
+            }
         </div >
     );
 };
