@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 const BookingModeContext = createContext();
 
@@ -17,29 +18,69 @@ export const BookingModeProvider = ({ children }) => {
         return saved || 'production';
     });
 
-    // Force close booking (overrides all other rules)
-    const [forceClose, setForceClose] = useState(() => {
-        const saved = localStorage.getItem('eysa_force_close_booking');
-        return saved === 'true';
-    });
+    // Force close booking (overrides all other rules) - Load from DATABASE
+    const [forceClose, setForceClose] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // Save to localStorage whenever it changes
+    // Load force_close from database on mount
+    useEffect(() => {
+        const loadForceClose = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('settings')
+                    .select('force_close_booking')
+                    .single();
+
+                if (error) {
+                    console.error('❌ Error loading force_close_booking:', error);
+                    setForceClose(false);
+                } else {
+                    setForceClose(data?.force_close_booking || false);
+                    console.log('✅ Loaded force_close_booking from database:', data?.force_close_booking);
+                }
+            } catch (err) {
+                console.error('❌ Exception loading force_close_booking:', err);
+                setForceClose(false);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadForceClose();
+    }, []);
+
+    // Save to localStorage whenever booking mode changes
     useEffect(() => {
         localStorage.setItem('eysa_booking_mode', bookingMode);
         console.log('📋 Booking Mode changed to:', bookingMode);
     }, [bookingMode]);
 
-    useEffect(() => {
-        localStorage.setItem('eysa_force_close_booking', forceClose.toString());
-        console.log('🔒 Force Close Booking:', forceClose);
-    }, [forceClose]);
-
     const toggleBookingMode = () => {
         setBookingMode(prev => prev === 'production' ? 'testing' : 'production');
     };
 
-    const toggleForceClose = () => {
-        setForceClose(prev => !prev);
+    const toggleForceClose = async () => {
+        const newValue = !forceClose;
+
+        try {
+            // Update database first
+            const { error } = await supabase
+                .from('settings')
+                .update({ force_close_booking: newValue })
+                .eq('id', 1); // Assuming settings table has id=1
+
+            if (error) {
+                console.error('❌ Error updating force_close_booking:', error);
+                throw error;
+            }
+
+            // Update local state after successful database update
+            setForceClose(newValue);
+            console.log('✅ Force Close Booking updated in database:', newValue);
+        } catch (err) {
+            console.error('❌ Failed to toggle force close:', err);
+            throw err;
+        }
     };
 
     const isTestingMode = bookingMode === 'testing';
@@ -54,7 +95,8 @@ export const BookingModeProvider = ({ children }) => {
             isProductionMode,
             forceClose,
             setForceClose,
-            toggleForceClose
+            toggleForceClose,
+            loading
         }}>
             {children}
         </BookingModeContext.Provider>
