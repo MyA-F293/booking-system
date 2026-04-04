@@ -73,7 +73,7 @@ const AdminDashboard = ({ user }) => {
     const [formData, setFormData] = useState({
         full_name: '',
         batch_number: 1,
-        program: 'Campus & Career',
+        program: 'English Campus & Career',
         level: 'Starter',
         password: 'student123'
     });
@@ -86,7 +86,7 @@ const AdminDashboard = ({ user }) => {
     const [teachersOnCooldown, setTeachersOnCooldown] = useState(false);
     const [teachersRemainingTime, setTeachersRemainingTime] = useState(0);
 
-    const programs = ['Campus & Career', 'English for Teens'];
+    const programs = ['English Campus & Career', 'English for Teens'];
     const levels = ['Starter', 'Upper Starter', 'Pre-Intermediate', 'Intermediate'];
 
     const [activeTab, setActiveTab] = useState('stats');
@@ -262,7 +262,7 @@ const AdminDashboard = ({ user }) => {
             setFormData({
                 full_name: '',
                 batch_number: 1,
-                program: 'Campus & Career',
+                program: 'English Campus & Career',
                 level: 'Starter',
                 password: 'student123'
             });
