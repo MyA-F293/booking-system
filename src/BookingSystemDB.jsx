@@ -1284,28 +1284,28 @@ const BookingSystemDB = ({ user }) => {
             {/* Booking Modal */}
             {showBookingModal && createPortal(
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-2 sm:p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[95vw] sm:max-w-lg lg:max-w-5xl rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 flex flex-col" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
+                    <div className="bg-white/95 backdrop-blur-md w-full max-w-[100vw] sm:max-w-lg lg:max-w-5xl rounded-xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50 flex flex-col mx-2 sm:mx-0" style={{ maxHeight: 'calc(100vh - 1rem)' }}>
 
                         {/* Header - Fixed at top */}
                         <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white p-3 sm:p-6 flex justify-between items-center flex-shrink-0">
-                            <div>
-                                <h3 className="text-sm sm:text-xl lg:text-2xl font-bold">
+                            <div className="flex-1 min-w-0 pr-2">
+                                <h3 className="text-base sm:text-xl lg:text-2xl font-bold truncate">
                                     {t('booking.selectClass')}
                                 </h3>
-                                <p className="text-blue-200 mt-0.5 sm:mt-1 text-[10px] sm:text-sm">
+                                <p className="text-blue-200 mt-0.5 sm:mt-1 text-xs sm:text-sm truncate">
                                     {selectedProgram} — {selectedLevel}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setShowBookingModal(false)}
-                                className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg sm:rounded-xl transition"
+                                className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg sm:rounded-xl transition flex-shrink-0"
                             >
-                                <X size={18} className="sm:w-6 sm:h-6" />
+                                <X size={20} className="sm:w-6 sm:h-6" />
                             </button>
                         </div>
 
                         {/* Content - Scrollable */}
-                        <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-8 overflow-y-auto flex-1">
+                        <div className="p-3 sm:p-6 lg:p-8 space-y-3 sm:space-y-8 overflow-y-auto flex-1">
 
                             {/* Phase Selection */}
                             <div>
@@ -1313,7 +1313,7 @@ const BookingSystemDB = ({ user }) => {
                                     3. {t('booking.selectPhase')}
                                 </h4>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+                                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                                     {phases.map((phase) => {
                                         const hasBooking = getUserPhaseBooking(phase.id);
                                         const isBookingThisPhase = bookingInProgress === phase.id;
@@ -1328,7 +1328,7 @@ const BookingSystemDB = ({ user }) => {
                                                     setSelectedDay('');
                                                     setSelectedTime('');
                                                 }}
-                                                className={`p-3 sm:p-5 rounded-xl sm:rounded-2xl border-2 text-left transition-all ${selectedPhase === phase.id
+                                                className={`p-2.5 sm:p-5 rounded-lg sm:rounded-2xl border-2 text-left transition-all ${selectedPhase === phase.id
                                                     ? 'bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] text-white border-[#1F4E8C] shadow-lg'
                                                     : 'bg-white/80 text-[#1F4E8C] border-[#1F4E8C]/30 hover:border-[#1F4E8C] hover:shadow-md'
                                                     } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -1336,17 +1336,17 @@ const BookingSystemDB = ({ user }) => {
                                                 <div className="font-semibold text-xs sm:text-lg">
                                                     {t(`phase.${phase.id}`)}
                                                 </div>
-                                                <div className="text-[10px] sm:text-sm mt-0.5 sm:mt-1 opacity-80">
+                                                <div className="text-[9px] sm:text-sm mt-0.5 sm:mt-1 opacity-80 leading-tight">
                                                     {t(`phase.${phase.id}Days`)}
                                                 </div>
 
                                                 {hasBooking && (
-                                                    <div className="text-[9px] sm:text-xs mt-1.5 sm:mt-3 font-semibold bg-green-100 text-green-700 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg inline-block">
+                                                    <div className="text-[8px] sm:text-xs mt-1 sm:mt-3 font-semibold bg-green-100 text-green-700 px-1 sm:px-2 py-0.5 sm:py-1 rounded sm:rounded-lg inline-block">
                                                         ✓ {t('booking.alreadyBooked')}
                                                     </div>
                                                 )}
                                                 {isBookingThisPhase && (
-                                                    <div className="text-[9px] sm:text-xs mt-1.5 sm:mt-3 font-semibold bg-blue-100 text-blue-700 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg inline-block">
+                                                    <div className="text-[8px] sm:text-xs mt-1 sm:mt-3 font-semibold bg-blue-100 text-blue-700 px-1 sm:px-2 py-0.5 sm:py-1 rounded sm:rounded-lg inline-block">
                                                         ⏳ Booking...
                                                     </div>
                                                 )}
@@ -1511,8 +1511,16 @@ const BookingSystemDB = ({ user }) => {
                                             const roomConflict = roomConflicts[classItem.id];
                                             const hasRoomConflict = !!roomConflict;
 
-                                            const teacherIndex = classes.findIndex(c => c.id === classItem.id);
-                                            const teacher = teachers[teacherIndex % teachers.length];
+                                            // Get teacher - if room is occupied/conflict, show the occupying schedule's teacher
+                                            let teacher = schedule?.teacher || { name: 'TBA' };
+
+                                            // If room is occupied by another program, get that program's teacher
+                                            if (isOccupied || hasRoomConflict) {
+                                                const occupiedSchedule = occupiedClasses.find(oc => oc.class_id === classItem.id);
+                                                if (occupiedSchedule?.teacher) {
+                                                    teacher = occupiedSchedule.teacher;
+                                                }
+                                            }
 
                                             const stickyNoteClass = hasRoomConflict
                                                 ? 'bg-orange-50 border-orange-400'

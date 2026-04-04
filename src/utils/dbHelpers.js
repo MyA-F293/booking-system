@@ -590,10 +590,16 @@ export const getOccupiedClassesByOtherPrograms = async (params) => {
     console.log('📡 dbHelpers: getOccupiedClassesByOtherPrograms called with:', params);
 
     // Get all schedules for this day/time/week that have bookings (current_students > 0)
-    // and are NOT the current program
+    // and are NOT the current program - include teacher data
     let query = supabase
         .from('schedules')
-        .select('class_id, program, current_students')
+        .select(`
+            class_id, 
+            program, 
+            level,
+            current_students,
+            teacher:teachers(*)
+        `)
         .eq('day', day)
         .eq('time_slot', time_slot)
         .eq('week_number', week_number)
@@ -614,11 +620,13 @@ export const getOccupiedClassesByOtherPrograms = async (params) => {
         throw error;
     }
 
-    // Extract unique class_ids that are occupied
+    // Extract unique class_ids that are occupied with teacher info
     const occupiedClasses = data?.map(s => ({
         class_id: s.class_id,
         program: s.program,
-        students: s.current_students
+        level: s.level,
+        students: s.current_students,
+        teacher: s.teacher
     })) || [];
 
     console.log('✅ dbHelpers: getOccupiedClassesByOtherPrograms found:', occupiedClasses);
