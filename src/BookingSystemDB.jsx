@@ -31,12 +31,14 @@ import {
 
 const BookingSystemDB = ({ user }) => {
     const { currentWeek } = useWeek(); // Use database week from context
-    const { isTestingMode, forceClose } = useBookingMode(); // Use booking mode from context
+    const { isTestingMode, forceClose, loading: bookingModeLoading } = useBookingMode(); // Use booking mode from context
+
     console.log('🚀 BookingSystemDB component mounted');
     console.log('👤 Received user prop:', user);
     console.log('📦 User batch:', user?.batch);
     console.log('🔧 Booking Mode:', isTestingMode ? 'TESTING' : 'PRODUCTION');
     console.log('🔒 Force Close:', forceClose);
+    console.log('⏳ BookingMode Loading:', bookingModeLoading);
 
     const { t } = useLanguage();
     const { settings, updateSettings } = useSettings();

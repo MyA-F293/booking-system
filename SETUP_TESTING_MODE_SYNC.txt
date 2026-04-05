@@ -1,0 +1,70 @@
+╔══════════════════════════════════════════════════════════════╗
+║     SETUP TESTING MODE - DATABASE SYNC (SEMUA USER)          ║
+╚══════════════════════════════════════════════════════════════╝
+
+📋 MASALAH SEBELUMNYA:
+   Testing mode disimpan di localStorage (per browser)
+   → Admin nyalakan testing mode, student TIDAK terima
+
+✅ SOLUSI BARU:
+   Testing mode disimpan di DATABASE (seperti force_close)
+   → Admin nyalakan testing mode, SEMUA user terima!
+
+🔧 SETUP (3 LANGKAH):
+
+   STEP 1: Jalankan SQL
+   ---------------------
+   1. Buka Supabase Dashboard
+   2. Go to SQL Editor
+   3. Paste & run: database/ADD_TESTING_MODE_COLUMN.sql
+   4. Verify: SELECT * FROM settings;
+   
+   Expected:
+   | id | testing_mode | force_close_booking |
+   |----|--------------|---------------------|
+   | 1  | false        | false               |
+
+   STEP 2: Deploy Code
+   -------------------
+   cd booking-system
+   npm run build
+   # Deploy ke Netlify
+
+   STEP 3: Test
+   ------------
+   Admin:
+   1. Login sebagai admin
+   2. Toggle "Testing Mode" ON
+   3. Check database: testing_mode = true
+   
+   Student:
+   1. Refresh page (F5)
+   2. Console: "✅ Loaded testing_mode: true"
+   3. Booking sekarang OPEN (bypass hari)
+
+📊 CARA KERJA:
+
+   SEBELUM (localStorage):
+   Admin toggle → localStorage admin → Student TIDAK terima ❌
+   
+   SESUDAH (database):
+   Admin toggle → Database → Student refresh → Terima! ✅
+
+🎯 PRIORITY LOGIC:
+
+   1. Force Close = true → CLOSED (tertinggi)
+   2. Testing Mode = true → OPEN (bypass hari)
+   3. Production Mode → Cek hari (Thu-Sat only)
+
+💡 KEUNTUNGAN:
+
+   ✅ Admin kontrol testing mode untuk SEMUA user
+   ✅ Student otomatis terima perubahan (refresh aja)
+   ✅ Tidak perlu setup manual di setiap browser
+   ✅ Konsisten dengan force_close_booking
+   ✅ State tersimpan di database (backup)
+
+📁 FILES:
+   - database/ADD_TESTING_MODE_COLUMN.sql (SQL)
+   - src/contexts/BookingModeContext.jsx (updated)
+   - TESTING_MODE_DATABASE_SYNC.md (detail lengkap)

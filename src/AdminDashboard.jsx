@@ -605,34 +605,73 @@ This action CANNOT be undone!`,
     };
 
     const handleCleanEmptySchedules = async () => {
+        console.log('🔍 handleCleanEmptySchedules CALLED');
+        console.log('📊 Schedules array:', schedules);
+        console.log('📊 Schedules length:', schedules?.length);
+
+        const emptyCount = schedules.filter(s => s.current_students === 0).length;
+        console.log('📊 Empty schedules count:', emptyCount);
+
+        if (emptyCount === 0) {
+            console.log('⚠️ No empty schedules found');
+            toast.info('No empty schedules to clean');
+            return;
+        }
+
+        console.log('✅ About to show confirmation dialog');
+        console.log('🔧 Toast object:', toast);
+        console.log('🔧 Toast.confirm function:', toast.confirm);
+
         toast.confirm(
-            'Delete all empty schedules (0 students)? This cannot be undone.',
+            `Delete ${emptyCount} empty schedule(s) with 0 students? This cannot be undone.`,
             async () => {
+                console.log('✅ User confirmed deletion');
                 try {
                     setLoading(true);
+                    console.log('🔄 Loading state set to true');
 
                     // Delete schedules with 0 students
+                    console.log('🗑️ Attempting to delete empty schedules...');
                     const { data, error } = await supabase
                         .from('schedules')
                         .delete()
                         .eq('current_students', 0)
                         .select();
 
-                    if (error) throw error;
+                    console.log('📥 Delete response - data:', data);
+                    console.log('📥 Delete response - error:', error);
+
+                    if (error) {
+                        console.error('❌ Supabase error:', error);
+                        throw error;
+                    }
 
                     const deletedCount = data?.length || 0;
-                    toast.success(`✅ Deleted ${deletedCount} empty schedules!`);
+                    console.log('✅ Deleted count:', deletedCount);
 
-                    // Reload students to refresh the stats
-                    await loadStudents();
+                    if (deletedCount > 0) {
+                        toast.success(`✅ Successfully deleted ${deletedCount} empty schedule(s)!`);
+                        console.log('🔄 Reloading students...');
+                        // Reload students to refresh the stats
+                        await loadStudents();
+                        console.log('✅ Students reloaded');
+                    } else {
+                        toast.info('No schedules were deleted');
+                        console.log('⚠️ No schedules were deleted');
+                    }
                 } catch (err) {
-                    console.error('Error cleaning empty schedules:', err);
-                    toast.error('❌ Failed to clean schedules: ' + err.message);
+                    console.error('❌ Error cleaning empty schedules:', err);
+                    toast.error('❌ Failed to clean schedules: ' + (err.message || 'Unknown error'));
                 } finally {
                     setLoading(false);
+                    console.log('✅ Loading state set to false');
                 }
+            },
+            () => {
+                console.log('❌ User cancelled deletion');
             }
         );
+        console.log('✅ toast.confirm called');
     };
 
     // Export Students to PDF
@@ -2000,7 +2039,10 @@ This action CANNOT be undone!`,
                                         </p>
                                     </div>
                                     <button
-                                        onClick={handleCleanEmptySchedules}
+                                        onClick={() => {
+                                            console.log('🖱️ Clean button CLICKED!');
+                                            handleCleanEmptySchedules();
+                                        }}
                                         className="text-[10px] sm:text-xs bg-red-500 hover:bg-red-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all hover:shadow-md flex-shrink-0"
                                     >
                                         Clean

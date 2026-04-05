@@ -501,6 +501,29 @@ const AdminBookingDashboard = () => {
             return;
         }
 
+        // ✅ NEW: Warning if creating schedule without students
+        if (scheduleFormMode === 'create' && selectedStudentsForSchedule.length === 0) {
+            console.log('⚠️ Creating schedule without students - showing confirmation');
+
+            const confirmed = await new Promise((resolve) => {
+                toast.confirm(
+                    '⚠️ No students selected for this schedule.\n\nThe schedule will be created empty and students can book later.\n\nNote: Empty schedules can be cleaned up using the "Clean" button in Quick Insights.\n\nContinue?',
+                    () => {
+                        console.log('✅ User confirmed creating empty schedule');
+                        resolve(true);
+                    },
+                    () => {
+                        console.log('❌ User cancelled creating empty schedule');
+                        resolve(false);
+                    }
+                );
+            });
+
+            if (!confirmed) {
+                return;
+            }
+        }
+
         // ✅ FIX: Prevent double submission (race condition protection)
         if (loading) {
             console.log('⚠️ Already processing, ignoring duplicate submission');
@@ -1085,9 +1108,14 @@ const AdminBookingDashboard = () => {
 
                             {/* Booking Mode Toggle */}
                             <button
-                                onClick={() => {
-                                    toggleBookingMode();
-                                    toast.success(`Booking mode changed to ${isTestingMode ? 'PRODUCTION' : 'TESTING'}`);
+                                onClick={async () => {
+                                    try {
+                                        await toggleBookingMode();
+                                        toast.success(`Booking mode changed to ${!isTestingMode ? 'TESTING' : 'PRODUCTION'}`);
+                                    } catch (error) {
+                                        console.error('Failed to toggle booking mode:', error);
+                                        toast.error('Failed to change booking mode. Please try again.');
+                                    }
                                 }}
                                 className={`px-2.5 sm:px-3 py-1.5 rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 shadow-md ${isTestingMode
                                     ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
@@ -2181,6 +2209,21 @@ const AdminBookingDashboard = () => {
                                 {/* ==================== STUDENT ASSIGNMENT SECTION ==================== */}
                                 {scheduleFormMode === 'create' && (
                                     <div className="border-t border-gray-200 pt-3 mt-3">
+                                        {/* ✅ NEW: Visual warning if no students selected */}
+                                        {selectedStudentsForSchedule.length === 0 && (
+                                            <div className="bg-amber-50 border-l-4 border-amber-500 rounded-r-lg p-3 mb-3 animate-pulse-subtle">
+                                                <div className="flex items-start gap-2">
+                                                    <AlertCircle className="text-amber-600 w-4 h-4 mt-0.5 flex-shrink-0" />
+                                                    <div>
+                                                        <p className="text-xs font-semibold text-amber-900">No Students Selected</p>
+                                                        <p className="text-[10px] text-amber-700 mt-0.5">
+                                                            Schedule will be created empty. You can assign students now or let them book later.
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="flex items-center justify-between mb-2">
                                             <label className="block text-xs font-semibold text-gray-700">
                                                 Assign Students (Optional)
@@ -2196,7 +2239,7 @@ const AdminBookingDashboard = () => {
                                                         }).length} found
                                                     </span>
                                                 )}
-                                                <span className="text-[10px] text-gray-500">
+                                                <span className={`text-[10px] font-medium ${selectedStudentsForSchedule.length > 0 ? 'text-green-600' : 'text-gray-500'}`}>
                                                     {selectedStudentsForSchedule.length} selected
                                                 </span>
                                             </div>

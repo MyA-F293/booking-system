@@ -12,51 +12,116 @@ export const useBookingMode = () => {
 };
 
 export const BookingModeProvider = ({ children }) => {
-    // Load from localStorage, default to 'production'
-    const [bookingMode, setBookingMode] = useState(() => {
-        const saved = localStorage.getItem('eysa_booking_mode');
-        return saved || 'production';
-    });
+    console.log('🔵 BookingModeProvider: Component mounted/rendered');
+
+    // Testing mode - Load from DATABASE (not localStorage anymore)
+    const [testingMode, setTestingMode] = useState(false);
 
     // Force close booking (overrides all other rules) - Load from DATABASE
     const [forceClose, setForceClose] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    // Load force_close from database on mount
+    // Backward compatibility: keep bookingMode for legacy code
+    const bookingMode = testingMode ? 'testing' : 'production';
+
+    // Load force_close AND testing_mode from database on mount
     useEffect(() => {
-        const loadForceClose = async () => {
+        console.log('🔵 BookingModeContext: Starting to load settings from database...');
+
+        const loadSettings = async () => {
             try {
+                console.log('🔵 BookingModeContext: Querying settings table...');
                 const { data, error } = await supabase
                     .from('settings')
-                    .select('force_close_booking')
+                    .select('force_close_booking, testing_mode')
                     .single();
 
+                console.log('🔵 BookingModeContext: Query result:', { data, error });
+
                 if (error) {
-                    console.error('❌ Error loading force_close_booking:', error);
+                    console.error('❌ Error loading settings:', error);
                     setForceClose(false);
+                    setTestingMode(false);
                 } else {
                     setForceClose(data?.force_close_booking || false);
+                    setTestingMode(data?.testing_mode || false);
                     console.log('✅ Loaded force_close_booking from database:', data?.force_close_booking);
+                    console.log('✅ Loaded testing_mode from database:', data?.testing_mode);
                 }
             } catch (err) {
-                console.error('❌ Exception loading force_close_booking:', err);
+                console.error('❌ Exception loading settings:', err);
                 setForceClose(false);
+                setTestingMode(false);
             } finally {
                 setLoading(false);
+                console.log('🔵 BookingModeContext: Loading complete, loading state set to false');
             }
         };
 
-        loadForceClose();
+        loadSettings();
+
+        // Subscribe to realtime changes
+        console.log('🔵 BookingModeContext: Setting up realtime subscription...');
+        const subscription = supabase
+            .channel('settings-changes')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'settings'
+                },
+                (payload) => {
+                    console.log('🔔 Realtime update received:', payload);
+                    if (payload.new) {
+                        setForceClose(payload.new.force_close_booking || false);
+                        setTestingMode(payload.new.testing_mode || false);
+                        console.log('✅ Settings updated from realtime:', {
+                            force_close: payload.new.force_close_booking,
+                            testing_mode: payload.new.testing_mode
+                        });
+                    }
+                }
+            )
+            .subscribe();
+
+        // Cleanup subscription on unmount
+        return () => {
+            console.log('🔵 BookingModeContext: Cleaning up realtime subscription');
+            subscription.unsubscribe();
+        };
     }, []);
 
-    // Save to localStorage whenever booking mode changes
-    useEffect(() => {
-        localStorage.setItem('eysa_booking_mode', bookingMode);
-        console.log('📋 Booking Mode changed to:', bookingMode);
-    }, [bookingMode]);
+    // Remove localStorage sync (no longer needed)
+    // Testing mode is now controlled from database only
 
-    const toggleBookingMode = () => {
-        setBookingMode(prev => prev === 'production' ? 'testing' : 'production');
+    const toggleBookingMode = async () => {
+        const newValue = !testingMode;
+        console.log('🔵 About to update testing_mode to:', newValue);
+
+        try {
+            // Update database first
+            const { data, error } = await supabase
+                .from('settings')
+                .update({ testing_mode: newValue })
+                .eq('id', 1)
+                .select(); // Return updated row to verify
+
+            console.log('🔵 Update result:', { data, error });
+
+            if (error) {
+                console.error('❌ Error updating testing_mode:', error);
+                throw error;
+            }
+
+            // Update local state after successful database update
+            setTestingMode(newValue);
+            console.log('✅ Testing Mode updated in database:', newValue);
+            console.log('✅ Returned data from database:', data);
+        } catch (err) {
+            console.error('❌ Failed to toggle testing mode:', err);
+            throw err;
+        }
     };
 
     const toggleForceClose = async () => {
@@ -67,7 +132,7 @@ export const BookingModeProvider = ({ children }) => {
             const { error } = await supabase
                 .from('settings')
                 .update({ force_close_booking: newValue })
-                .eq('id', 1); // Assuming settings table has id=1
+                .eq('id', 1);
 
             if (error) {
                 console.error('❌ Error updating force_close_booking:', error);
@@ -83,13 +148,14 @@ export const BookingModeProvider = ({ children }) => {
         }
     };
 
-    const isTestingMode = bookingMode === 'testing';
-    const isProductionMode = bookingMode === 'production';
+    const isTestingMode = testingMode;
+    const isProductionMode = !testingMode;
 
     return (
         <BookingModeContext.Provider value={{
-            bookingMode,
-            setBookingMode,
+            bookingMode, // backward compatibility
+            testingMode,
+            setTestingMode,
             toggleBookingMode,
             isTestingMode,
             isProductionMode,
