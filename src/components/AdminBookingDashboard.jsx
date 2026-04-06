@@ -966,9 +966,12 @@ const AdminBookingDashboard = () => {
         const bookedStudentIds = scheduleStudents.map(b => b.user.id);
         let available = allStudents.filter(s => !bookedStudentIds.includes(s.id));
 
-        // ✅ NEW: Filter by Harvard Class restriction
-        if (selectedSchedule?.class?.name === 'Harvard Class') {
-            available = available.filter(s => s.program?.toLowerCase().includes('teens'));
+        // ✅ Filter by schedule's program and level
+        if (selectedSchedule?.class?.program && selectedSchedule?.class?.level) {
+            available = available.filter(s =>
+                s.program === selectedSchedule.class.program &&
+                s.level === selectedSchedule.class.level
+            );
         }
 
         // Apply search filter if query exists
@@ -1784,9 +1787,9 @@ const AdminBookingDashboard = () => {
                                             <UserPlus size={20} />
                                             {t('adminBooking.addStudent')}
                                         </h3>
-                                        {selectedSchedule?.class?.name === 'Harvard Class' && (
+                                        {selectedSchedule?.class?.program && selectedSchedule?.class?.level && (
                                             <p className="text-emerald-100 text-xs mt-1 flex items-center gap-1">
-                                                🎓 Only showing English for Teens students
+                                                🎓 Only showing {selectedSchedule.class.program} - {selectedSchedule.class.level} students
                                             </p>
                                         )}
                                     </div>
