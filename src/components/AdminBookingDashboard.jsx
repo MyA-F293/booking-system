@@ -737,16 +737,6 @@ const AdminBookingDashboard = () => {
                 return;
             }
 
-            // ✅ NEW: Harvard Class restriction validation
-            if (selectedSchedule.class?.name === 'Harvard Class') {
-                const student = allStudents.find(s => s.id === studentId);
-                const isTeensStudent = student?.program?.toLowerCase().includes('teens');
-                if (!isTeensStudent) {
-                    toast.error('❌ Harvard Class is exclusively for English for Teens program students!');
-                    return;
-                }
-            }
-
             // Try to create booking
             await createBooking({ schedule_id: selectedSchedule.id, user_id: studentId, status: 'confirmed' });
             toast.success(t('adminBooking.studentAdded'));
