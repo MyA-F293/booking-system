@@ -16,6 +16,7 @@ export const WeekProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [initialized, setInitialized] = useState(false);
+    const [lastNotifiedWeek, setLastNotifiedWeek] = useState(null); // Track last notified week to prevent spam
 
     // Fetch current week from database
     const fetchCurrentWeek = async () => {
@@ -61,6 +62,39 @@ export const WeekProvider = ({ children }) => {
             setInitialized(true);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Refresh week silently (without resetting initialized flag)
+    // Used for polling and realtime updates
+    const refreshWeekSilently = async (showNotification = false) => {
+        try {
+            const { data, error } = await supabase
+                .from('settings')
+                .select('current_week')
+                .eq('id', 1)
+                .single();
+
+            if (error) {
+                console.error('❌ Error refreshing week:', error);
+                return;
+            }
+
+            if (data && data.current_week !== currentWeek) {
+                const oldWeek = currentWeek;
+                const newWeek = data.current_week;
+                console.log('📅 Week changed! Old:', oldWeek, 'New:', newWeek);
+                setCurrentWeek(newWeek);
+
+                // Show notification only once per week change
+                if (showNotification && newWeek !== lastNotifiedWeek) {
+                    setLastNotifiedWeek(newWeek);
+                    // Note: Toast will be shown by components that import useWeek
+                    console.log('📢 Week change notification should be shown');
+                }
+            }
+        } catch (err) {
+            console.error('❌ Exception refreshing week:', err);
         }
     };
 
@@ -126,9 +160,52 @@ export const WeekProvider = ({ children }) => {
             fetchCurrentWeek();
         }, 100); // Small delay to let app initialize first
 
+        // Setup realtime subscription for week changes
+        console.log('🔵 Setting up realtime subscription for settings changes...');
+        const subscription = supabase
+            .channel('settings-week-changes')
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'settings',
+                filter: 'id=eq.1'
+            }, (payload) => {
+                console.log('📅 Week changed via realtime!', payload);
+                const newWeek = payload.new?.current_week;
+                if (newWeek && newWeek !== currentWeek) {
+                    console.log('📅 Updating week from', currentWeek, 'to', newWeek);
+                    setCurrentWeek(newWeek);
+
+                    // Show notification only once per week change
+                    if (newWeek !== lastNotifiedWeek) {
+                        setLastNotifiedWeek(newWeek);
+                        console.log('📢 Week change notification: Week', newWeek);
+                    }
+                }
+            })
+            .subscribe((status) => {
+                console.log('🔵 Realtime subscription status:', status);
+            });
+
+        // Setup page focus listener to refresh week when user returns to tab
+        const handleFocus = () => {
+            console.log('👀 Page focused, refreshing week...');
+            refreshWeekSilently(false); // Don't show notification on focus
+        };
+        window.addEventListener('focus', handleFocus);
+
+        // Setup polling as fallback (every 5 minutes)
+        const pollInterval = setInterval(() => {
+            console.log('🔄 Polling week from database...');
+            refreshWeekSilently(false); // Don't show notification on poll
+        }, 5 * 60 * 1000); // 5 minutes
+
         return () => {
             console.log('🔵 WeekProvider useEffect: Cleanup');
             clearTimeout(timer);
+            subscription.unsubscribe();
+            window.removeEventListener('focus', handleFocus);
+            clearInterval(pollInterval);
         };
     }, []); // Empty dependency array - only run once on mount
 
@@ -142,7 +219,9 @@ export const WeekProvider = ({ children }) => {
         incrementWeek,
         setWeek,
         refreshWeek,
-        fetchCurrentWeek
+        fetchCurrentWeek,
+        refreshWeekSilently, // Export for manual refresh
+        lastNotifiedWeek // Export for components to check if they should show notification
     };
 
     // Always render children, even if there's an error
