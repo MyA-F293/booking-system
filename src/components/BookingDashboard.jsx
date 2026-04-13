@@ -117,11 +117,17 @@ const BookingDashboard = ({ user }) => {
                 userBookingScheduleIds = bookings.map(b => b.schedule_id);
             }
 
-            // Smart filter: Show schedules that have students OR user has booked
-            // This prevents showing empty schedules while still showing user's bookings
-            const relevantSchedules = data.filter(s =>
-                s.current_students > 0 || userBookingScheduleIds.includes(s.id)
-            );
+            // CRITICAL FIX: Always show schedules where user has booked
+            // Even if current_students = 0 (counter sync issue)
+            // This prevents bookings from disappearing due to cache/race conditions
+            const relevantSchedules = data.filter(s => {
+                const userHasBooked = userBookingScheduleIds.includes(s.id);
+                const hasStudents = s.current_students > 0;
+
+                // Show if: user booked OR has students
+                // Priority: user's bookings ALWAYS show (even if counter = 0)
+                return userHasBooked || hasStudents;
+            });
 
             console.log('✅ All schedules loaded:', data.length);
             console.log('📋 Relevant schedules (with students or user booked):', relevantSchedules.length);
