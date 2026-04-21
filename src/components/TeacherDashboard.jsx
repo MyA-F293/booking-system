@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { LogOut, Users, Calendar, Clock, CheckCircle, XCircle, AlertCircle, Loader2, RefreshCw, Key, Eye, EyeOff } from 'lucide-react';
 import { useToast } from './Toast';
 import { useWeek } from '../contexts/WeekContext';
+import { useSettings } from '../contexts/SettingsContext';
 import { logout, updateTeacherPassword } from '../utils/authHelpers';
 import { getSchedules, getScheduleStudents, getCurrentYear, submitBatchAttendance } from '../utils/dbHelpers';
 import { supabase } from '../supabaseClient';
@@ -9,6 +10,7 @@ import { supabase } from '../supabaseClient';
 const TeacherDashboard = ({ user }) => {
     const toast = useToast();
     const { currentWeek } = useWeek(); // Use database week from context
+    const { settings } = useSettings(); // Use settings context for batch
     const [schedules, setSchedules] = useState([]);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [students, setStudents] = useState([]);
@@ -458,7 +460,7 @@ const TeacherDashboard = ({ user }) => {
 
                                 {/* Row 2: Batch | Week | Name */}
                                 <div className="flex items-center gap-0.5 sm:gap-2 text-[8px] sm:text-sm text-gray-600 mt-0.5 sm:mt-1">
-                                    <span className="whitespace-nowrap">Batch {user.batch || 1}</span>
+                                    <span className="whitespace-nowrap">Batch {settings.batch || 1}</span>
                                     <span>|</span>
                                     <span className="whitespace-nowrap">Week {currentWeek}</span>
                                     <span>|</span>
