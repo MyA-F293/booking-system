@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, CheckCircle, Clock } from 'lucide-react';
 import { useToast } from './Toast';
+import { supabase } from '../supabaseClient';
 
 const StudentAttendanceHistory = ({ user }) => {
     const toast = useToast();
@@ -14,23 +15,40 @@ const StudentAttendanceHistory = ({ user }) => {
     const fetchMyAttendance = async () => {
         setLoading(true);
         try {
-            const SHEET_URL = import.meta.env.VITE_ATTENDANCE_SHEET_URL;
-            if (!SHEET_URL) {
-                toast.error('Attendance data not available');
-                setLoading(false);
-                return;
+            console.log('🔍 Fetching attendance for student:', user.student_id);
+
+            // Fetch attendance from Supabase database
+            const { data: attendanceRecords, error } = await supabase
+                .from('attendance')
+                .select(`
+                    *,
+                    schedules (
+                        class_name,
+                        day,
+                        teacher_name
+                    )
+                `)
+                .eq('student_id', user.student_id)
+                .order('date', { ascending: false });
+
+            if (error) {
+                console.error('Error fetching attendance:', error);
+                throw error;
             }
 
-            const response = await fetch(SHEET_URL, {
-                method: 'GET',
-                headers: { 'Accept': 'application/json' }
-            });
+            console.log('📊 Found attendance records:', attendanceRecords?.length || 0);
 
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            // Transform data to match old format
+            const transformedData = (attendanceRecords || []).map(record => ({
+                timestamp: record.date,
+                className: record.schedules?.class_name || 'Unknown Class',
+                day: record.schedules?.day || 'Unknown',
+                teacherName: record.schedules?.teacher_name || 'TBA',
+                status: record.status,
+                studentId: record.student_id
+            }));
 
-            const data = await response.json();
-            const myData = data.filter(record => record.studentId === user.student_id);
-            setAttendanceData(myData);
+            setAttendanceData(transformedData);
         } catch (error) {
             console.error('Error fetching attendance:', error);
             toast.error('Failed to load attendance history');
@@ -128,11 +146,10 @@ const StudentAttendanceHistory = ({ user }) => {
                                         </td>
                                         <td className="px-3 py-2 text-[10px] sm:text-sm text-gray-700">{record.teacherName}</td>
                                         <td className="px-3 py-2">
-                                            <span className={`px-2 py-1 rounded-full text-[9px] sm:text-xs font-semibold ${
-                                                record.status === 'present' ? 'bg-green-100 text-green-700' :
-                                                record.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
-                                                'bg-red-100 text-red-700'
-                                            }`}>
+                                            <span className={`px-2 py-1 rounded-full text-[9px] sm:text-xs font-semibold ${record.status === 'present' ? 'bg-green-100 text-green-700' :
+                                                    record.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
+                                                        'bg-red-100 text-red-700'
+                                                }`}>
                                                 {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
                                             </span>
                                         </td>
@@ -145,29 +162,27 @@ const StudentAttendanceHistory = ({ user }) => {
             </div>
 
             {stats.total > 0 && (
-                <div className={`rounded-xl p-4 ${
-                    attendanceRate >= 80 ? 'bg-green-50 border-2 border-green-200' :
-                    attendanceRate >= 60 ? 'bg-yellow-50 border-2 border-yellow-200' :
-                    'bg-red-50 border-2 border-red-200'
-                }`}>
+                <div className={`rounded-xl p-4 ${attendanceRate >= 80 ? 'bg-green-50 border-2 border-green-200' :
+                        attendanceRate >= 60 ? 'bg-yellow-50 border-2 border-yellow-200' :
+                            'bg-red-50 border-2 border-red-200'
+                    }`}>
                     <div className="flex items-start gap-3">
                         <div className="text-3xl">
                             {attendanceRate >= 80 ? '🎉' : attendanceRate >= 60 ? '💪' : '📚'}
                         </div>
                         <div>
-                            <h4 className={`text-sm sm:text-base font-bold mb-1 ${
-                                attendanceRate >= 80 ? 'text-green-800' :
-                                attendanceRate >= 60 ? 'text-yellow-800' :
-                                'text-red-800'
-                            }`}>
+                            <h4 className={`text-sm sm:text-base font-bold mb-1 ${attendanceRate >= 80 ? 'text-green-800' :
+                                    attendanceRate >= 60 ? 'text-yellow-800' :
+                                        'text-red-800'
+                                }`}>
                                 {attendanceRate >= 80 ? 'Excellent Attendance!' :
-                                 attendanceRate >= 60 ? 'Good Job! Keep It Up!' :
-                                 'Let\'s Improve Together!'}
+                                    attendanceRate >= 60 ? 'Good Job! Keep It Up!' :
+                                        'Let\'s Improve Together!'}
                             </h4>
                             <p className="text-xs sm:text-sm text-gray-700">
                                 {attendanceRate >= 80 ? 'You\'re doing amazing! Keep up the great work!' :
-                                 attendanceRate >= 60 ? 'You\'re on the right track! Try to attend all classes.' :
-                                 'Regular attendance is key to success. We believe in you!'}
+                                    attendanceRate >= 60 ? 'You\'re on the right track! Try to attend all classes.' :
+                                        'Regular attendance is key to success. We believe in you!'}
                             </p>
                         </div>
                     </div>
