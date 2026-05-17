@@ -18,18 +18,12 @@ const StudentAttendanceHistory = ({ user }) => {
             console.log('🔍 Fetching attendance for student:', user.student_id);
 
             // Fetch attendance from Supabase database
+            // Match the structure used in Admin/Teacher components
             const { data: attendanceRecords, error } = await supabase
                 .from('attendance')
-                .select(`
-                    *,
-                    schedules (
-                        class_name,
-                        day,
-                        teacher_name
-                    )
-                `)
+                .select('*')
                 .eq('student_id', user.student_id)
-                .order('date', { ascending: false });
+                .order('created_at', { ascending: false });
 
             if (error) {
                 console.error('Error fetching attendance:', error);
@@ -38,14 +32,20 @@ const StudentAttendanceHistory = ({ user }) => {
 
             console.log('📊 Found attendance records:', attendanceRecords?.length || 0);
 
-            // Transform data to match old format
+            // Transform data - use fields directly from attendance table
+            // No need to join schedules since all data is already in attendance table
             const transformedData = (attendanceRecords || []).map(record => ({
-                timestamp: record.date,
-                className: record.schedules?.class_name || 'Unknown Class',
-                day: record.schedules?.day || 'Unknown',
-                teacherName: record.schedules?.teacher_name || 'TBA',
+                id: record.id,
+                timestamp: record.created_at,
+                className: record.class_name || 'Unknown Class',
+                day: record.day || 'Unknown',
+                teacherName: record.teacher_name || 'TBA',
                 status: record.status,
-                studentId: record.student_id
+                studentId: record.student_id,
+                week: record.week_number,
+                year: record.year,
+                phase: record.phase,
+                timeSlot: record.time_slot
             }));
 
             setAttendanceData(transformedData);
@@ -65,7 +65,8 @@ const StudentAttendanceHistory = ({ user }) => {
         absent: attendanceData.filter(r => r.status === 'absent').length,
     };
 
-    const attendanceRate = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : 0;
+    // Count both "present" AND "late" as attended (late students still attended class)
+    const attendanceRate = stats.total > 0 ? (((stats.present + stats.late) / stats.total) * 100).toFixed(1) : 0;
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -102,17 +103,20 @@ const StudentAttendanceHistory = ({ user }) => {
                         <p className="text-[10px] sm:text-xs opacity-90 font-medium">Rate</p>
                     </div>
                     <p className="text-2xl sm:text-3xl font-bold">{attendanceRate}%</p>
+                    <p className="text-[9px] sm:text-xs opacity-75 mt-1">Present + Late</p>
                 </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div className="p-3 sm:p-4 bg-gradient-to-r from-[#1F4E8C] to-[#163a6b] text-white">
                     <h3 className="text-base sm:text-lg font-bold">Attendance Records</h3>
+                    <p className="text-xs text-blue-200 mt-1">Complete history of your class attendance</p>
                 </div>
                 <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 sticky top-0">
                             <tr>
+                                <th className="px-3 py-2 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Week</th>
                                 <th className="px-3 py-2 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Date</th>
                                 <th className="px-3 py-2 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Class</th>
                                 <th className="px-3 py-2 text-left text-[10px] sm:text-xs font-semibold text-gray-600 uppercase">Teacher</th>
@@ -122,11 +126,11 @@ const StudentAttendanceHistory = ({ user }) => {
                         <tbody className="divide-y divide-gray-200">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">Loading...</td>
+                                    <td colSpan="5" className="px-4 py-8 text-center text-gray-500">Loading...</td>
                                 </tr>
                             ) : attendanceData.length === 0 ? (
                                 <tr>
-                                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                                    <td colSpan="5" className="px-4 py-8 text-center text-gray-500">
                                         <div className="flex flex-col items-center gap-2">
                                             <Calendar size={48} className="text-gray-300" />
                                             <p className="text-sm font-semibold">No attendance records found</p>
@@ -137,12 +141,31 @@ const StudentAttendanceHistory = ({ user }) => {
                             ) : (
                                 attendanceData.map((record, index) => (
                                     <tr key={index} className="hover:bg-gray-50">
+                                        <td className="px-3 py-2">
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-[10px] sm:text-sm font-bold text-[#1F4E8C]">W{record.week}</span>
+                                                {record.phase && (
+                                                    <span className={`text-[8px] sm:text-[10px] px-1.5 py-0.5 rounded ${record.phase === 'phase1' ? 'bg-blue-100 text-blue-700' :
+                                                            record.phase === 'phase2' ? 'bg-purple-100 text-purple-700' :
+                                                                'bg-green-100 text-green-700'
+                                                        }`}>
+                                                        {record.phase === 'phase1' ? 'P1' : record.phase === 'phase2' ? 'P2' : 'RC'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="px-3 py-2 text-[10px] sm:text-sm text-gray-700">
-                                            {new Date(record.timestamp).toLocaleDateString()}
+                                            {new Date(record.timestamp).toLocaleDateString('en-US', {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}
                                         </td>
                                         <td className="px-3 py-2">
                                             <div className="text-[10px] sm:text-sm font-semibold text-gray-800">{record.className}</div>
-                                            <div className="text-[9px] sm:text-xs text-gray-500">{record.day}</div>
+                                            <div className="text-[9px] sm:text-xs text-gray-500 capitalize">
+                                                {record.day}{record.timeSlot && ` • ${record.timeSlot}`}
+                                            </div>
                                         </td>
                                         <td className="px-3 py-2 text-[10px] sm:text-sm text-gray-700">{record.teacherName}</td>
                                         <td className="px-3 py-2">
@@ -150,7 +173,9 @@ const StudentAttendanceHistory = ({ user }) => {
                                                     record.status === 'late' ? 'bg-yellow-100 text-yellow-700' :
                                                         'bg-red-100 text-red-700'
                                                 }`}>
-                                                {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                                                {record.status === 'present' ? '✓ Present' :
+                                                    record.status === 'late' ? '⏰ Late' :
+                                                        '✗ Absent'}
                                             </span>
                                         </td>
                                     </tr>
@@ -163,8 +188,8 @@ const StudentAttendanceHistory = ({ user }) => {
 
             {stats.total > 0 && (
                 <div className={`rounded-xl p-4 ${attendanceRate >= 80 ? 'bg-green-50 border-2 border-green-200' :
-                        attendanceRate >= 60 ? 'bg-yellow-50 border-2 border-yellow-200' :
-                            'bg-red-50 border-2 border-red-200'
+                    attendanceRate >= 60 ? 'bg-yellow-50 border-2 border-yellow-200' :
+                        'bg-red-50 border-2 border-red-200'
                     }`}>
                     <div className="flex items-start gap-3">
                         <div className="text-3xl">
@@ -172,8 +197,8 @@ const StudentAttendanceHistory = ({ user }) => {
                         </div>
                         <div>
                             <h4 className={`text-sm sm:text-base font-bold mb-1 ${attendanceRate >= 80 ? 'text-green-800' :
-                                    attendanceRate >= 60 ? 'text-yellow-800' :
-                                        'text-red-800'
+                                attendanceRate >= 60 ? 'text-yellow-800' :
+                                    'text-red-800'
                                 }`}>
                                 {attendanceRate >= 80 ? 'Excellent Attendance!' :
                                     attendanceRate >= 60 ? 'Good Job! Keep It Up!' :

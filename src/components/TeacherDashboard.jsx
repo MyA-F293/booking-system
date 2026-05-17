@@ -192,6 +192,7 @@ const TeacherDashboard = ({ user }) => {
         // Prevent double submission
         if (submitting) {
             console.log('⚠️ Already submitting, ignoring duplicate click');
+            toast.warning('⏳ Please wait, submitting attendance...');
             return;
         }
 
@@ -227,11 +228,32 @@ const TeacherDashboard = ({ user }) => {
             return;
         }
 
-        // Check if any attendance has been marked
-        const markedAttendance = Object.values(attendance).filter(status => status !== null);
-        if (markedAttendance.length === 0) {
-            toast.error('Please mark attendance for at least one student');
-            return;
+        // VALIDATION: Different rules for NEW vs EDIT mode
+        if (!hasExistingAttendance) {
+            // NEW ATTENDANCE: Must mark ALL students
+            const unmarkedStudents = students.filter(student =>
+                attendance[student.user_id] === null || attendance[student.user_id] === undefined
+            );
+
+            if (unmarkedStudents.length > 0) {
+                const studentNames = unmarkedStudents.map(s => s.user?.full_name).join(', ');
+                toast.error(
+                    `⚠️ Please mark attendance for ALL students!\n\n${unmarkedStudents.length} student(s) not marked:\n${studentNames}`,
+                    { duration: 8000 }
+                );
+                console.warn('⚠️ Unmarked students:', unmarkedStudents.map(s => ({
+                    name: s.user?.full_name,
+                    id: s.user?.student_id
+                })));
+                return;
+            }
+        } else {
+            // EDIT MODE: Can update any number of students (minimum 1)
+            const markedAttendance = Object.values(attendance).filter(status => status !== null);
+            if (markedAttendance.length === 0) {
+                toast.error('⚠️ Please mark at least one student to update');
+                return;
+            }
         }
 
         try {
@@ -557,13 +579,31 @@ const TeacherDashboard = ({ user }) => {
 
                             {/* Info Banner if attendance already submitted */}
                             {hasExistingAttendance && (
-                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 sm:p-4 mx-3 sm:mx-6 mt-4 rounded-lg">
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-3 sm:p-4 mx-3 sm:mx-6 mt-4 rounded-lg shadow-sm">
                                     <div className="flex items-start gap-2 sm:gap-3">
                                         <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
                                         <div>
                                             <h3 className="font-bold text-blue-900 text-sm sm:text-base">📝 Edit Mode: Attendance Already Submitted</h3>
                                             <p className="text-blue-800 text-xs sm:text-sm mt-1">
-                                                You can edit existing attendance below. Change any status (e.g., Present → Late) and click Submit to update. New students will be added automatically.
+                                                Existing attendance has been loaded. You can edit any student's status and click Submit to update.
+                                            </p>
+                                            <p className="text-green-700 text-xs mt-2 font-semibold">
+                                                ✅ You can update just 1 student or multiple students - no need to re-mark everyone!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Warning Banner for new attendance */}
+                            {!hasExistingAttendance && students.length > 0 && (
+                                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-500 p-3 sm:p-4 mx-3 sm:mx-6 mt-4 rounded-lg shadow-sm">
+                                    <div className="flex items-start gap-2 sm:gap-3">
+                                        <AlertCircle className="text-orange-600 flex-shrink-0 mt-0.5" size={20} />
+                                        <div>
+                                            <h3 className="font-bold text-orange-900 text-sm sm:text-base">⚠️ New Attendance</h3>
+                                            <p className="text-orange-800 text-xs sm:text-sm mt-1">
+                                                Please mark attendance for ALL {students.length} students below. You must select Present, Late, or Absent for each student before submitting.
                                             </p>
                                         </div>
                                     </div>
@@ -577,64 +617,91 @@ const TeacherDashboard = ({ user }) => {
                                         <p className="text-gray-500 font-semibold">No students in this class yet</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-2 sm:space-y-3">
-                                        {students.map((student, index) => (
-                                            <div
-                                                key={student.user_id}
-                                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors gap-2 sm:gap-0"
-                                            >
-                                                <div className="flex items-center gap-2 sm:gap-4">
-                                                    <div className="w-7 h-7 sm:w-10 sm:h-10 bg-[#1F4E8C] rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-base flex-shrink-0">
-                                                        {index + 1}
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="font-semibold text-gray-800 text-sm sm:text-base truncate">
-                                                            {student.user?.full_name}
-                                                        </div>
-                                                        <div className="text-[10px] sm:text-sm text-gray-500">
-                                                            {student.user?.student_id}
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="flex gap-1 sm:gap-2">
-                                                    <button
-                                                        onClick={() => handleAttendanceChange(student.user_id, 'present')}
-                                                        className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all text-[10px] sm:text-sm ${attendance[student.user_id] === 'present'
-                                                            ? 'bg-green-500 text-white shadow-lg'
-                                                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                                                            }`}
-                                                    >
-                                                        <CheckCircle size={14} className="inline mr-0.5 sm:mr-1 sm:w-[18px] sm:h-[18px]" />
-                                                        <span className="hidden sm:inline">Present</span>
-                                                        <span className="sm:hidden">✓</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAttendanceChange(student.user_id, 'late')}
-                                                        className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all text-[10px] sm:text-sm ${attendance[student.user_id] === 'late'
-                                                            ? 'bg-yellow-500 text-white shadow-lg'
-                                                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                                                            }`}
-                                                    >
-                                                        <AlertCircle size={14} className="inline mr-0.5 sm:mr-1 sm:w-[18px] sm:h-[18px]" />
-                                                        <span className="hidden sm:inline">Late</span>
-                                                        <span className="sm:hidden">⏰</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAttendanceChange(student.user_id, 'absent')}
-                                                        className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all text-[10px] sm:text-sm ${attendance[student.user_id] === 'absent'
-                                                            ? 'bg-red-500 text-white shadow-lg'
-                                                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                                                            }`}
-                                                    >
-                                                        <XCircle size={14} className="inline mr-0.5 sm:mr-1 sm:w-[18px] sm:h-[18px]" />
-                                                        <span className="hidden sm:inline">Absent</span>
-                                                        <span className="sm:hidden">✗</span>
-                                                    </button>
-                                                </div>
+                                    <>
+                                        {/* Progress Indicator */}
+                                        <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-semibold text-gray-700">
+                                                    Attendance Progress
+                                                </span>
+                                                <span className="text-sm font-bold text-blue-600">
+                                                    {Object.values(attendance).filter(s => s !== null && s !== undefined).length} / {students.length}
+                                                </span>
                                             </div>
-                                        ))}
-                                    </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div
+                                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                    style={{
+                                                        width: `${(Object.values(attendance).filter(s => s !== null && s !== undefined).length / students.length) * 100}%`
+                                                    }}
+                                                />
+                                            </div>
+                                            {Object.values(attendance).filter(s => s !== null && s !== undefined).length < students.length && (
+                                                <p className="text-xs text-orange-600 mt-2 font-medium">
+                                                    ⚠️ {students.length - Object.values(attendance).filter(s => s !== null && s !== undefined).length} student(s) not marked yet
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2 sm:space-y-3">
+                                            {students.map((student, index) => (
+                                                <div
+                                                    key={student.user_id}
+                                                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl hover:bg-gray-100 transition-colors gap-2 sm:gap-0"
+                                                >
+                                                    <div className="flex items-center gap-2 sm:gap-4">
+                                                        <div className="w-7 h-7 sm:w-10 sm:h-10 bg-[#1F4E8C] rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-base flex-shrink-0">
+                                                            {index + 1}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <div className="font-semibold text-gray-800 text-sm sm:text-base truncate">
+                                                                {student.user?.full_name}
+                                                            </div>
+                                                            <div className="text-[10px] sm:text-sm text-gray-500">
+                                                                {student.user?.student_id}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-1 sm:gap-2">
+                                                        <button
+                                                            onClick={() => handleAttendanceChange(student.user_id, 'present')}
+                                                            className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all text-[10px] sm:text-sm ${attendance[student.user_id] === 'present'
+                                                                ? 'bg-green-500 text-white shadow-lg'
+                                                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                                                }`}
+                                                        >
+                                                            <CheckCircle size={14} className="inline mr-0.5 sm:mr-1 sm:w-[18px] sm:h-[18px]" />
+                                                            <span className="hidden sm:inline">Present</span>
+                                                            <span className="sm:hidden">✓</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleAttendanceChange(student.user_id, 'late')}
+                                                            className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all text-[10px] sm:text-sm ${attendance[student.user_id] === 'late'
+                                                                ? 'bg-yellow-500 text-white shadow-lg'
+                                                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                                                }`}
+                                                        >
+                                                            <AlertCircle size={14} className="inline mr-0.5 sm:mr-1 sm:w-[18px] sm:h-[18px]" />
+                                                            <span className="hidden sm:inline">Late</span>
+                                                            <span className="sm:hidden">⏰</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleAttendanceChange(student.user_id, 'absent')}
+                                                            className={`flex-1 sm:flex-none px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold transition-all text-[10px] sm:text-sm ${attendance[student.user_id] === 'absent'
+                                                                ? 'bg-red-500 text-white shadow-lg'
+                                                                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                                                }`}
+                                                        >
+                                                            <XCircle size={14} className="inline mr-0.5 sm:mr-1 sm:w-[18px] sm:h-[18px]" />
+                                                            <span className="hidden sm:inline">Absent</span>
+                                                            <span className="sm:hidden">✗</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
                                 )}
 
                                 {students.length > 0 && (

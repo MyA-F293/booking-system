@@ -112,7 +112,8 @@ const AttendanceReport = () => {
         absent: filteredData.filter(r => r.status === 'absent').length,
     };
 
-    const attendanceRate = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : 0;
+    // Count both "present" AND "late" as attended (late students still attended class)
+    const attendanceRate = stats.total > 0 ? (((stats.present + stats.late) / stats.total) * 100).toFixed(1) : 0;
     const uniqueClasses = [...new Set(attendanceData.map(r => r.class_name))];
 
     // Calculate student summary (cumulative per person)
@@ -147,7 +148,8 @@ const AttendanceReport = () => {
 
         return Object.values(summaryMap).map(student => ({
             ...student,
-            attendanceRate: student.total > 0 ? ((student.present / student.total) * 100).toFixed(1) : 0
+            // Count both "present" AND "late" as attended
+            attendanceRate: student.total > 0 ? (((student.present + student.late) / student.total) * 100).toFixed(1) : 0
         })).sort((a, b) => b.attendanceRate - a.attendanceRate);
     };
 
@@ -183,7 +185,8 @@ const AttendanceReport = () => {
         return Object.values(summaryMap).map(cls => ({
             ...cls,
             studentCount: cls.uniqueStudents.size,
-            attendanceRate: cls.total > 0 ? ((cls.present / cls.total) * 100).toFixed(1) : 0
+            // Count both "present" AND "late" as attended
+            attendanceRate: cls.total > 0 ? (((cls.present + cls.late) / cls.total) * 100).toFixed(1) : 0
         })).sort((a, b) => b.attendanceRate - a.attendanceRate);
     };
 
@@ -218,7 +221,8 @@ const AttendanceReport = () => {
             ...day,
             studentCount: day.uniqueStudents.size,
             classCount: day.uniqueClasses.size,
-            attendanceRate: day.total > 0 ? ((day.present / day.total) * 100).toFixed(1) : 0
+            // Count both "present" AND "late" as attended
+            attendanceRate: day.total > 0 ? (((day.present + day.late) / day.total) * 100).toFixed(1) : 0
         })).sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
     };
 

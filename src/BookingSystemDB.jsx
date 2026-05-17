@@ -682,7 +682,8 @@ const BookingSystemDB = ({ user }) => {
             absent: attendanceData.filter(r => r.status === 'absent').length,
         };
 
-        const attendanceRate = stats.total > 0 ? ((stats.present / stats.total) * 100).toFixed(1) : 0;
+        // Count both "present" AND "late" as attended (late students still attended class)
+        const attendanceRate = stats.total > 0 ? (((stats.present + stats.late) / stats.total) * 100).toFixed(1) : 0;
 
         return (
             <div className="space-y-4 sm:space-y-6">
