@@ -142,7 +142,7 @@ const BookingSystemDB = ({ user }) => {
     const levels = [
         { name: 'Starter', comingSoon: false },
         { name: 'Upper Starter', comingSoon: false },
-        { name: 'Pre-Intermediate', comingSoon: true },
+        { name: 'Pre-Intermediate', comingSoon: false },
         { name: 'Intermediate', comingSoon: true }
     ];
 
