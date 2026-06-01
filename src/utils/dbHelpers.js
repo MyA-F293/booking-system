@@ -980,9 +980,8 @@ export const getDateForDayInWeek = (dayName, weekNumber, year) => {
     const dayIndex = dayMap[dayName.toLowerCase()] || 1;
 
     // FIXED: Use actual week start date from batch
-    // Week 1 starts on March 30, 2026 (Monday)
-    // Today (March 29) is Week 0 (preparation week)
-    const week1StartDate = new Date(2026, 2, 30); // March 30, 2026 (Monday)
+    // Batch 3: Week 1 starts on June 1, 2026 (Monday)
+    const week1StartDate = new Date(2026, 5, 1); // June 1, 2026 (Monday)
 
     // Calculate the Monday of the target week
     const targetWeekMonday = new Date(week1StartDate);
