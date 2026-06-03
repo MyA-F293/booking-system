@@ -23,73 +23,61 @@ export const SettingsProvider = ({ children }) => {
 
     const loadSettings = async () => {
         try {
-            // Try to load from Supabase first
-            const { data, error } = await supabase
-                .from('app_settings')
-                .select('*')
-                .eq('key', 'header_info')
-                .single();
+            // AUTO-DETECT: Get batch number from majority of active students
+            const { data: students, error: studentsError } = await supabase
+                .from('users')
+                .select('batch')
+                .eq('role', 'student')
+                .not('batch', 'is', null);
 
-            if (data && !error) {
-                // Handle migration from old format
-                const value = data.value;
-                if (typeof value.batch === 'string') {
-                    // Extract number from "Batch 2025" format
-                    const batchNum = parseInt(value.batch.replace(/\D/g, '')) || 1;
-                    setSettings({ batch: batchNum });
-                } else {
-                    setSettings({ batch: value.batch || 1 });
-                }
-            } else {
-                // Fallback to localStorage
-                const saved = localStorage.getItem('app_settings');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    if (typeof parsed.batch === 'string') {
-                        const batchNum = parseInt(parsed.batch.replace(/\D/g, '')) || 1;
-                        setSettings({ batch: batchNum });
-                    } else {
-                        setSettings({ batch: parsed.batch || 1 });
+            let detectedBatch = 1; // default fallback
+
+            if (students && !studentsError && students.length > 0) {
+                // Count occurrences of each batch
+                const batchCounts = {};
+                students.forEach(student => {
+                    const batch = typeof student.batch === 'string'
+                        ? parseInt(student.batch.replace(/\D/g, ''))
+                        : student.batch;
+
+                    if (batch && !isNaN(batch)) {
+                        batchCounts[batch] = (batchCounts[batch] || 0) + 1;
                     }
-                }
+                });
+
+                // Find the most common batch
+                let maxCount = 0;
+                Object.entries(batchCounts).forEach(([batch, count]) => {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        detectedBatch = parseInt(batch);
+                    }
+                });
+
+                console.log('📊 Batch detection:', {
+                    totalStudents: students.length,
+                    batchCounts,
+                    detectedBatch
+                });
             }
+
+            setSettings({ batch: detectedBatch });
+
         } catch (err) {
-            // Fallback to localStorage
-            const saved = localStorage.getItem('app_settings');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                setSettings({ batch: typeof parsed.batch === 'number' ? parsed.batch : 1 });
-            }
+            console.error('❌ Error loading settings:', err);
+            setSettings({ batch: 1 }); // fallback
         } finally {
             setLoading(false);
         }
     };
 
-    const updateSettings = async (newSettings) => {
-        try {
-            // Save to localStorage as backup
-            localStorage.setItem('app_settings', JSON.stringify(newSettings));
-            setSettings(newSettings);
-
-            // Try to save to Supabase
-            await supabase
-                .from('app_settings')
-                .upsert({
-                    key: 'header_info',
-                    value: newSettings,
-                    updated_at: new Date().toISOString()
-                }, { onConflict: 'key' });
-
-            return true;
-        } catch (err) {
-            console.error('Error saving settings:', err);
-            // Still update local state even if Supabase fails
-            return true;
-        }
+    const refreshSettings = async () => {
+        setLoading(true);
+        await loadSettings();
     };
 
     return (
-        <SettingsContext.Provider value={{ settings, updateSettings, loading }}>
+        <SettingsContext.Provider value={{ settings, refreshSettings, loading }}>
             {children}
         </SettingsContext.Provider>
     );

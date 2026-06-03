@@ -22,13 +22,9 @@ import jsPDF from 'jspdf';
 
 const AdminDashboard = ({ user }) => {
     const { t } = useLanguage();
-    const { settings, updateSettings } = useSettings();
+    const { settings, refreshSettings, loading: settingsLoading } = useSettings();
     const { currentWeek, incrementWeek, refreshWeek } = useWeek();
     const toast = useToast();
-
-    // Settings edit state
-    const [showSettingsModal, setShowSettingsModal] = useState(false);
-    const [editBatch, setEditBatch] = useState(1);
 
     // Students state
     const [students, setStudents] = useState([]);
@@ -104,7 +100,6 @@ const AdminDashboard = ({ user }) => {
         showEditStudentModal ||
         showPasswordModal ||
         showTeacherIdModal ||
-        showSettingsModal ||
         showBulkOperations ||
         showAdminGuide ||
         showResetBatchModal
@@ -913,16 +908,7 @@ This action CANNOT be undone!`,
                                     <p className="text-[8px] sm:text-[10px] lg:text-xs text-gray-500">
                                         Batch {settings.batch} | {t('common.week')} {currentWeek}
                                     </p>
-                                    <button
-                                        onClick={() => {
-                                            setEditBatch(settings.batch);
-                                            setShowSettingsModal(true);
-                                        }}
-                                        className="p-0.5 hover:bg-gray-200 rounded transition-colors"
-                                        title="Edit Info"
-                                    >
-                                        <Pencil size={8} className="sm:w-2.5 sm:h-2.5 text-gray-400 hover:text-[#F39C32]" />
-                                    </button>
+                                    {/* Batch auto-detected from majority of students - no manual edit needed */}
                                     <button
                                         onClick={async () => {
                                             try {
@@ -2064,61 +2050,6 @@ This action CANNOT be undone!`,
                     </div>
                 </div>
             </div>
-
-            {/* Settings Edit Modal */}
-            {showSettingsModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50">
-                    <div className="bg-white rounded-xl sm:rounded-2xl max-w-md w-full shadow-2xl overflow-hidden flex flex-col my-4" style={{ maxHeight: 'calc(100vh - 2rem)' }}>
-                        <div className="bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white p-3 sm:p-5 flex-shrink-0">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                                    <Pencil size={16} className="sm:w-5 sm:h-5" />
-                                    Edit Info Header
-                                </h3>
-                                <button
-                                    onClick={() => setShowSettingsModal(false)}
-                                    className="p-1.5 sm:p-2 hover:bg-white/20 rounded-lg transition-colors"
-                                >
-                                    <X size={16} className="sm:w-[18px] sm:h-[18px]" />
-                                </button>
-                            </div>
-                        </div>
-                        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 overflow-y-auto flex-1">
-                            <div>
-                                <label className="block text-gray-700 font-semibold mb-2 text-sm">
-                                    Batch Number
-                                </label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={editBatch}
-                                    onChange={(e) => setEditBatch(parseInt(e.target.value) || 1)}
-                                    placeholder="e.g. 1"
-                                    className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#F39C32] text-sm"
-                                />
-                            </div>
-                        </div>
-                        <div className="bg-gray-50 p-4 border-t flex gap-3">
-                            <button
-                                onClick={async () => {
-                                    await updateSettings({ batch: editBatch });
-                                    toast.success('Header info updated successfully!');
-                                    setShowSettingsModal(false);
-                                }}
-                                className="flex-1 bg-gradient-to-r from-[#F39C32] to-[#f5a847] text-white py-2.5 rounded-xl font-semibold text-sm hover:from-[#e08a1f] hover:to-[#F39C32] transition-all"
-                            >
-                                Save
-                            </button>
-                            <button
-                                onClick={() => setShowSettingsModal(false)}
-                                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 rounded-xl font-semibold transition-colors text-sm"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Teacher ID Modal */}
             {showTeacherIdModal && selectedTeacherForId && (
