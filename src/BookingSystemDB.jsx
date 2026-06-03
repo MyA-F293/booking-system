@@ -72,6 +72,7 @@ const BookingSystemDB = ({ user }) => {
         'Oxford Class': { emoji: '📚', color: 'bg-blue-100 text-blue-700' },
         'Tokyo Class': { emoji: '🗼', color: 'bg-pink-100 text-pink-700' },
         'Tsinghua Class': { emoji: '🏯', color: 'bg-purple-100 text-purple-700' },
+        'Stanford Class': { emoji: '🌲', color: 'bg-green-100 text-green-700' },
     };
 
     const getClassBadge = (className) => {
@@ -471,13 +472,14 @@ const BookingSystemDB = ({ user }) => {
         }
 
         const count = scheduleData.current_students || 0;
-        console.log('📊 Current students:', count);
+        const maxCapacity = classItem.max_students || 10; // Use class's max_students, fallback to 10
+        console.log('📊 Current students:', count, '/ Max:', maxCapacity);
 
-        if (count >= 10) {
-            return { count, available: false, status: 'full' };
+        if (count >= maxCapacity) {
+            return { count, available: false, status: 'full', maxCapacity };
         }
 
-        return { count, available: true, status: count >= 4 ? 'active' : 'available' };
+        return { count, available: true, status: count >= 4 ? 'active' : 'available', maxCapacity };
     };
 
     const handleClassSelect = async (classItem) => {
@@ -581,7 +583,7 @@ const BookingSystemDB = ({ user }) => {
                 return;
             }
 
-            if (schedule.current_students >= 10) {
+            if (schedule.current_students >= (classItem.max_students || 10)) {
                 console.log('⚠️ Class is full');
                 toast.error(t('booking.classFull'));
                 return;
@@ -1593,7 +1595,7 @@ const BookingSystemDB = ({ user }) => {
                                                     {!isOccupied && !hasRoomConflict && (
                                                         <div className={`text-[10px] sm:text-sm font-semibold ${isFull ? 'text-red-700' : isActive ? 'text-green-700' : 'text-gray-600'}`}>
                                                             <Users size={10} className="sm:w-3 sm:h-3 inline mr-0.5 sm:mr-1" />
-                                                            {status.count}/10
+                                                            {status.count}/{status.maxCapacity || 10}
                                                         </div>
                                                     )}
 

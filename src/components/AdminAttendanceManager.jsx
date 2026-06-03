@@ -13,6 +13,7 @@ const classBadges = {
     'Oxford Class': { emoji: '📚', color: 'bg-blue-100 text-blue-700' },
     'Tokyo Class': { emoji: '🗼', color: 'bg-pink-100 text-pink-700' },
     'Tsinghua Class': { emoji: '🏯', color: 'bg-purple-100 text-purple-700' },
+    'Stanford Class': { emoji: '🌲', color: 'bg-green-100 text-green-700' },
 };
 
 const getClassBadge = (className) => {
