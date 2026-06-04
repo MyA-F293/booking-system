@@ -904,6 +904,42 @@ const AdminBookingDashboard = () => {
             toast.success(message);
             await loadAllSchedules();
 
+            // ✅ AUTO-CLEAN: Remove empty schedules after copy (with safety)
+            setTimeout(async () => {
+                try {
+                    // Reload schedules to get fresh data
+                    const filters = {
+                        week_number: targetWeek,
+                        year: currentYear,
+                        _cacheBust: Date.now()
+                    };
+                    const freshSchedules = await getSchedules(filters);
+                    const emptySchedules = freshSchedules.filter(s => s.current_students === 0);
+
+                    if (emptySchedules.length > 0) {
+                        console.log(`🗑️ Auto-cleaning ${emptySchedules.length} empty schedules...`);
+
+                        // Delete empty schedules
+                        const { error: deleteError } = await supabase
+                            .from('schedules')
+                            .delete()
+                            .eq('current_students', 0)
+                            .eq('week_number', targetWeek)
+                            .eq('year', currentYear);
+
+                        if (deleteError) {
+                            console.error('Error auto-cleaning:', deleteError);
+                        } else {
+                            toast.success(`🧹 Auto-cleaned ${emptySchedules.length} empty schedule${emptySchedules.length > 1 ? 's' : ''}!`);
+                            await loadAllSchedules();
+                        }
+                    }
+                } catch (cleanError) {
+                    console.error('Error in auto-clean:', cleanError);
+                    // Don't show error to user, just log it
+                }
+            }, 2000); // Wait 2 seconds after copy completes
+
         } catch (err) {
             console.error('Error copying week:', err);
             toast.error('❌ Failed to copy bookings: ' + err.message);
