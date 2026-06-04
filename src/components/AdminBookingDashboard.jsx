@@ -948,52 +948,6 @@ const AdminBookingDashboard = () => {
         }
     };
 
-    // ✅ NEW: Clean empty schedules (0 students)
-    const handleCleanEmptySchedules = async () => {
-        try {
-            // Count empty schedules first
-            const emptySchedules = schedules.filter(s => s.current_students === 0);
-            const count = emptySchedules.length;
-
-            if (count === 0) {
-                toast.info('✅ No empty schedules to clean!');
-                return;
-            }
-
-            // Show confirmation with details
-            toast.confirm(
-                `🗑️ Found ${count} empty schedule${count > 1 ? 's' : ''} (0 students)\n\nThese schedules will be permanently deleted.\n\nContinue?`,
-                async () => {
-                    try {
-                        setLoading(true);
-                        toast.info(`🗑️ Cleaning ${count} empty schedules...`);
-
-                        // Delete empty schedules for current display week
-                        const { error } = await supabase
-                            .from('schedules')
-                            .delete()
-                            .eq('current_students', 0)
-                            .eq('week_number', displayWeek)
-                            .eq('year', currentYear);
-
-                        if (error) throw error;
-
-                        toast.success(`✅ Cleaned ${count} empty schedule${count > 1 ? 's' : ''}!`);
-                        await loadAllSchedules();
-                    } catch (err) {
-                        console.error('Error cleaning empty schedules:', err);
-                        toast.error('❌ Failed to clean schedules: ' + err.message);
-                    } finally {
-                        setLoading(false);
-                    }
-                }
-            );
-        } catch (err) {
-            console.error('Error checking empty schedules:', err);
-            toast.error('❌ Failed to check schedules: ' + err.message);
-        }
-    };
-
     const handleDeleteStudent = async (bookingId, studentName, studentId) => {
         toast.confirm(
             `${t('adminBooking.confirmDelete')} ${studentName} ${t('adminBooking.fromThisClass')}?`,
