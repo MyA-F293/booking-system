@@ -1902,6 +1902,93 @@ This action CANNOT be undone!`,
                     <AttendanceReportExcel />
                 )}
 
+                {/* 🎨 UNIQUE: Empty Schedules Hero Card - Standalone Featured Alert */}
+                {(() => {
+                    const emptyCount = schedules.filter(s => s.current_students === 0).length;
+                    if (emptyCount === 0) return null;
+
+                    return (
+                        <div className="mt-4 sm:mt-6 animate-fade-in">
+                            <div className="group relative bg-gradient-to-r from-rose-500 via-pink-500 to-orange-500 rounded-2xl sm:rounded-3xl p-1 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
+                                {/* Inner Card */}
+                                <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-orange-50 rounded-2xl sm:rounded-3xl p-4 sm:p-6 relative overflow-hidden">
+                                    {/* Animated Background Pattern */}
+                                    <div className="absolute inset-0 opacity-10">
+                                        <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-rose-400 rounded-full -translate-y-20 translate-x-20 group-hover:scale-125 transition-transform duration-1000"></div>
+                                        <div className="absolute bottom-0 left-0 w-32 sm:w-48 h-32 sm:h-48 bg-orange-400 rounded-full translate-y-16 -translate-x-16 group-hover:scale-125 transition-transform duration-1000"></div>
+                                        <div className="absolute top-1/2 left-1/2 w-24 sm:w-40 h-24 sm:h-40 bg-pink-400 rounded-full -translate-x-1/2 -translate-y-1/2 group-hover:rotate-180 transition-transform duration-1000"></div>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="relative z-10">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                                            {/* Icon & Badge */}
+                                            <div className="flex items-center gap-3 sm:gap-4">
+                                                <div className="relative">
+                                                    {/* Pulsing Ring */}
+                                                    <div className="absolute inset-0 bg-rose-400 rounded-2xl animate-ping opacity-75"></div>
+                                                    {/* Icon Container */}
+                                                    <div className="relative p-3 sm:p-4 bg-gradient-to-br from-rose-600 to-orange-600 rounded-2xl shadow-xl">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white sm:w-10 sm:h-10">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M12 8v4" />
+                                                            <path d="M12 16h.01" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                                {/* Count Badge */}
+                                                <div className="bg-gradient-to-r from-rose-600 to-orange-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl shadow-lg">
+                                                    <p className="text-3xl sm:text-5xl font-black">{emptyCount}</p>
+                                                    <p className="text-[10px] sm:text-xs font-bold opacity-90">EMPTY</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Text Content */}
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-xl sm:text-2xl font-black text-rose-900 mb-1 sm:mb-2">
+                                                    ⚠️ Empty Schedules Detected!
+                                                </h3>
+                                                <p className="text-sm sm:text-base text-rose-700 font-semibold mb-2">
+                                                    {emptyCount} schedule{emptyCount > 1 ? 's' : ''} with no students enrolled
+                                                </p>
+                                                <div className="flex items-center gap-2 text-rose-600">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <path d="M12 16v-4" />
+                                                        <path d="M12 8h.01" />
+                                                    </svg>
+                                                    <span className="text-xs sm:text-sm font-medium">These schedules are taking up space without any students</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Action Button */}
+                                            <button
+                                                onClick={() => {
+                                                    console.log('🗑️ Hero card clean button clicked!');
+                                                    handleCleanEmptySchedules();
+                                                }}
+                                                className="w-full sm:w-auto bg-gradient-to-r from-rose-600 via-pink-600 to-orange-600 hover:from-rose-700 hover:via-pink-700 hover:to-orange-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all transform hover:scale-110 active:scale-95 flex items-center justify-center gap-2 sm:gap-3 group"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform">
+                                                    <path d="M3 6h18" />
+                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                    <path d="M10 11v6" />
+                                                    <path d="M14 11v6" />
+                                                </svg>
+                                                <div className="text-left">
+                                                    <div className="text-base sm:text-lg leading-none">Clean Now</div>
+                                                    <div className="text-[10px] opacity-90 font-normal">Remove all empty</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })()}
+
                 {/* Quick Stats & Alerts - Modern Design with Contained Hover */}
                 <div className="mt-4 sm:mt-6 bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm animate-fade-in">
                     {/* Header */}
@@ -2021,8 +2108,8 @@ This action CANNOT be undone!`,
 
                                 return (
                                     <div className={`group relative overflow-hidden rounded-lg sm:rounded-xl p-3 sm:p-4 border-2 transition-all duration-300 animate-slide-in-right ${hasEmpty
-                                            ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-amber-300/50 hover:border-amber-400 hover:shadow-lg'
-                                            : 'bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 border-emerald-300/50 hover:border-emerald-400 hover:shadow-lg'
+                                        ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-amber-300/50 hover:border-amber-400 hover:shadow-lg'
+                                        : 'bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 border-emerald-300/50 hover:border-emerald-400 hover:shadow-lg'
                                         }`}>
                                         {/* Decorative Background Elements */}
                                         <div className={`absolute -top-10 -right-10 w-20 sm:w-32 h-20 sm:h-32 rounded-full group-hover:scale-150 transition-transform duration-700 ${hasEmpty ? 'bg-amber-200/20' : 'bg-emerald-200/20'
@@ -2034,8 +2121,8 @@ This action CANNOT be undone!`,
                                         <div className="relative z-10 flex items-start gap-2 sm:gap-3">
                                             {/* Icon */}
                                             <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0 shadow-sm ${hasEmpty
-                                                    ? 'bg-gradient-to-br from-amber-100 to-orange-100'
-                                                    : 'bg-gradient-to-br from-emerald-100 to-green-100'
+                                                ? 'bg-gradient-to-br from-amber-100 to-orange-100'
+                                                : 'bg-gradient-to-br from-emerald-100 to-green-100'
                                                 }`}>
                                                 {hasEmpty ? (
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5 text-amber-600">
