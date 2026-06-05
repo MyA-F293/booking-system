@@ -2012,29 +2012,99 @@ This action CANNOT be undone!`,
                                 </div>
                             )}
 
-                            {/* Empty Schedules Alert */}
-                            {schedules.filter(s => s.current_students === 0).length > 0 && (
-                                <div className="group flex items-start gap-2 sm:gap-3 bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border-2 border-gray-200/50 hover:border-gray-300 hover:shadow-md transition-all duration-300 animate-slide-in-right">
-                                    <div className="p-1 sm:p-1.5 bg-gray-500/10 rounded-lg flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 text-gray-600"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+                            {/* Empty Schedules Alert - Enhanced Professional Design */}
+                            {(() => {
+                                const emptyCount = schedules.filter(s => s.current_students === 0).length;
+                                const hasEmpty = emptyCount > 0;
+
+                                if (!hasEmpty) return null;
+
+                                return (
+                                    <div className={`group relative overflow-hidden rounded-lg sm:rounded-xl p-3 sm:p-4 border-2 transition-all duration-300 animate-slide-in-right ${hasEmpty
+                                            ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-amber-300/50 hover:border-amber-400 hover:shadow-lg'
+                                            : 'bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 border-emerald-300/50 hover:border-emerald-400 hover:shadow-lg'
+                                        }`}>
+                                        {/* Decorative Background Elements */}
+                                        <div className={`absolute -top-10 -right-10 w-20 sm:w-32 h-20 sm:h-32 rounded-full group-hover:scale-150 transition-transform duration-700 ${hasEmpty ? 'bg-amber-200/20' : 'bg-emerald-200/20'
+                                            }`}></div>
+                                        <div className={`absolute -bottom-10 -left-10 w-20 sm:w-32 h-20 sm:h-32 rounded-full group-hover:scale-150 transition-transform duration-700 ${hasEmpty ? 'bg-orange-200/20' : 'bg-green-200/20'
+                                            }`}></div>
+
+                                        {/* Content */}
+                                        <div className="relative z-10 flex items-start gap-2 sm:gap-3">
+                                            {/* Icon */}
+                                            <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0 shadow-sm ${hasEmpty
+                                                    ? 'bg-gradient-to-br from-amber-100 to-orange-100'
+                                                    : 'bg-gradient-to-br from-emerald-100 to-green-100'
+                                                }`}>
+                                                {hasEmpty ? (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5 text-amber-600">
+                                                        <circle cx="12" cy="12" r="10" />
+                                                        <path d="M12 8v4" />
+                                                        <path d="M12 16h.01" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5 text-emerald-600">
+                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                                        <polyline points="22 4 12 14.01 9 11.01" />
+                                                    </svg>
+                                                )}
+                                            </div>
+
+                                            {/* Info */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-baseline gap-2 mb-0.5">
+                                                    <p className={`text-xs sm:text-sm font-bold ${hasEmpty ? 'text-amber-900' : 'text-emerald-900'
+                                                        }`}>
+                                                        {hasEmpty ? '⚠️ Empty Schedules Detected' : '✨ All Schedules Filled'}
+                                                    </p>
+                                                    {hasEmpty && (
+                                                        <span className="px-1.5 sm:px-2 py-0.5 bg-amber-200/50 rounded-full text-[9px] sm:text-[10px] font-bold text-amber-700">
+                                                            {emptyCount}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className={`text-[10px] sm:text-xs font-medium ${hasEmpty ? 'text-amber-700' : 'text-emerald-700'
+                                                    }`}>
+                                                    {hasEmpty
+                                                        ? `${emptyCount} schedule${emptyCount > 1 ? 's' : ''} with no students enrolled`
+                                                        : 'All schedules have students - great job!'
+                                                    }
+                                                </p>
+                                                {hasEmpty && (
+                                                    <p className="text-[9px] sm:text-[10px] text-amber-600 mt-1 flex items-center gap-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-3 sm:h-3">
+                                                            <circle cx="12" cy="12" r="10" />
+                                                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                                                            <path d="M12 17h.01" />
+                                                        </svg>
+                                                        <span>Click "Clean" to remove empty schedules automatically</span>
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Action Button */}
+                                            {hasEmpty && (
+                                                <button
+                                                    onClick={() => {
+                                                        console.log('🖱️ Clean button CLICKED from enhanced alert!');
+                                                        handleCleanEmptySchedules();
+                                                    }}
+                                                    className="flex-shrink-0 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs transition-all hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1 sm:gap-1.5"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-3.5 sm:h-3.5">
+                                                        <path d="M3 6h18" />
+                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                    </svg>
+                                                    <span className="hidden sm:inline">Clean Now</span>
+                                                    <span className="sm:hidden">Clean</span>
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] sm:text-xs font-bold text-gray-900">Empty Schedules</p>
-                                        <p className="text-[10px] sm:text-xs text-gray-600">
-                                            {schedules.filter(s => s.current_students === 0).length} schedule(s) with no students
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            console.log('🖱️ Clean button CLICKED!');
-                                            handleCleanEmptySchedules();
-                                        }}
-                                        className="text-[10px] sm:text-xs bg-red-500 hover:bg-red-600 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all hover:shadow-md flex-shrink-0"
-                                    >
-                                        Clean
-                                    </button>
-                                </div>
-                            )}
+                                );
+                            })()}
 
                             {/* All Good */}
                             {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length === 0 &&
