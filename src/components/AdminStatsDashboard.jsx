@@ -374,208 +374,162 @@ const AdminStatsDashboard = () => {
                 </div>
             </div>
 
-            <div ref={dashboardRef} className="space-y-6" style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '16px' }}>
-                {/* Student Booking Status Tracker - REFINED DESIGN */}
-                <div className="relative overflow-hidden rounded-2xl p-6 shadow-lg bg-white border border-gray-100">
-                    {/* Subtle Animated Background Gradient Orbs - CONTAINED */}
-                    <div className="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-30" style={{
-                        background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.3), rgba(239, 68, 68, 0.3))',
-                        animation: 'float 15s ease-in-out infinite'
-                    }}></div>
-                    <div className="absolute bottom-0 left-0 w-56 h-56 rounded-full blur-3xl opacity-30" style={{
-                        animationDelay: '3s',
-                        background: 'linear-gradient(135deg, rgba(147, 197, 253, 0.3), rgba(196, 181, 253, 0.3))',
-                        animation: 'float 18s ease-in-out infinite'
-                    }}></div>
+            {/* 🎨 QUICK INSIGHTS - BENTO BOX LAYOUT (TOP POSITION) */}
+            <div className="space-y-3 animate-fade-in">
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gradient-to-br from-[#1F4E8C] to-[#2a5fa3] rounded-xl shadow-lg">
+                        <TrendingUp className="text-white" size={20} />
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 text-base sm:text-lg">Quick Insights</h4>
+                        <p className="text-xs text-gray-500">Week {displayWeek} overview at a glance</p>
+                    </div>
+                </div>
 
-                    <div className="relative z-10">
-                        {/* Header - SMALLER */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-md">
-                                    <UserCheck size={24} className="text-white" strokeWidth={2.5} />
+                {/* Bento Grid - Asymmetric 2x2 Layout */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {/* 1. TOTAL BOOKINGS - Large Blue Card (takes 2 cols on lg) */}
+                    <div className="lg:col-span-2 group relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl p-5 sm:p-6 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
+                        {/* Animated Background */}
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -translate-y-20 translate-x-20 group-hover:scale-150 transition-transform duration-700"></div>
+                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full translate-y-16 -translate-x-16 group-hover:scale-150 transition-transform duration-700"></div>
+                        </div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                                        <Calendar size={18} className="text-white" />
+                                    </div>
+                                    <span className="text-blue-100 text-sm font-bold uppercase tracking-wide">Total Bookings</span>
+                                </div>
+                                <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-black text-white backdrop-blur-sm">
+                                    Week {displayWeek}
+                                </div>
+                            </div>
+                            <div className="flex items-baseline gap-3">
+                                <p className="text-5xl sm:text-6xl font-black text-white tracking-tight">
+                                    {stats.totalBookings}
+                                </p>
+                                <div>
+                                    <p className="text-blue-100 text-sm font-bold">Active</p>
+                                    <p className="text-blue-200 text-xs">Confirmed</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. BOOKING RATE - Compact Orange Card */}
+                    <div className="group relative bg-gradient-to-br from-orange-400 via-orange-500 to-amber-500 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 right-0 w-28 h-28 bg-white rounded-full -translate-y-14 translate-x-14 group-hover:scale-125 transition-transform duration-500"></div>
+                        </div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-3">
+                                <UserCheck size={14} className="text-orange-100" />
+                                <span className="text-orange-100 text-xs font-bold uppercase">Booking Rate</span>
+                            </div>
+                            <p className="text-3xl sm:text-4xl font-black text-white mb-1">
+                                {studentBookingStatus.bookingRate}%
+                            </p>
+                            <p className="text-orange-100 text-xs font-medium">
+                                {studentBookingStatus.booked.length}/{stats.totalStudents} Students
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* 3. MOST POPULAR CLASS - Green Hero Card */}
+                    <div className="group relative bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="absolute top-0 right-0 w-28 h-28 bg-white rounded-full -translate-y-14 translate-x-14 group-hover:scale-125 transition-transform duration-500"></div>
+                        </div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-3">
+                                <BookOpen size={14} className="text-teal-100" />
+                                <span className="text-teal-100 text-xs font-bold uppercase">Top Class</span>
+                            </div>
+                            <p className="text-lg sm:text-xl font-black text-white mb-1 truncate">
+                                {stats.bookingsByClass.length > 0
+                                    ? stats.bookingsByClass.sort((a, b) => b.value - a.value)[0].name
+                                    : 'N/A'}
+                            </p>
+                            <div className="flex items-baseline gap-1">
+                                <p className="text-2xl font-black text-white">
+                                    {stats.bookingsByClass.length > 0
+                                        ? stats.bookingsByClass.sort((a, b) => b.value - a.value)[0].value
+                                        : 0}
+                                </p>
+                                <span className="text-teal-100 text-xs font-medium">bookings</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Alerts Row - Side by Side Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* STUDENTS NOT BOOKED Alert */}
+                    {studentBookingStatus.notBooked.length > 0 && (
+                        <button
+                            onClick={() => {
+                                setModalType('notBooked');
+                                setShowStudentModal(true);
+                            }}
+                            className="group relative bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl p-4 border-2 border-amber-300 hover:border-amber-400 hover:shadow-lg transition-all duration-300 overflow-hidden text-left"
+                        >
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-200/30 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                            <div className="relative z-10 flex items-start gap-3">
+                                <div className="p-2 bg-amber-500/20 rounded-xl flex-shrink-0">
+                                    <UserX size={20} className="text-amber-700" strokeWidth={2.5} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="text-sm font-black text-amber-900">⚠️ Not Booked Yet</p>
+                                        <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-xs font-bold">
+                                            {studentBookingStatus.notBooked.length}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-amber-700 font-medium">Students haven't booked for W{displayWeek}</p>
+                                </div>
+                            </div>
+                        </button>
+                    )}
+
+                    {/* ALL STUDENTS BOOKED Status */}
+                    {studentBookingStatus.notBooked.length === 0 && stats.totalStudents > 0 && (
+                        <div className="group relative bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl p-4 border-2 border-emerald-300 overflow-hidden">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-200/30 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                            <div className="relative z-10 flex items-center gap-3">
+                                <div className="p-2 bg-emerald-500/20 rounded-xl">
+                                    <CheckCircle2 size={20} className="text-emerald-700" strokeWidth={2.5} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-800">
-                                        Student Booking Status
-                                    </h3>
-                                    <p className="text-gray-500 text-xs font-medium mt-0.5">
-                                        Week {displayWeek} • Real-time tracking
-                                    </p>
+                                    <p className="text-sm font-black text-emerald-900">✨ All Students Booked!</p>
+                                    <p className="text-xs text-emerald-700 font-medium">100% booking rate achieved</p>
                                 </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-4xl font-black bg-gradient-to-r from-orange-500 via-red-500 to-orange-500 bg-clip-text text-transparent" style={{ backgroundSize: '200% auto', animation: 'gradient-text 5s ease infinite' }}>
-                                    {studentBookingStatus.bookingRate}%
-                                </div>
-                                <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide">Booking Rate</div>
                             </div>
                         </div>
-
-                        {/* Progress Bar - SUBTLE ANIMATION */}
-                        <div className="mb-6">
-                            <div className="h-4 bg-gray-100 rounded-full overflow-hidden shadow-inner relative">
-                                <div
-                                    className="h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden"
-                                    style={{
-                                        width: `${studentBookingStatus.bookingRate}%`,
-                                        background: 'linear-gradient(90deg, #fb923c, #f97316, #ef4444)',
-                                        backgroundSize: '200% 100%',
-                                        animation: 'gradient-move 8s ease infinite'
-                                    }}
-                                >
-                                    {/* Subtle shine effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent" style={{ animation: 'shimmer 4s ease-in-out infinite' }}></div>
-                                </div>
-                            </div>
-                            <div className="flex justify-between mt-1.5 text-xs text-gray-400 font-medium">
-                                <span>0%</span>
-                                <span>50%</span>
-                                <span>100%</span>
-                            </div>
-                        </div>
-
-                        {/* Stats Cards - SMALLER & CLEANER */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Booked Students Card */}
-                            <button
-                                onClick={() => {
-                                    setModalType('booked');
-                                    setShowStudentModal(true);
-                                }}
-                                className="group relative overflow-hidden bg-white rounded-2xl p-6 transition-all duration-300 hover:scale-[1.01] border-2 border-emerald-200 hover:border-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                            >
-                                {/* Subtle background gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-green-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                                <div className="relative z-10">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="p-3 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300">
-                                            <CheckCircle2 size={28} className="text-white" strokeWidth={2.5} />
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-4xl font-black text-gray-800 group-hover:scale-105 transition-transform duration-300">
-                                                {studentBookingStatus.booked.length}
-                                            </div>
-                                            <div className="text-emerald-600 text-xs font-bold uppercase tracking-wide mt-0.5">Students</div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="relative">
-                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                                                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full absolute top-0 left-0 animate-ping"></div>
-                                            </div>
-                                            <div className="text-gray-800 font-bold text-base">Already Booked</div>
-                                        </div>
-                                        <div className="text-gray-600 text-xs font-medium">Students who completed booking</div>
-                                        <div className="text-emerald-600 text-xs font-semibold mt-2 flex items-center gap-1.5 group-hover:gap-2 transition-all">
-                                            <span>View detailed list</span>
-                                            <span className="text-sm group-hover:translate-x-0.5 transition-transform">→</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </button>
-
-                            {/* Not Booked Students Card */}
-                            <button
-                                onClick={() => {
-                                    setModalType('notBooked');
-                                    setShowStudentModal(true);
-                                }}
-                                className="group relative overflow-hidden bg-white rounded-2xl p-6 transition-all duration-300 hover:scale-[1.01] border-2 border-red-200 hover:border-red-400 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]"
-                            >
-                                {/* Subtle background gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-orange-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                                <div className="relative z-10">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="p-3 bg-gradient-to-br from-red-500 to-orange-600 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300">
-                                            <AlertCircle size={28} className="text-white" strokeWidth={2.5} />
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-4xl font-black text-gray-800 group-hover:scale-105 transition-transform duration-300">
-                                                {studentBookingStatus.notBooked.length}
-                                            </div>
-                                            <div className="text-red-600 text-xs font-bold uppercase tracking-wide mt-0.5">Students</div>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="relative">
-                                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
-                                                <div className="w-1.5 h-1.5 bg-red-500 rounded-full absolute top-0 left-0 animate-ping"></div>
-                                            </div>
-                                            <div className="text-gray-800 font-bold text-base">Not Booked Yet</div>
-                                        </div>
-                                        <div className="text-gray-600 text-xs font-medium">Students need to book schedule</div>
-                                        <div className="text-red-600 text-xs font-semibold mt-2 flex items-center gap-1.5 group-hover:gap-2 transition-all">
-                                            <span>View detailed list</span>
-                                            <span className="text-sm group-hover:translate-x-0.5 transition-transform">→</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* Quick Action Hint */}
-                        <div className="mt-5 flex items-center justify-center gap-2 text-gray-400 text-xs">
-                            <div className="relative">
-                                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-                                <div className="w-1.5 h-1.5 bg-gray-400 rounded-full absolute top-0 left-0 animate-ping"></div>
-                            </div>
-                            <span>Click on cards above to see detailed student lists</span>
-                        </div>
-                    </div>
+                    )}
                 </div>
+            </div>
 
-                {/* Summary Cards with Animations */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInLeft stagger-1" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#dbeafe' }}>
-                                <Users size={24} style={{ color: '#1F4E8C' }} />
-                            </div>
-                            <div>
-                                <p className="text-3xl font-bold" style={{ color: '#1f2937' }}>{stats.totalStudents}</p>
-                                <p className="text-sm" style={{ color: '#6b7280' }}>{t('statsDashboard.totalStudents')}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInLeft stagger-2" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#d1fae5', animationDelay: '0.5s' }}>
-                                <GraduationCap size={24} style={{ color: '#059669' }} />
-                            </div>
-                            <div>
-                                <p className="text-3xl font-bold" style={{ color: '#1f2937' }}>{stats.totalTeachers}</p>
-                                <p className="text-sm" style={{ color: '#6b7280' }}>{t('statsDashboard.totalTeachers')}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInRight stagger-3" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#ffedd5', animationDelay: '1s' }}>
-                                <Calendar size={24} style={{ color: '#F39C32' }} />
-                            </div>
-                            <div>
-                                <p className="text-3xl font-bold" style={{ color: '#1f2937' }}>{stats.totalBookings}</p>
-                                <p className="text-sm" style={{ color: '#6b7280' }}>{t('statsDashboard.bookingWeek')} W{displayWeek}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="rounded-2xl p-5 border shadow-sm hover-lift animate-slideInRight stagger-4" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 rounded-xl animate-float" style={{ backgroundColor: '#ede9fe', animationDelay: '1.5s' }}>
-                                <BookOpen size={24} style={{ color: '#7c3aed' }} />
-                            </div>
-                            <div>
-                                <p className="text-3xl font-bold" style={{ color: '#1f2937' }}>{stats.totalClasses}</p>
-                                <p className="text-sm" style={{ color: '#6b7280' }}>{t('statsDashboard.totalClasses')}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div ref={dashboardRef} className="space-y-6" style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '16px' }}>
+                {/* Student Booking Status Tracker - REMOVED (data now in Quick Insights above) */}
+                {/* The detailed booking status with progress bar was redundant since Quick Insights 
+                    already shows: Booking Rate %, Total Bookings, and Not Booked alert with clickable action */}
+
+                {/* Summary Cards - REMOVED (data now in Quick Insights above) */}
+                {/* The 4 small summary cards were redundant:
+                    - Total Students → Not critical for quick view
+                    - Total Teachers → Not critical for quick view  
+                    - Total Bookings → Already in Quick Insights (large blue card)
+                    - Total Classes → Not critical for quick view
+                   Quick Insights provides better, more visual overview. */}
 
                 {/* Charts Row 1 with Animations */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -689,27 +643,9 @@ const AdminStatsDashboard = () => {
                     </div>
                 </div>
 
-                {stats.bookingsByClass.length > 0 && (
-                    <div className="rounded-2xl p-6 border shadow-sm" style={{ backgroundColor: 'white', borderColor: '#f3f4f6' }}>
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: '#1f2937' }}>
-                            <BookOpen size={20} style={{ color: '#F39C32' }} />
-                            {t('statsDashboard.bookingPerClass')}
-                        </h3>
-                        <div className="h-64">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={stats.bookingsByClass}>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                    <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                                    <YAxis tick={{ fontSize: 12 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="value" radius={[8, 8, 0, 0]} name="Booking">
-                                        {stats.bookingsByClass.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.fill} />))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                )}
+                {/* Booking per Class chart - REMOVED (redundant with "Top Class" in Quick Insights) */}
+                {/* Quick Insights already shows the most popular class with booking count,
+                     which is the most important information. Full chart removed to reduce clutter. */}
             </div>
 
             {/* Student List Modal */}

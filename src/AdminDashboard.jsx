@@ -1989,71 +1989,94 @@ This action CANNOT be undone!`,
                     );
                 })()}
 
-                {/* Quick Stats & Alerts - Modern Design with Contained Hover */}
-                <div className="mt-4 sm:mt-6 bg-white border border-gray-200 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm animate-fade-in">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-[#1F4E8C] to-[#2a5fa3] px-3 sm:px-5 py-2 sm:py-3 flex items-center gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2 bg-white/10 rounded-lg animate-pulse-slow">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-[18px] sm:h-[18px] text-white"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
+                {/* Quick Stats & Insights - UNIQUE BENTO BOX LAYOUT */}
+                {/* ONLY show in Dashboard tab (activeTab === 'dashboard') */}
+                {/* Stats tab has its own Quick Insights in AdminStatsDashboard.jsx */}
+                {activeTab === 'dashboard' && (
+                    <div className="mt-4 sm:mt-6 space-y-3 animate-fade-in">
+                        {/* Header */}
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-gradient-to-br from-[#1F4E8C] to-[#2a5fa3] rounded-xl shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                                    <path d="M3 3v18h18" />
+                                    <path d="m19 9-5 5-4-4-3 3" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-gray-800 text-base sm:text-lg">Quick Insights</h4>
+                                <p className="text-xs text-gray-500">Real-time overview & alerts</p>
+                            </div>
                         </div>
-                        <h4 className="font-bold text-white text-xs sm:text-sm">Quick Insights</h4>
-                    </div>
 
-                    {/* Content */}
-                    <div className="p-3 sm:p-5 space-y-3 sm:space-y-4">
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                            {/* Current Week Bookings */}
-                            <div className="group relative bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg sm:rounded-xl p-2.5 sm:p-4 border-2 border-blue-200/50 hover:border-blue-300 hover:shadow-lg transition-all duration-300 animate-slide-in-left overflow-hidden">
-                                {/* Decorative circle */}
-                                <div className="absolute -top-8 -right-8 w-16 sm:w-24 h-16 sm:h-24 bg-blue-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                        {/* Bento Grid - Asymmetric 2x2 Layout */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                            {/* 1. THIS WEEK - Large Blue Card (takes 2 cols on lg) */}
+                            <div className="lg:col-span-2 group relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl p-5 sm:p-6 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
+                                {/* Animated Background */}
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -translate-y-20 translate-x-20 group-hover:scale-150 transition-transform duration-700"></div>
+                                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full translate-y-16 -translate-x-16 group-hover:scale-150 transition-transform duration-700"></div>
+                                </div>
+
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                                        <div className="p-1 sm:p-1.5 bg-blue-500/10 rounded-lg">
-                                            <Calendar size={12} className="sm:w-[14px] sm:h-[14px] text-blue-600" />
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                                                <Calendar size={18} className="text-white" />
+                                            </div>
+                                            <span className="text-blue-100 text-sm font-bold uppercase tracking-wide">This Week</span>
                                         </div>
-                                        <p className="text-[10px] sm:text-xs text-blue-700 font-semibold">This Week</p>
+                                        <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-black text-white backdrop-blur-sm">
+                                            Week {currentWeek}
+                                        </div>
                                     </div>
-                                    <p className="text-xl sm:text-3xl font-bold text-blue-900 mb-0.5 sm:mb-1 animate-count-up">
-                                        {schedules.filter(s => s.week_number === currentWeek).reduce((sum, s) => sum + s.current_students, 0)}
-                                    </p>
-                                    <p className="text-[10px] sm:text-xs text-blue-600 font-medium">W{currentWeek} bookings</p>
+                                    <div className="flex items-baseline gap-3">
+                                        <p className="text-5xl sm:text-6xl font-black text-white tracking-tight">
+                                            {schedules.filter(s => s.week_number === currentWeek).reduce((sum, s) => sum + s.current_students, 0)}
+                                        </p>
+                                        <div>
+                                            <p className="text-blue-100 text-sm font-bold">Total</p>
+                                            <p className="text-blue-200 text-xs">Bookings</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Next Week Bookings */}
-                            <div className="group relative bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-lg sm:rounded-xl p-2.5 sm:p-4 border-2 border-orange-200/50 hover:border-orange-300 hover:shadow-lg transition-all duration-300 animate-slide-in-right overflow-hidden">
-                                {/* Decorative circle */}
-                                <div className="absolute -top-8 -right-8 w-16 sm:w-24 h-16 sm:h-24 bg-orange-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                            {/* 2. NEXT WEEK - Compact Orange Card */}
+                            <div className="group relative bg-gradient-to-br from-orange-400 via-orange-500 to-amber-500 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-0 right-0 w-28 h-28 bg-white rounded-full -translate-y-14 translate-x-14 group-hover:scale-125 transition-transform duration-500"></div>
+                                </div>
+
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                                        <div className="p-1 sm:p-1.5 bg-orange-500/10 rounded-lg">
-                                            <Calendar size={12} className="sm:w-[14px] sm:h-[14px] text-orange-600" />
-                                        </div>
-                                        <p className="text-[10px] sm:text-xs text-orange-700 font-semibold">Next Week</p>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Calendar size={14} className="text-orange-100" />
+                                        <span className="text-orange-100 text-xs font-bold uppercase">Next Week</span>
                                     </div>
-                                    <p className="text-xl sm:text-3xl font-bold text-orange-900 mb-0.5 sm:mb-1 animate-count-up">
+                                    <p className="text-3xl sm:text-4xl font-black text-white mb-1">
                                         {schedules.filter(s => s.week_number === currentWeek + 1).reduce((sum, s) => sum + s.current_students, 0)}
                                     </p>
-                                    <p className="text-[10px] sm:text-xs text-orange-600 font-medium">W{currentWeek + 1} bookings</p>
+                                    <p className="text-orange-100 text-xs font-medium">W{currentWeek + 1} Bookings</p>
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Most Popular Class */}
-                        <div className="group relative bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg sm:rounded-xl p-2.5 sm:p-4 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 animate-slide-in-up overflow-hidden">
-                            {/* Decorative circles */}
-                            <div className="absolute -top-8 -right-8 w-16 sm:w-24 h-16 sm:h-24 bg-emerald-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-                            <div className="absolute -bottom-8 -left-8 w-16 sm:w-24 h-16 sm:h-24 bg-teal-200/20 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
-                            <div className="relative z-10 flex items-center justify-between">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-                                        <div className="p-1 sm:p-1.5 bg-emerald-500/10 rounded-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-[14px] sm:h-[14px] text-emerald-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-                                        </div>
-                                        <p className="text-[10px] sm:text-xs text-emerald-700 font-semibold">Most Popular</p>
+                            {/* 3. MOST POPULAR - Green Hero Card */}
+                            <div className="group relative bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
+                                <div className="absolute inset-0 opacity-10">
+                                    <div className="absolute top-0 right-0 w-28 h-28 bg-white rounded-full -translate-y-14 translate-x-14 group-hover:scale-125 transition-transform duration-500"></div>
+                                </div>
+
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-teal-100">
+                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                            <circle cx="9" cy="7" r="4" />
+                                            <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                                        </svg>
+                                        <span className="text-teal-100 text-xs font-bold uppercase">Top Class</span>
                                     </div>
-                                    <p className="text-sm sm:text-lg font-bold text-emerald-900 truncate">
+                                    <p className="text-lg sm:text-xl font-black text-white mb-1 truncate">
                                         {(() => {
                                             const classCounts = {};
                                             schedules.forEach(s => {
@@ -2064,148 +2087,75 @@ This action CANNOT be undone!`,
                                             return mostPopular ? mostPopular[0] : 'N/A';
                                         })()}
                                     </p>
-                                </div>
-                                <div className="text-right ml-2 sm:ml-4 flex-shrink-0">
-                                    <p className="text-xl sm:text-3xl font-bold text-emerald-900 animate-count-up">
-                                        {(() => {
-                                            const classCounts = {};
-                                            schedules.forEach(s => {
-                                                const className = s.class?.name || 'Unknown';
-                                                classCounts[className] = (classCounts[className] || 0) + s.current_students;
-                                            });
-                                            const mostPopular = Object.entries(classCounts).sort((a, b) => b[1] - a[1])[0];
-                                            return mostPopular ? mostPopular[1] : 0;
-                                        })()}
-                                    </p>
-                                    <p className="text-[10px] sm:text-xs text-emerald-600 font-medium">students</p>
+                                    <div className="flex items-baseline gap-1">
+                                        <p className="text-2xl font-black text-white">
+                                            {(() => {
+                                                const classCounts = {};
+                                                schedules.forEach(s => {
+                                                    const className = s.class?.name || 'Unknown';
+                                                    classCounts[className] = (classCounts[className] || 0) + s.current_students;
+                                                });
+                                                const mostPopular = Object.entries(classCounts).sort((a, b) => b[1] - a[1])[0];
+                                                return mostPopular ? mostPopular[1] : 0;
+                                            })()}
+                                        </p>
+                                        <span className="text-teal-100 text-xs font-medium">students</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Alerts Section */}
-                        <div className="space-y-1.5 sm:space-y-2">
-                            {/* Near Capacity Alert */}
+                        {/* Alerts Row - Side by Side Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* NEAR CAPACITY Alert */}
                             {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length > 0 && (
-                                <div className="group flex items-start gap-2 sm:gap-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border-2 border-amber-200/50 hover:border-amber-300 hover:shadow-md transition-all duration-300 animate-slide-in-left">
-                                    <div className="p-1 sm:p-1.5 bg-amber-500/10 rounded-lg flex-shrink-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 text-amber-600"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] sm:text-xs font-bold text-amber-900">Near Capacity</p>
-                                        <p className="text-[10px] sm:text-xs text-amber-700">
-                                            {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length} class(es) almost full (8-9/10)
-                                        </p>
+                                <div className="group relative bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl p-4 border-2 border-amber-300 hover:border-amber-400 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-amber-200/30 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                                    <div className="relative z-10 flex items-start gap-3">
+                                        <div className="p-2 bg-amber-500/20 rounded-xl flex-shrink-0">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-700">
+                                                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                                                <path d="M12 9v4" />
+                                                <path d="M12 17h.01" />
+                                            </svg>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="text-sm font-black text-amber-900">⚠️ Near Capacity</p>
+                                                <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-xs font-bold">
+                                                    {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-amber-700 font-medium">Classes almost full (8-9/10 students)</p>
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* Empty Schedules Alert - Enhanced Professional Design */}
-                            {(() => {
-                                const emptyCount = schedules.filter(s => s.current_students === 0).length;
-                                const hasEmpty = emptyCount > 0;
-
-                                if (!hasEmpty) return null;
-
-                                return (
-                                    <div className={`group relative overflow-hidden rounded-lg sm:rounded-xl p-3 sm:p-4 border-2 transition-all duration-300 animate-slide-in-right ${hasEmpty
-                                        ? 'bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 border-amber-300/50 hover:border-amber-400 hover:shadow-lg'
-                                        : 'bg-gradient-to-br from-emerald-50 via-green-50 to-emerald-50 border-emerald-300/50 hover:border-emerald-400 hover:shadow-lg'
-                                        }`}>
-                                        {/* Decorative Background Elements */}
-                                        <div className={`absolute -top-10 -right-10 w-20 sm:w-32 h-20 sm:h-32 rounded-full group-hover:scale-150 transition-transform duration-700 ${hasEmpty ? 'bg-amber-200/20' : 'bg-emerald-200/20'
-                                            }`}></div>
-                                        <div className={`absolute -bottom-10 -left-10 w-20 sm:w-32 h-20 sm:h-32 rounded-full group-hover:scale-150 transition-transform duration-700 ${hasEmpty ? 'bg-orange-200/20' : 'bg-green-200/20'
-                                            }`}></div>
-
-                                        {/* Content */}
-                                        <div className="relative z-10 flex items-start gap-2 sm:gap-3">
-                                            {/* Icon */}
-                                            <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0 shadow-sm ${hasEmpty
-                                                ? 'bg-gradient-to-br from-amber-100 to-orange-100'
-                                                : 'bg-gradient-to-br from-emerald-100 to-green-100'
-                                                }`}>
-                                                {hasEmpty ? (
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5 text-amber-600">
-                                                        <circle cx="12" cy="12" r="10" />
-                                                        <path d="M12 8v4" />
-                                                        <path d="M12 16h.01" />
-                                                    </svg>
-                                                ) : (
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="sm:w-5 sm:h-5 text-emerald-600">
-                                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                                                        <polyline points="22 4 12 14.01 9 11.01" />
-                                                    </svg>
-                                                )}
-                                            </div>
-
-                                            {/* Info */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-baseline gap-2 mb-0.5">
-                                                    <p className={`text-xs sm:text-sm font-bold ${hasEmpty ? 'text-amber-900' : 'text-emerald-900'
-                                                        }`}>
-                                                        {hasEmpty ? '⚠️ Empty Schedules Detected' : '✨ All Schedules Filled'}
-                                                    </p>
-                                                    {hasEmpty && (
-                                                        <span className="px-1.5 sm:px-2 py-0.5 bg-amber-200/50 rounded-full text-[9px] sm:text-[10px] font-bold text-amber-700">
-                                                            {emptyCount}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className={`text-[10px] sm:text-xs font-medium ${hasEmpty ? 'text-amber-700' : 'text-emerald-700'
-                                                    }`}>
-                                                    {hasEmpty
-                                                        ? `${emptyCount} schedule${emptyCount > 1 ? 's' : ''} with no students enrolled`
-                                                        : 'All schedules have students - great job!'
-                                                    }
-                                                </p>
-                                                {hasEmpty && (
-                                                    <p className="text-[9px] sm:text-[10px] text-amber-600 mt-1 flex items-center gap-1">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-3 sm:h-3">
-                                                            <circle cx="12" cy="12" r="10" />
-                                                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                                                            <path d="M12 17h.01" />
-                                                        </svg>
-                                                        <span>Click "Clean" to remove empty schedules automatically</span>
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Action Button */}
-                                            {hasEmpty && (
-                                                <button
-                                                    onClick={() => {
-                                                        console.log('🖱️ Clean button CLICKED from enhanced alert!');
-                                                        handleCleanEmptySchedules();
-                                                    }}
-                                                    className="flex-shrink-0 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-xs transition-all hover:shadow-lg hover:scale-105 active:scale-95 flex items-center gap-1 sm:gap-1.5"
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-3.5 sm:h-3.5">
-                                                        <path d="M3 6h18" />
-                                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                                    </svg>
-                                                    <span className="hidden sm:inline">Clean Now</span>
-                                                    <span className="sm:hidden">Clean</span>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })()}
-
-                            {/* All Good */}
+                            {/* ALL GOOD Status */}
                             {schedules.filter(s => s.current_students >= 8 && s.current_students < 10).length === 0 &&
                                 schedules.filter(s => s.current_students === 0).length === 0 && (
-                                    <div className="group flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-emerald-50 to-green-50 rounded-lg sm:rounded-xl p-2 sm:p-3 border-2 border-emerald-200/50 hover:border-emerald-300 hover:shadow-md transition-all duration-300 animate-slide-in-up">
-                                        <div className="p-1 sm:p-1.5 bg-emerald-500/10 rounded-lg flex-shrink-0">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 text-emerald-600"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                                    <div className="group relative bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl p-4 border-2 border-emerald-300 overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-200/30 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500"></div>
+
+                                        <div className="relative z-10 flex items-center gap-3">
+                                            <div className="p-2 bg-emerald-500/20 rounded-xl">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-700">
+                                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                                    <polyline points="22 4 12 14.01 9 11.01" />
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-black text-emerald-900">✨ All Systems Normal</p>
+                                                <p className="text-xs text-emerald-700 font-medium">Everything looks great!</p>
+                                            </div>
                                         </div>
-                                        <p className="text-[10px] sm:text-xs text-emerald-800 font-bold">All systems normal</p>
                                     </div>
                                 )}
                         </div>
                     </div>
-                </div>
+                )}
             </div>
 
             {/* Teacher ID Modal */}
@@ -2323,134 +2273,141 @@ This action CANNOT be undone!`,
                         </div>
                     </div>
                 </div>
-            )}
+            )
+            }
 
             {/* Bulk Operations Modal */}
-            {showBulkOperations && (
-                <BulkOperations onClose={() => setShowBulkOperations(false)} />
-            )}
+            {
+                showBulkOperations && (
+                    <BulkOperations onClose={() => setShowBulkOperations(false)} />
+                )
+            }
 
             {/* Admin Guide Modal */}
-            {showAdminGuide && (
-                <AdminGuide onClose={() => setShowAdminGuide(false)} userId={user.id} />
-            )}
+            {
+                showAdminGuide && (
+                    <AdminGuide onClose={() => setShowAdminGuide(false)} userId={user.id} />
+                )
+            }
 
             {/* Reset Batch Modal */}
-            {showResetBatchModal && createPortal(
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full">
-                        <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-t-xl">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                                        <Trash2 size={18} />
+            {
+                showResetBatchModal && createPortal(
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+                        <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full">
+                            <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 rounded-t-xl">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                            <Trash2 size={18} />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-base font-bold">Reset Batch</h2>
+                                            <p className="text-red-100 text-xs">Delete all batch data</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 className="text-base font-bold">Reset Batch</h2>
-                                        <p className="text-red-100 text-xs">Delete all batch data</p>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => setShowResetBatchModal(false)}
-                                    className="text-white/80 hover:text-white transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="p-4 space-y-4">
-                            <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded-lg">
-                                <div className="flex items-start gap-2">
-                                    <div className="text-red-600 text-sm mt-0.5">⚠️</div>
-                                    <div>
-                                        <h3 className="font-bold text-red-800 text-sm mb-1">Danger Zone</h3>
-                                        <p className="text-xs text-red-700">
-                                            This will permanently delete ALL data from the selected batch. This action cannot be undone!
-                                        </p>
-                                    </div>
+                                    <button
+                                        onClick={() => setShowResetBatchModal(false)}
+                                        className="text-white/80 hover:text-white transition-colors"
+                                    >
+                                        <X size={20} />
+                                    </button>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Select Batch to Reset
-                                </label>
-                                <select
-                                    value={resetBatchNumber}
-                                    onChange={(e) => setResetBatchNumber(e.target.value)}
-                                    className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm"
-                                    disabled={resetBatchLoading}
-                                >
-                                    <option value="1">Batch 1</option>
-                                    <option value="2">Batch 2</option>
-                                    <option value="3">Batch 3</option>
-                                    <option value="4">Batch 4</option>
-                                    <option value="5">Batch 5</option>
-                                </select>
-                            </div>
+                            <div className="p-4 space-y-4">
+                                <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded-lg">
+                                    <div className="flex items-start gap-2">
+                                        <div className="text-red-600 text-sm mt-0.5">⚠️</div>
+                                        <div>
+                                            <h3 className="font-bold text-red-800 text-sm mb-1">Danger Zone</h3>
+                                            <p className="text-xs text-red-700">
+                                                This will permanently delete ALL data from the selected batch. This action cannot be undone!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <div className="bg-gray-50 p-3 rounded-lg">
-                                <h4 className="font-semibold text-gray-800 mb-2 text-xs">What will be deleted:</h4>
-                                <ul className="space-y-1 text-xs text-gray-600">
-                                    <li className="flex items-center gap-2">
-                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                                        All students in Batch {resetBatchNumber}
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                                        All bookings from these students
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                                        All attendance records
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <div className="w-1 h-1 bg-red-500 rounded-full"></div>
-                                        All orphan attendance data
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
-                                        ALL schedules (all weeks)
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
-                                        Current week → Reset to Week 1
-                                    </li>
-                                </ul>
-                            </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Select Batch to Reset
+                                    </label>
+                                    <select
+                                        value={resetBatchNumber}
+                                        onChange={(e) => setResetBatchNumber(e.target.value)}
+                                        className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all text-sm"
+                                        disabled={resetBatchLoading}
+                                    >
+                                        <option value="1">Batch 1</option>
+                                        <option value="2">Batch 2</option>
+                                        <option value="3">Batch 3</option>
+                                        <option value="4">Batch 4</option>
+                                        <option value="5">Batch 5</option>
+                                    </select>
+                                </div>
 
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setShowResetBatchModal(false)}
-                                    className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all text-sm"
-                                    disabled={resetBatchLoading}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleResetBatch}
-                                    disabled={resetBatchLoading}
-                                    className="flex-1 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
-                                >
-                                    {resetBatchLoading ? (
-                                        <>
-                                            <RefreshCw size={14} className="animate-spin" />
-                                            Resetting...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Trash2 size={14} />
-                                            Reset Batch {resetBatchNumber}
-                                        </>
-                                    )}
-                                </button>
+                                <div className="bg-gray-50 p-3 rounded-lg">
+                                    <h4 className="font-semibold text-gray-800 mb-2 text-xs">What will be deleted:</h4>
+                                    <ul className="space-y-1 text-xs text-gray-600">
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                            All students in Batch {resetBatchNumber}
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                            All bookings from these students
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                            All attendance records
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1 h-1 bg-red-500 rounded-full"></div>
+                                            All orphan attendance data
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1 h-1 bg-orange-500 rounded-full"></div>
+                                            ALL schedules (all weeks)
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <div className="w-1 h-1 bg-blue-500 rounded-full"></div>
+                                            Current week → Reset to Week 1
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setShowResetBatchModal(false)}
+                                        className="flex-1 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition-all text-sm"
+                                        disabled={resetBatchLoading}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleResetBatch}
+                                        disabled={resetBatchLoading}
+                                        className="flex-1 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                                    >
+                                        {resetBatchLoading ? (
+                                            <>
+                                                <RefreshCw size={14} className="animate-spin" />
+                                                Resetting...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Trash2 size={14} />
+                                                Reset Batch {resetBatchNumber}
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>,
-                document.body
-            )}
+                    </div>,
+                    document.body
+                )
+            }
         </div>
     );
 };
