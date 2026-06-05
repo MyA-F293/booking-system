@@ -502,27 +502,11 @@ const AdminBookingDashboard = () => {
             return;
         }
 
-        // ✅ NEW: Warning if creating schedule without students
+        // ✅ PREVENT: Block empty schedule creation completely
         if (scheduleFormMode === 'create' && selectedStudentsForSchedule.length === 0) {
-            console.log('⚠️ Creating schedule without students - showing confirmation');
-
-            const confirmed = await new Promise((resolve) => {
-                toast.confirm(
-                    '⚠️ No students selected for this schedule.\n\nThe schedule will be created empty and students can book later.\n\nNote: Empty schedules can be cleaned up using the "Clean" button in Quick Insights.\n\nContinue?',
-                    () => {
-                        console.log('✅ User confirmed creating empty schedule');
-                        resolve(true);
-                    },
-                    () => {
-                        console.log('❌ User cancelled creating empty schedule');
-                        resolve(false);
-                    }
-                );
-            });
-
-            if (!confirmed) {
-                return;
-            }
+            console.log('❌ Blocking creation of empty schedule (no students selected)');
+            toast.error('⚠️ Cannot create empty schedule!\n\nPlease select at least one student before creating the schedule.');
+            return;
         }
 
         // ✅ FIX: Prevent double submission (race condition protection)
