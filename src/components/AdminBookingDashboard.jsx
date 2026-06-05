@@ -1282,17 +1282,58 @@ const AdminBookingDashboard = () => {
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 border-red-100 shadow-sm">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="p-1.5 sm:p-2.5 bg-gradient-to-br from-red-100 to-rose-100 rounded-lg sm:rounded-xl flex-shrink-0">
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">!</div>
+                {/* Empty Schedules Card - Enhanced Design */}
+                {(() => {
+                    const emptyCount = schedules.filter(s => s.current_students === 0).length;
+                    const hasEmpty = emptyCount > 0;
+
+                    return (
+                        <div className={`bg-gradient-to-br rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 shadow-sm transition-all ${hasEmpty
+                                ? 'from-amber-50 to-orange-50 border-amber-200'
+                                : 'from-emerald-50 to-green-50 border-emerald-200'
+                            }`}>
+                            <div className="flex items-start gap-2 sm:gap-3">
+                                <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl flex-shrink-0 ${hasEmpty
+                                        ? 'bg-gradient-to-br from-amber-100 to-orange-100'
+                                        : 'bg-gradient-to-br from-emerald-100 to-green-100'
+                                    }`}>
+                                    {hasEmpty ? (
+                                        <AlertCircle size={16} className="sm:w-5 sm:h-5 text-amber-600" />
+                                    ) : (
+                                        <div className="w-4 h-4 sm:w-5 sm:h-5 bg-emerald-500 rounded-full flex items-center justify-center text-white text-[10px] sm:text-xs font-bold">✓</div>
+                                    )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-baseline gap-1.5">
+                                        <p className={`text-lg sm:text-2xl font-bold truncate ${hasEmpty ? 'text-amber-700' : 'text-emerald-700'
+                                            }`}>
+                                            {emptyCount}
+                                        </p>
+                                        {hasEmpty && !hideEmpty && (
+                                            <button
+                                                onClick={handleCleanEmptySchedules}
+                                                disabled={loading}
+                                                className="ml-auto p-1 sm:p-1.5 bg-red-500 hover:bg-red-600 rounded-md sm:rounded-lg transition-all disabled:opacity-50 flex-shrink-0"
+                                                title="Clean empty schedules"
+                                            >
+                                                <Trash2 size={12} className="sm:w-3.5 sm:h-3.5 text-white" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p className={`text-[10px] sm:text-xs font-medium truncate ${hasEmpty ? 'text-amber-600' : 'text-emerald-600'
+                                        }`}>
+                                        {hasEmpty ? 'Empty Schedules' : 'All Filled ✨'}
+                                    </p>
+                                    {hasEmpty && (
+                                        <p className="text-[9px] sm:text-[10px] text-amber-500 mt-0.5 truncate">
+                                            Click 👁️ to view
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        <div className="min-w-0">
-                            <p className="text-lg sm:text-2xl font-bold text-gray-800 truncate">{schedules.filter(s => s.current_students >= 10).length}</p>
-                            <p className="text-[10px] sm:text-xs text-gray-500 truncate">{t('stats.fullClasses')}</p>
-                        </div>
-                    </div>
-                </div>
+                    );
+                })()}
             </div>
 
             {/* NEW: Filters and View Mode */}
