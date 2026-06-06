@@ -1185,16 +1185,17 @@ export const autoCopyBookingsToNextWeek = async () => {
 
             const targetWeekSchedule = await getOrCreateSchedule(scheduleData);
 
-            // Check if user already has booking for target week in this phase
-            const existingBooking = await hasUserBookedPhase(
-                booking.user_id,
-                schedule.phase,
-                targetWeek,
-                currentYear
-            );
+            // Check if user already booked THIS SPECIFIC schedule (not just any schedule in same phase)
+            const { data: existingSpecific } = await supabase
+                .from('bookings')
+                .select('id')
+                .eq('user_id', booking.user_id)
+                .eq('schedule_id', targetWeekSchedule.id)
+                .eq('status', 'confirmed')
+                .maybeSingle();
 
-            if (existingBooking) {
-                console.log('⏭️ User', booking.user_id, 'already booked phase', schedule.phase, 'for week', targetWeek);
+            if (existingSpecific) {
+                console.log('⏭️ User', booking.user_id, 'already booked this schedule', targetWeekSchedule.id);
                 continue;
             }
 
