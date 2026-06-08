@@ -417,7 +417,8 @@ const AdminBookingDashboard = () => {
                     parseInt(scheduleForm.week_number),
                     parseInt(scheduleForm.year),
                     scheduleForm.program,
-                    scheduleForm.level
+                    scheduleForm.level,
+                    editingSchedule?.id || null
                 );
 
                 if (conflict) {
@@ -499,6 +500,25 @@ const AdminBookingDashboard = () => {
         // Validation
         if (!scheduleForm.class_id || !scheduleForm.day || !scheduleForm.time_slot || !scheduleForm.phase || !scheduleForm.week_number || !scheduleForm.program || !scheduleForm.level) {
             toast.error('Please fill all required fields!');
+            return;
+        }
+
+        // ✅ PREVENT: Validate day-phase consistency
+        const phase1Days = ['monday', 'tuesday', 'wednesday'];
+        const phase2Days = ['thursday', 'friday', 'saturday'];
+        const recapDays = ['sunday'];
+        const selectedDay = scheduleForm.day?.toLowerCase();
+
+        if (scheduleForm.phase === 'phase1' && !phase1Days.includes(selectedDay)) {
+            toast.error(`⚠️ ${scheduleForm.day} cannot be Phase 1!\n\nPhase 1 = Monday, Tuesday, Wednesday\nPhase 2 = Thursday, Friday, Saturday\nRecap = Sunday`);
+            return;
+        }
+        if (scheduleForm.phase === 'phase2' && !phase2Days.includes(selectedDay)) {
+            toast.error(`⚠️ ${scheduleForm.day} cannot be Phase 2!\n\nPhase 1 = Monday, Tuesday, Wednesday\nPhase 2 = Thursday, Friday, Saturday\nRecap = Sunday`);
+            return;
+        }
+        if (scheduleForm.phase === 'recap' && !recapDays.includes(selectedDay)) {
+            toast.error(`⚠️ ${scheduleForm.day} cannot be Recap!\n\nRecap = Sunday only`);
             return;
         }
 
@@ -1289,13 +1309,13 @@ const AdminBookingDashboard = () => {
 
                     return (
                         <div className={`bg-gradient-to-br rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border-2 shadow-sm transition-all ${hasEmpty
-                                ? 'from-amber-50 to-orange-50 border-amber-200'
-                                : 'from-emerald-50 to-green-50 border-emerald-200'
+                            ? 'from-amber-50 to-orange-50 border-amber-200'
+                            : 'from-emerald-50 to-green-50 border-emerald-200'
                             }`}>
                             <div className="flex items-start gap-2 sm:gap-3">
                                 <div className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl flex-shrink-0 ${hasEmpty
-                                        ? 'bg-gradient-to-br from-amber-100 to-orange-100'
-                                        : 'bg-gradient-to-br from-emerald-100 to-green-100'
+                                    ? 'bg-gradient-to-br from-amber-100 to-orange-100'
+                                    : 'bg-gradient-to-br from-emerald-100 to-green-100'
                                     }`}>
                                     {hasEmpty ? (
                                         <AlertCircle size={16} className="sm:w-5 sm:h-5 text-amber-600" />

@@ -374,8 +374,8 @@ const AdminStatsDashboard = () => {
                 </div>
             </div>
 
-            {/* 🎨 QUICK INSIGHTS - BENTO BOX LAYOUT (TOP POSITION) */}
-            <div className="space-y-3 animate-fade-in">
+            {/* 🎨 QUICK INSIGHTS - ABSTRACT BENTO LAYOUT */}
+            <div className="space-y-4 animate-fade-in">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <div className="p-2.5 bg-gradient-to-br from-[#1F4E8C] to-[#2a5fa3] rounded-xl shadow-lg">
@@ -387,135 +387,147 @@ const AdminStatsDashboard = () => {
                     </div>
                 </div>
 
-                {/* Bento Grid - Asymmetric 2x2 Layout */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                    {/* 1. TOTAL BOOKINGS - Large Blue Card (takes 2 cols on lg) */}
-                    <div className="lg:col-span-2 group relative bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl p-5 sm:p-6 overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1">
-                        {/* Animated Background */}
-                        <div className="absolute inset-0 opacity-10">
-                            <div className="absolute top-0 right-0 w-40 h-40 bg-white rounded-full -translate-y-20 translate-x-20 group-hover:scale-150 transition-transform duration-700"></div>
-                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-white rounded-full translate-y-16 -translate-x-16 group-hover:scale-150 transition-transform duration-700"></div>
+                {/* Abstract Bento Grid */}
+                <div className="grid grid-cols-6 grid-rows-2 gap-3 sm:gap-4 auto-rows-[120px] sm:auto-rows-[140px]">
+                    {/* 1. TOTAL BOOKINGS - Large card spanning 3 cols, 2 rows */}
+                    <div className="col-span-6 sm:col-span-3 row-span-2 group relative bg-gradient-to-br from-slate-800 via-slate-900 to-gray-900 rounded-3xl p-6 sm:p-8 overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-500">
+                        {/* Abstract shapes */}
+                        <div className="absolute inset-0 overflow-hidden">
+                            <div className="absolute -top-10 -right-10 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700"></div>
+                            <div className="absolute -bottom-16 -left-16 w-56 h-56 bg-indigo-500/15 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl"></div>
+                            {/* Geometric lines */}
+                            <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+                                <line x1="0" y1="0" x2="100%" y2="100%" stroke="white" strokeWidth="1" />
+                                <line x1="100%" y1="0" x2="0" y2="100%" stroke="white" strokeWidth="1" />
+                                <circle cx="50%" cy="50%" r="60" fill="none" stroke="white" strokeWidth="0.5" />
+                            </svg>
                         </div>
 
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
+                        <div className="relative z-10 h-full flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                                        <Calendar size={18} className="text-white" />
+                                    <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm border border-white/10">
+                                        <Calendar size={16} className="text-blue-300" />
                                     </div>
-                                    <span className="text-blue-100 text-sm font-bold uppercase tracking-wide">Total Bookings</span>
+                                    <span className="text-gray-400 text-xs font-semibold uppercase tracking-widest">Total Bookings</span>
                                 </div>
-                                <div className="px-3 py-1 bg-white/20 rounded-full text-xs font-black text-white backdrop-blur-sm">
-                                    Week {displayWeek}
+                                <div className="px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-[10px] font-bold text-blue-300 backdrop-blur-sm">
+                                    W{displayWeek}
                                 </div>
                             </div>
-                            <div className="flex items-baseline gap-3">
-                                <p className="text-5xl sm:text-6xl font-black text-white tracking-tight">
+                            <div>
+                                <p className="text-6xl sm:text-7xl font-black text-white tracking-tighter leading-none">
                                     {stats.totalBookings}
                                 </p>
-                                <div>
-                                    <p className="text-blue-100 text-sm font-bold">Active</p>
-                                    <p className="text-blue-200 text-xs">Confirmed</p>
-                                </div>
+                                <p className="text-gray-400 text-sm mt-2 font-medium">Active confirmed bookings</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* 2. BOOKING RATE - Compact Orange Card */}
-                    <div className="group relative bg-gradient-to-br from-orange-400 via-orange-500 to-amber-500 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
-                        <div className="absolute inset-0 opacity-10">
-                            <div className="absolute top-0 right-0 w-28 h-28 bg-white rounded-full -translate-y-14 translate-x-14 group-hover:scale-125 transition-transform duration-500"></div>
+                    {/* 2. BOOKING RATE - Top right */}
+                    <div className="col-span-3 sm:col-span-3 row-span-1 group relative bg-gradient-to-br from-violet-500 via-purple-600 to-fuchsia-600 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-0.5">
+                        {/* Abstract accent */}
+                        <div className="absolute inset-0 overflow-hidden">
+                            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl"></div>
+                            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/10 to-transparent"></div>
+                            {/* Dot grid pattern */}
+                            <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '16px 16px' }}></div>
                         </div>
 
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-2 mb-3">
-                                <UserCheck size={14} className="text-orange-100" />
-                                <span className="text-orange-100 text-xs font-bold uppercase">Booking Rate</span>
+                        <div className="relative z-10 h-full flex flex-col justify-between">
+                            <div className="flex items-center gap-2">
+                                <UserCheck size={14} className="text-purple-200" />
+                                <span className="text-purple-200 text-[10px] font-bold uppercase tracking-wider">Booking Rate</span>
                             </div>
-                            <p className="text-3xl sm:text-4xl font-black text-white mb-1">
-                                {studentBookingStatus.bookingRate}%
-                            </p>
-                            <p className="text-orange-100 text-xs font-medium">
-                                {studentBookingStatus.booked.length}/{stats.totalStudents} Students
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* 3. MOST POPULAR CLASS - Green Hero Card */}
-                    <div className="group relative bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500">
-                        <div className="absolute inset-0 opacity-10">
-                            <div className="absolute top-0 right-0 w-28 h-28 bg-white rounded-full -translate-y-14 translate-x-14 group-hover:scale-125 transition-transform duration-500"></div>
-                        </div>
-
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-2 mb-3">
-                                <BookOpen size={14} className="text-teal-100" />
-                                <span className="text-teal-100 text-xs font-bold uppercase">Top Class</span>
-                            </div>
-                            <p className="text-lg sm:text-xl font-black text-white mb-1 truncate">
-                                {stats.bookingsByClass.length > 0
-                                    ? stats.bookingsByClass.sort((a, b) => b.value - a.value)[0].name
-                                    : 'N/A'}
-                            </p>
-                            <div className="flex items-baseline gap-1">
-                                <p className="text-2xl font-black text-white">
-                                    {stats.bookingsByClass.length > 0
-                                        ? stats.bookingsByClass.sort((a, b) => b.value - a.value)[0].value
-                                        : 0}
+                            <div className="flex items-end justify-between">
+                                <p className="text-4xl sm:text-5xl font-black text-white tracking-tight">
+                                    {studentBookingStatus.bookingRate}<span className="text-2xl text-purple-200">%</span>
                                 </p>
-                                <span className="text-teal-100 text-xs font-medium">bookings</span>
+                                <p className="text-purple-200 text-xs font-medium pb-1">
+                                    {studentBookingStatus.booked.length}/{stats.totalStudents}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 3. TOP CLASS - Bottom right */}
+                    <div className="col-span-3 sm:col-span-3 row-span-1 group relative bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 rounded-2xl p-4 sm:p-5 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-0.5">
+                        {/* Abstract accent */}
+                        <div className="absolute inset-0 overflow-hidden">
+                            <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-white/10 rounded-full blur-lg"></div>
+                            <div className="absolute top-0 left-0 w-full h-1/3 bg-gradient-to-b from-white/5 to-transparent"></div>
+                            {/* Wave pattern */}
+                            <svg className="absolute bottom-0 left-0 w-full h-12 opacity-[0.06]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 50" preserveAspectRatio="none">
+                                <path d="M0,25 Q100,0 200,25 T400,25 V50 H0 Z" fill="white" />
+                            </svg>
+                        </div>
+
+                        <div className="relative z-10 h-full flex flex-col justify-between">
+                            <div className="flex items-center gap-2">
+                                <BookOpen size={14} className="text-emerald-200" />
+                                <span className="text-emerald-200 text-[10px] font-bold uppercase tracking-wider">Top Class</span>
+                            </div>
+                            <div>
+                                <p className="text-base sm:text-lg font-black text-white truncate">
+                                    {stats.bookingsByClass.length > 0
+                                        ? stats.bookingsByClass.sort((a, b) => b.value - a.value)[0].name
+                                        : 'N/A'}
+                                </p>
+                                <div className="flex items-baseline gap-1.5">
+                                    <p className="text-2xl sm:text-3xl font-black text-white">
+                                        {stats.bookingsByClass.length > 0
+                                            ? stats.bookingsByClass.sort((a, b) => b.value - a.value)[0].value
+                                            : 0}
+                                    </p>
+                                    <span className="text-emerald-200 text-xs font-medium">bookings</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Alerts Row - Side by Side Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* STUDENTS NOT BOOKED Alert */}
-                    {studentBookingStatus.notBooked.length > 0 && (
-                        <button
-                            onClick={() => {
-                                setModalType('notBooked');
-                                setShowStudentModal(true);
-                            }}
-                            className="group relative bg-gradient-to-br from-amber-100 to-yellow-100 rounded-xl p-4 border-2 border-amber-300 hover:border-amber-400 hover:shadow-lg transition-all duration-300 overflow-hidden text-left"
-                        >
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-200/30 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500"></div>
+                {/* Alert - Minimal abstract style */}
+                {studentBookingStatus.notBooked.length > 0 && (
+                    <button
+                        onClick={() => {
+                            setModalType('notBooked');
+                            setShowStudentModal(true);
+                        }}
+                        className="w-full group relative bg-white rounded-2xl p-4 border border-gray-200 hover:border-amber-300 hover:shadow-lg transition-all duration-300 overflow-hidden text-left"
+                    >
+                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-400 to-orange-500 rounded-l-2xl"></div>
+                        <div className="absolute -top-8 -right-8 w-24 h-24 bg-amber-50 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
 
-                            <div className="relative z-10 flex items-start gap-3">
-                                <div className="p-2 bg-amber-500/20 rounded-xl flex-shrink-0">
-                                    <UserX size={20} className="text-amber-700" strokeWidth={2.5} />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <p className="text-sm font-black text-amber-900">⚠️ Not Booked Yet</p>
-                                        <span className="px-2 py-0.5 bg-amber-500 text-white rounded-full text-xs font-bold">
-                                            {studentBookingStatus.notBooked.length}
-                                        </span>
-                                    </div>
-                                    <p className="text-xs text-amber-700 font-medium">Students haven't booked for W{displayWeek}</p>
-                                </div>
+                        <div className="relative z-10 flex items-center gap-3 pl-3">
+                            <div className="p-2 bg-amber-100 rounded-xl flex-shrink-0">
+                                <UserX size={18} className="text-amber-600" strokeWidth={2.5} />
                             </div>
-                        </button>
-                    )}
+                            <div className="flex-1">
+                                <p className="text-sm font-bold text-gray-800">Not Booked Yet</p>
+                                <p className="text-xs text-gray-500">Students haven't booked for W{displayWeek}</p>
+                            </div>
+                            <span className="px-3 py-1 bg-amber-500 text-white rounded-full text-xs font-bold shadow-sm">
+                                {studentBookingStatus.notBooked.length}
+                            </span>
+                        </div>
+                    </button>
+                )}
 
-                    {/* ALL STUDENTS BOOKED Status */}
-                    {studentBookingStatus.notBooked.length === 0 && stats.totalStudents > 0 && (
-                        <div className="group relative bg-gradient-to-br from-emerald-100 to-green-100 rounded-xl p-4 border-2 border-emerald-300 overflow-hidden">
-                            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-200/30 rounded-full -translate-y-12 translate-x-12 group-hover:scale-150 transition-transform duration-500"></div>
-
-                            <div className="relative z-10 flex items-center gap-3">
-                                <div className="p-2 bg-emerald-500/20 rounded-xl">
-                                    <CheckCircle2 size={20} className="text-emerald-700" strokeWidth={2.5} />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-black text-emerald-900">✨ All Students Booked!</p>
-                                    <p className="text-xs text-emerald-700 font-medium">100% booking rate achieved</p>
-                                </div>
+                {studentBookingStatus.notBooked.length === 0 && stats.totalStudents > 0 && (
+                    <div className="w-full relative bg-white rounded-2xl p-4 border border-gray-200 overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-green-500 rounded-l-2xl"></div>
+                        <div className="relative z-10 flex items-center gap-3 pl-3">
+                            <div className="p-2 bg-emerald-100 rounded-xl">
+                                <CheckCircle2 size={18} className="text-emerald-600" strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-gray-800">All Students Booked</p>
+                                <p className="text-xs text-gray-500">100% booking rate achieved</p>
                             </div>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
 
             <div ref={dashboardRef} className="space-y-6" style={{ backgroundColor: '#f9fafb', padding: '16px', borderRadius: '16px' }}>

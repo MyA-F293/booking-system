@@ -525,11 +525,11 @@ export const getSchedules = async (filters = {}) => {
  * @param {string} currentLevel - Current user's level
  * @returns {Object|null} Conflict details or null
  */
-export const checkRoomConflict = async (classId, day, timeSlot, phase, weekNumber, year, currentProgram, currentLevel) => {
+export const checkRoomConflict = async (classId, day, timeSlot, phase, weekNumber, year, currentProgram, currentLevel, excludeScheduleId = null) => {
     try {
-        console.log('🔍 Checking room conflict:', { classId, day, timeSlot, phase, weekNumber, year, currentProgram, currentLevel });
+        console.log('🔍 Checking room conflict:', { classId, day, timeSlot, phase, weekNumber, year, currentProgram, currentLevel, excludeScheduleId });
 
-        const { data, error } = await supabase
+        let query = supabase
             .from('schedules')
             .select('id, program, level, current_students, batch')
             .eq('class_id', classId)
@@ -537,8 +537,14 @@ export const checkRoomConflict = async (classId, day, timeSlot, phase, weekNumbe
             .eq('time_slot', timeSlot)
             .eq('phase', phase)
             .eq('week_number', weekNumber)
-            .eq('year', year)
-            .limit(1);
+            .eq('year', year);
+
+        // Exclude current schedule when editing
+        if (excludeScheduleId) {
+            query = query.neq('id', excludeScheduleId);
+        }
+
+        const { data, error } = await query.limit(1);
 
         if (error) {
             console.error('❌ Error checking room conflict:', error);
