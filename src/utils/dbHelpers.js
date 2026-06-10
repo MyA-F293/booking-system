@@ -1205,9 +1205,17 @@ export const autoCopyBookingsToNextWeek = async () => {
                 continue;
             }
 
-            // Check if class is full (max 10)
-            if (targetWeekSchedule.current_students >= 10) {
-                console.log('⚠️ Class full for schedule', targetWeekSchedule.id);
+            // Check if class is full (use actual max from classes table)
+            let maxStudents = 10;
+            const { data: classData } = await supabase
+                .from('classes')
+                .select('max_students')
+                .eq('id', schedule.class_id)
+                .single();
+            if (classData) maxStudents = classData.max_students || 10;
+
+            if (targetWeekSchedule.current_students >= maxStudents) {
+                console.log('⚠️ Class full for schedule', targetWeekSchedule.id, `(${targetWeekSchedule.current_students}/${maxStudents})`);
                 continue;
             }
 

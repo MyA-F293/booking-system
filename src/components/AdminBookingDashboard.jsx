@@ -737,7 +737,8 @@ const AdminBookingDashboard = () => {
                 toast.warning(t('adminBooking.studentAlreadyInClass'));
                 return;
             }
-            if (selectedSchedule.current_students >= 10) {
+            const maxStudents = selectedSchedule.class?.max_students || 10;
+            if (selectedSchedule.current_students >= maxStudents) {
                 toast.error(t('adminBooking.classFull'));
                 return;
             }
@@ -1448,7 +1449,7 @@ const AdminBookingDashboard = () => {
                         const badge = getClassBadge(className);
                         const isExpanded = expandedClasses.has(className);
                         const totalStudents = classSchedules.reduce((sum, s) => sum + s.current_students, 0);
-                        const maxCapacity = classSchedules.length * 10;
+                        const maxCapacity = classSchedules.reduce((sum, s) => sum + (s.class?.max_students || 10), 0);
 
                         return (
                             <div key={className} className="bg-white rounded-xl sm:rounded-2xl border-2 border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
@@ -1730,7 +1731,7 @@ const AdminBookingDashboard = () => {
                                     </div>
                                     <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100">
                                         <p className="text-[10px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">{t('adminBooking.capacity')}</p>
-                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.current_students}/10 {t('booking.students')}</p>
+                                        <p className="font-semibold text-gray-800 text-xs sm:text-sm">{selectedSchedule.current_students}/{selectedSchedule.class?.max_students || 10} {t('booking.students')}</p>
                                     </div>
                                     <div className="bg-white rounded-lg sm:rounded-xl p-2 sm:p-3 border border-orange-100 col-span-2">
                                         <div className="flex items-center justify-between">
@@ -1747,7 +1748,7 @@ const AdminBookingDashboard = () => {
                             </div>
 
                             <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                                <button onClick={() => setShowAddModal(true)} disabled={selectedSchedule.current_students >= 10} className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-emerald-600 hover:to-emerald-500 transition-all flex items-center justify-center gap-1 sm:gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
+                                <button onClick={() => setShowAddModal(true)} disabled={selectedSchedule.current_students >= (selectedSchedule.class?.max_students || 10)} className="bg-gradient-to-r from-emerald-500 to-emerald-400 text-white py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-[10px] sm:text-xs hover:from-emerald-600 hover:to-emerald-500 transition-all flex items-center justify-center gap-1 sm:gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20">
                                     <UserPlus size={12} className="sm:w-3.5 sm:h-3.5" />
                                     <span className="hidden sm:inline">{t('adminBooking.addStudent')}</span>
                                     <span className="sm:hidden">Add</span>
