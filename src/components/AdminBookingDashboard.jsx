@@ -85,7 +85,7 @@ const AdminBookingDashboard = () => {
     const [loading, setLoading] = useState(false);
     const [selectedSchedule, setSelectedSchedule] = useState(null);
     const [scheduleStudents, setScheduleStudents] = useState([]);
-    const [selectedWeekTab, setSelectedWeekTab] = useState('next'); // 'current' or 'next'
+    const [selectedWeekTab, setSelectedWeekTab] = useState('current'); // 'previous', 'current', or 'next'
     const [hideEmpty, setHideEmpty] = useState(true); // Hide empty schedules by default
 
     const [showAddModal, setShowAddModal] = useState(false);
@@ -179,7 +179,8 @@ const AdminBookingDashboard = () => {
     };
 
     const nextWeek = currentWeek + 1;
-    const displayWeek = selectedWeekTab === 'current' ? currentWeek : nextWeek;
+    const prevWeek = currentWeek - 1;
+    const displayWeek = selectedWeekTab === 'previous' ? prevWeek : selectedWeekTab === 'current' ? currentWeek : nextWeek;
 
     const phases = ['phase1', 'phase2', 'recap'];
 
@@ -883,7 +884,7 @@ const AdminBookingDashboard = () => {
             setIsCopying(true);
             setShowCopyWeekModal(false);
 
-            const displayWeek = selectedWeekTab === 'current' ? currentWeek : currentWeek + 1;
+            const displayWeek = selectedWeekTab === 'previous' ? currentWeek - 1 : selectedWeekTab === 'current' ? currentWeek : currentWeek + 1;
             const sourceWeek = displayWeek - 1;
             const targetWeek = displayWeek;
 
@@ -1198,6 +1199,15 @@ const AdminBookingDashboard = () => {
 
                             {/* Week Toggle */}
                             <div className="flex items-center bg-white/10 rounded-full p-0.5 border border-white/20">
+                                <button
+                                    onClick={() => setSelectedWeekTab('previous')}
+                                    className={`px-2.5 sm:px-3 py-1.5 rounded-full font-medium text-[11px] sm:text-xs transition-all ${selectedWeekTab === 'previous'
+                                        ? 'bg-gray-200 text-gray-700 shadow'
+                                        : 'text-white/70 hover:text-white'
+                                        }`}
+                                >
+                                    W{prevWeek}
+                                </button>
                                 <button
                                     onClick={() => setSelectedWeekTab('current')}
                                     className={`px-2.5 sm:px-3 py-1.5 rounded-full font-medium text-[11px] sm:text-xs transition-all ${selectedWeekTab === 'current'
@@ -2034,12 +2044,12 @@ const AdminBookingDashboard = () => {
                                     <div className="flex items-center justify-center gap-3 my-3">
                                         <div className="bg-white px-4 py-2 rounded-lg border-2 border-blue-300">
                                             <p className="text-xs text-gray-500">From</p>
-                                            <p className="text-lg font-bold text-blue-700">Week {selectedWeekTab === 'current' ? currentWeek - 1 : currentWeek}</p>
+                                            <p className="text-lg font-bold text-blue-700">Week {selectedWeekTab === 'previous' ? currentWeek - 2 : selectedWeekTab === 'current' ? currentWeek - 1 : currentWeek}</p>
                                         </div>
                                         <ArrowRight size={24} className="text-blue-500" />
                                         <div className="bg-white px-4 py-2 rounded-lg border-2 border-green-300">
                                             <p className="text-xs text-gray-500">To</p>
-                                            <p className="text-lg font-bold text-green-700">Week {selectedWeekTab === 'current' ? currentWeek : currentWeek + 1}</p>
+                                            <p className="text-lg font-bold text-green-700">Week {selectedWeekTab === 'previous' ? currentWeek - 1 : selectedWeekTab === 'current' ? currentWeek : currentWeek + 1}</p>
                                         </div>
                                     </div>
                                 </div>
