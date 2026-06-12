@@ -84,7 +84,7 @@ const AdminStatsDashboard = () => {
                 .select(`
                     *,
                     user:users(id, full_name, student_id, program, level),
-                    schedule:schedules(
+                    schedule:schedules!inner(
                         phase,
                         time_slot,
                         week_number,
@@ -93,12 +93,11 @@ const AdminStatsDashboard = () => {
                         class:classes(name)
                     )
                 `)
-                .eq('status', 'confirmed');
+                .eq('status', 'confirmed')
+                .eq('schedule.week_number', displayWeek)
+                .eq('schedule.year', currentYear);
 
-            const currentWeekBookings = (bookings || []).filter(b =>
-                b.schedule?.week_number === displayWeek &&
-                b.schedule?.year === currentYear
-            );
+            const currentWeekBookings = bookings || [];
 
             setRawBookings(currentWeekBookings);
 
