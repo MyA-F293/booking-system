@@ -311,8 +311,8 @@ const TeacherDashboard = ({ user }) => {
                             phase: selectedSchedule.phase,
                             day: selectedSchedule.day,
                             time_slot: selectedSchedule.time_slot,
-                            week_number: currentWeek,
-                            year: currentYear,
+                            week_number: selectedSchedule.week_number || currentWeek,
+                            year: selectedSchedule.year || currentYear,
                             student_id: studentId,
                             student_name: student.user?.full_name || '-',
                             status: status
