@@ -103,6 +103,10 @@ const AdminBookingDashboard = () => {
     const [showCopyWeekModal, setShowCopyWeekModal] = useState(false);
     const [isCopying, setIsCopying] = useState(false);
 
+    // Delete Next Week Modal state
+    const [showDeleteNextWeekModal, setShowDeleteNextWeekModal] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
     // Search state for Add Student modal
     const [studentSearchQuery, setStudentSearchQuery] = useState('');
 
@@ -151,7 +155,8 @@ const AdminBookingDashboard = () => {
         showWhatsAppModal ||
         showScheduleModal ||
         showDuplicateWarning ||
-        showCopyWeekModal
+        showCopyWeekModal ||
+        showDeleteNextWeekModal
     );
 
     // Helper function to parse database errors into user-friendly messages
@@ -954,6 +959,69 @@ const AdminBookingDashboard = () => {
         }
     };
 
+    const handleDeleteNextWeek = async () => {
+        try {
+            setIsDeleting(true);
+            setShowDeleteNextWeekModal(false);
+
+            const nextWeek = currentWeek + 1;
+
+            toast.info(`🗑️ Deleting all schedules for Week ${nextWeek}...`);
+
+            // Step 1: Get all schedule IDs for next week
+            const { data: schedulesToDelete, error: fetchError } = await supabase
+                .from('schedules')
+                .select('id')
+                .eq('week_number', nextWeek)
+                .eq('year', currentYear);
+
+            if (fetchError) throw fetchError;
+
+            if (!schedulesToDelete || schedulesToDelete.length === 0) {
+                toast.info(`No schedules found for Week ${nextWeek}`);
+                setIsDeleting(false);
+                return;
+            }
+
+            const scheduleIds = schedulesToDelete.map(s => s.id);
+            const deletedCount = schedulesToDelete.length;
+
+            // Step 2: Delete bookings first (cascade)
+            const { error: bookingsError } = await supabase
+                .from('bookings')
+                .delete()
+                .in('schedule_id', scheduleIds);
+
+            if (bookingsError) throw bookingsError;
+
+            // Step 3: Delete attendance (cascade)
+            const { error: attendanceError } = await supabase
+                .from('attendance')
+                .delete()
+                .in('schedule_id', scheduleIds);
+
+            if (attendanceError) throw attendanceError;
+
+            // Step 4: Delete schedules
+            const { error: schedulesError } = await supabase
+                .from('schedules')
+                .delete()
+                .eq('week_number', nextWeek)
+                .eq('year', currentYear);
+
+            if (schedulesError) throw schedulesError;
+
+            toast.success(`✅ Successfully deleted ${deletedCount} schedule${deletedCount > 1 ? 's' : ''} from Week ${nextWeek}!`);
+            await loadAllSchedules();
+
+        } catch (err) {
+            console.error('Error deleting next week:', err);
+            toast.error('❌ Failed to delete schedules: ' + err.message);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const handleDeleteStudent = async (bookingId, studentName, studentId) => {
         toast.confirm(
             `${t('adminBooking.confirmDelete')} ${studentName} ${t('adminBooking.fromThisClass')}?`,
@@ -1195,6 +1263,21 @@ const AdminBookingDashboard = () => {
                                     <ArrowRight size={14} />
                                 )}
                                 <span className="hidden sm:inline">Copy</span>
+                            </button>
+
+                            {/* Delete Next Week Button */}
+                            <button
+                                onClick={() => setShowDeleteNextWeekModal(true)}
+                                disabled={isDeleting}
+                                className="px-2.5 sm:px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium text-[10px] sm:text-xs transition-all flex items-center gap-1 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Delete all schedules for next week"
+                            >
+                                {isDeleting ? (
+                                    <Loader2 size={14} className="animate-spin" />
+                                ) : (
+                                    <Trash2 size={14} />
+                                )}
+                                <span className="hidden sm:inline">Delete Next</span>
                             </button>
 
                             {/* Week Toggle */}
@@ -2075,6 +2158,69 @@ const AdminBookingDashboard = () => {
                                     className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
                                 >
                                     Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>,
+                    document.body
+                )
+            }
+
+            {/* Delete Next Week Confirmation Modal */}
+            {
+                showDeleteNextWeekModal && createPortal(
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+                        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full shadow-xl border border-gray-100/50 overflow-hidden">
+                            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-5">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold flex items-center gap-2">
+                                        <Trash2 size={20} />
+                                        Delete Next Week
+                                    </h3>
+                                    <button onClick={() => setShowDeleteNextWeekModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                                        <X size={18} />
+                                    </button>
+                                </div>
+                                <p className="text-red-100 text-sm mt-1">Remove all schedules for next week</p>
+                            </div>
+                            <div className="p-6">
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                                    <p className="text-sm text-red-900 mb-2">
+                                        <strong>⚠️ This will DELETE all schedules for:</strong>
+                                    </p>
+                                    <div className="flex items-center justify-center gap-3 my-3">
+                                        <div className="bg-white px-4 py-2 rounded-lg border-2 border-red-300">
+                                            <p className="text-xs text-gray-500">Target Week</p>
+                                            <p className="text-lg font-bold text-red-700">Week {currentWeek + 1}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                                    <p className="text-xs text-yellow-800 space-y-1">
+                                        <div className="font-bold">⚠️ WARNING: This action will delete:</div>
+                                        <div>• All schedules for Week {currentWeek + 1}</div>
+                                        <div>• All bookings for those schedules</div>
+                                        <div>• All attendance records</div>
+                                        <div className="mt-2 font-bold text-red-600">This action CANNOT be undone!</div>
+                                    </p>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-4 font-semibold">
+                                    Are you absolutely sure you want to delete all schedules for Week {currentWeek + 1}?
+                                </p>
+                            </div>
+                            <div className="bg-gray-50 p-4 border-t flex gap-3">
+                                <button
+                                    onClick={handleDeleteNextWeek}
+                                    className="flex-1 bg-gradient-to-r from-red-600 to-red-700 text-white py-3 rounded-xl font-semibold text-sm hover:from-red-700 hover:to-red-800 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 size={18} />
+                                    Yes, Delete All
+                                </button>
+                                <button
+                                    onClick={() => setShowDeleteNextWeekModal(false)}
+                                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-3 rounded-xl font-semibold transition-colors text-sm"
+                                >
+                                    No, Cancel
                                 </button>
                             </div>
                         </div>
