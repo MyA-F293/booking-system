@@ -1,4 +1,6 @@
-# React + Vite
+# EYSA Language Center - Booking System
+
+React + Vite powered booking system for EYSA Language Center.
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
