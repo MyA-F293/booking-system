@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Calendar, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText, ChevronRight } from 'lucide-react';
+import { UserPlus, Users, LogOut, RefreshCw, Eye, EyeOff, Trash2, Edit2, Plus, X, Check, RotateCcw, GraduationCap, Pencil, BarChart3, CalendarDays, Calendar, Key, Search, Copy, CheckCircle, ClipboardList, Upload, UserCheck, BookOpen, Cloud, FileText } from 'lucide-react';
 import { logout, getAllStudents, createStudentAccount, generateStudentId, getLatestBatch, updateStudent, deleteStudent, restoreStudent, permanentDeleteStudent, adminResetPassword, getUserPassword } from './utils/authHelpers';
 import { getAllTeachers, createTeacher, updateTeacher, deleteTeacher, restoreTeacher, permanentDeleteTeacher } from './utils/dbHelpers';
 import { supabase } from './supabaseClient';
@@ -23,7 +23,7 @@ import jsPDF from 'jspdf';
 const AdminDashboard = ({ user }) => {
     const { t } = useLanguage();
     const { settings, refreshSettings, loading: settingsLoading } = useSettings();
-    const { currentWeek, incrementWeek, refreshWeek } = useWeek();
+    const { currentWeek, refreshWeek } = useWeek();
     const toast = useToast();
 
     // Students state
@@ -908,22 +908,7 @@ This action CANNOT be undone!`,
                                     <p className="text-[8px] sm:text-[10px] lg:text-xs text-gray-500">
                                         Batch {settings.batch} | {t('common.week')} {currentWeek}
                                     </p>
-                                    {/* Batch auto-detected from majority of students - no manual edit needed */}
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                const newWeek = await incrementWeek();
-                                                toast.success(`Week incremented to ${newWeek}`);
-                                                await refreshWeek();
-                                            } catch (err) {
-                                                toast.error('Failed to increment week');
-                                            }
-                                        }}
-                                        className="ml-1 p-0.5 hover:bg-blue-100 rounded transition-colors group"
-                                        title="Next Week"
-                                    >
-                                        <ChevronRight size={10} className="sm:w-3 sm:h-3 text-blue-500 group-hover:text-blue-700" />
-                                    </button>
+                                    {/* Week increment button removed - use manual database update instead */}
                                 </div>
                             </div>
                         </div>
