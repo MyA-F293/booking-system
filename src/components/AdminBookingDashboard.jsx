@@ -8,6 +8,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useBookingMode } from '../contexts/BookingModeContext';
 import { useToast } from './Toast';
 import useModalScrollLock from '../hooks/useModalScrollLock';
+import DuplicatePhaseWarning from './DuplicatePhaseWarning';
 
 const dayLabels = {
     monday: 'Monday',
@@ -360,6 +361,30 @@ const AdminBookingDashboard = () => {
                 time_slot: s.time_slot,
                 students: s.current_students
             })));
+        }
+
+        // ✅ FETCH BOOKINGS: Load students for duplicate detection
+        if (uniqueSchedules.length > 0) {
+            const scheduleIds = uniqueSchedules.map(s => s.id);
+            const { data: bookingsData, error: bookingsError } = await supabase
+                .from('bookings')
+                .select('id, schedule_id, user_id, user:users(id, full_name, student_id)')
+                .in('schedule_id', scheduleIds)
+                .eq('status', 'confirmed');
+
+            if (!bookingsError && bookingsData) {
+                // Attach students to each schedule
+                uniqueSchedules.forEach(schedule => {
+                    schedule.students = bookingsData
+                        .filter(b => b.schedule_id === schedule.id)
+                        .map(b => ({
+                            id: b.user_id,
+                            name: b.user?.full_name || 'Unknown',
+                            student_name: b.user?.full_name || 'Unknown',
+                            student_id: b.user?.student_id
+                        }));
+                });
+            }
         }
 
         setSchedules(uniqueSchedules);
@@ -1449,6 +1474,12 @@ const AdminBookingDashboard = () => {
                     );
                 })()}
             </div>
+
+            {/* Duplicate Phase Booking Warning */}
+            <DuplicatePhaseWarning
+                schedules={schedules}
+                currentWeek={displayWeek}
+            />
 
             {/* NEW: Filters and View Mode */}
             {!loading && schedules.length > 0 && (

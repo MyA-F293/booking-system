@@ -18,7 +18,7 @@ class ErrorBoundary extends Component {
     handleReload = () => {
         // Clear all caches
         if ('caches' in window) {
-            caches.keys().then(names => {
+            caches.keys().then(namels => {
                 names.forEach(name => caches.delete(name));
             });
         }

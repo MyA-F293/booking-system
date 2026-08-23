@@ -164,6 +164,28 @@ const BookingDashboard = ({ user }) => {
         try {
             setIsBooking(true);
 
+            // Validation 0: Check day-phase consistency
+            const phase1Days = ['monday', 'tuesday', 'wednesday'];
+            const phase2Days = ['thursday', 'friday', 'saturday'];
+            const recapDays = ['sunday'];
+
+            const scheduleDay = schedule.day?.toLowerCase();
+            if (schedule.phase === 'phase1' && !phase1Days.includes(scheduleDay)) {
+                toast.error(`⚠️ Schedule error: ${schedule.day} cannot be Phase 1. Please contact admin.`);
+                console.error('❌ Day-Phase mismatch blocked:', { day: schedule.day, phase: schedule.phase });
+                return;
+            }
+            if (schedule.phase === 'phase2' && !phase2Days.includes(scheduleDay)) {
+                toast.error(`⚠️ Schedule error: ${schedule.day} cannot be Phase 2. Please contact admin.`);
+                console.error('❌ Day-Phase mismatch blocked:', { day: schedule.day, phase: schedule.phase });
+                return;
+            }
+            if (schedule.phase === 'recap' && !recapDays.includes(scheduleDay)) {
+                toast.error(`⚠️ Schedule error: ${schedule.day} cannot be Recap. Please contact admin.`);
+                console.error('❌ Day-Phase mismatch blocked:', { day: schedule.day, phase: schedule.phase });
+                return;
+            }
+
             // Validation 1: Check if already booked this phase
             const alreadyBookedPhase = await hasUserBookedPhase(
                 userId,
